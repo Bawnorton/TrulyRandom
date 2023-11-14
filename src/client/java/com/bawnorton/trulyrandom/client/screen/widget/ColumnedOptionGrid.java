@@ -1,4 +1,4 @@
-package com.bawnorton.trulyrandom.client.screen;
+package com.bawnorton.trulyrandom.client.screen.widget;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.tooltip.Tooltip;
@@ -18,12 +18,12 @@ public class ColumnedOptionGrid {
         this.options = options;
     }
 
-    public void refresh() {
-        options.forEach(Option::refresh);
-    }
-
     public static ColumnedOptionGrid.Builder builder(int columns, int width) {
         return new ColumnedOptionGrid.Builder(columns, width);
+    }
+
+    public void refresh() {
+        options.forEach(Option::refresh);
     }
 
     public static class Builder {
@@ -76,7 +76,7 @@ public class ColumnedOptionGrid {
 
         public void build(Consumer<Widget> widgetConsumer) {
             GridWidget widget = new GridWidget().setColumnSpacing(columnSpacing).setRowSpacing(rowSpacing);
-            for(int column = 0; column < this.columns; column += 2) {
+            for (int column = 0; column < this.columns; column += 2) {
                 widget.add(EmptyWidget.ofWidth(this.width / this.columns - 44), 0, column);
                 widget.add(EmptyWidget.ofWidth(44), 0, column + 1);
             }
@@ -98,7 +98,7 @@ public class ColumnedOptionGrid {
     public record Option(CyclingButtonWidget<Boolean> button, BooleanSupplier getter, BooleanSupplier toggleable) {
         public void refresh() {
             button.setValue(getter.getAsBoolean());
-            if(toggleable != null) {
+            if (toggleable != null) {
                 button.active = toggleable.getAsBoolean();
             }
         }
@@ -108,9 +108,9 @@ public class ColumnedOptionGrid {
         private final Text text;
         private final BooleanSupplier getter;
         private final Consumer<Boolean> setter;
+        private final int width;
         private BooleanSupplier toggleable;
         private Text tooltip;
-        private final int width;
 
         private OptionBuilder(Text text, BooleanSupplier getter, Consumer<Boolean> setter, int width) {
             this.text = text;
@@ -139,11 +139,11 @@ public class ColumnedOptionGrid {
             widget.add(textWidget, row, column, widget.copyPositioner().relative(0, 0.5f).marginLeft(builder.marginLeft));
             CyclingButtonWidget.Builder<Boolean> cyclingBuilder = CyclingButtonWidget.onOffBuilder(this.getter.getAsBoolean());
             cyclingBuilder.omitKeyText();
-            if(tooltip != null) {
+            if (tooltip != null) {
                 Tooltip tooltip = Tooltip.of(this.tooltip);
                 cyclingBuilder.tooltip(value -> tooltip);
             }
-            if(tooltip != null) {
+            if (tooltip != null) {
                 cyclingBuilder.narration(button -> ScreenTexts.joinSentences(text, button.getGenericNarrationMessage(), this.tooltip));
             } else {
                 cyclingBuilder.narration(button -> ScreenTexts.joinSentences(text, button.getGenericNarrationMessage()));

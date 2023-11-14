@@ -1,5 +1,7 @@
 package com.bawnorton.trulyrandom.random;
 
+import net.minecraft.nbt.NbtCompound;
+
 public enum Module {
     LOOT_TABLES(false),
     RECIPES(false),
@@ -25,5 +27,13 @@ public enum Module {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public void writeNbt(NbtCompound nbt) {
+        nbt.putBoolean(name(), enabled);
+    }
+
+    public void readNbt(NbtCompound nbt) {
+        enabled = nbt.getBoolean(name());
     }
 }

@@ -1,5 +1,7 @@
 package com.bawnorton.trulyrandom.random;
 
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.PacketByteBuf;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -10,6 +12,16 @@ import java.util.Map;
 public class Modules implements Iterable<Module> {
     private final List<Module> modules = List.of(Module.values());
     private final Map<Module, Boolean> memento = new HashMap<>();
+
+    public static Modules fromPacket(PacketByteBuf buf) {
+        Modules modules = new Modules();
+        modules.modules.forEach(module -> module.setEnabled(buf.readBoolean()));
+        return modules;
+    }
+
+    public void write(PacketByteBuf buf) {
+        modules.forEach(module -> buf.writeBoolean(module.isEnabled()));
+    }
 
     public boolean isDisabled(Module module) {
         return !module.isEnabled();
@@ -34,6 +46,14 @@ public class Modules implements Iterable<Module> {
 
     public void cancel() {
         memento.clear();
+    }
+
+    public void writeNbt(NbtCompound nbt) {
+        modules.forEach(module -> module.writeNbt(nbt));
+    }
+
+    public void readNbt(NbtCompound nbt) {
+        modules.forEach(module -> module.readNbt(nbt));
     }
 
     @NotNull

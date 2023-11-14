@@ -1,6 +1,6 @@
 {
   "selectWorld.trulyrandom": "TrulyRandom",
-  "selectWorld.trulyrandom.info": "Choose which modules to include in the randomization, these can be toggled in game, so don't worry if you set one you don't like.",
+  "selectWorld.trulyrandom.info": "Choose which modules to include in the randomisation, these can be toggled in game with the \"%s\" key, so don't worry if you set one you don't like.",
   "selectWorld.trulyrandom.block_models": "Block Models",
   "selectWorld.trulyrandom.block_models.tooltip": "Randomises the models of blocks that share the same shape and states.",
   "selectWorld.trulyrandom.item_models": "Item Models",
@@ -12,7 +12,7 @@
   "selectWorld.trulyrandom.structures": "Structures",
   "selectWorld.trulyrandom.structures.tooltip": "Randomises the structures that generate in the world. (i.e village can be a stronghold, etc.)",
   "selectWorld.trulyrandom.not_implemented": "Coming soon!",
-  "selectWorld.trulyrandom.seed": "Enter Seed (Leave blank for random)",
+  "selectWorld.trulyrandom.seed": "Leave Blank for Random",
   "selectWorld.trulyrandom.seed.title": "Seed: ",
-  "selectWorld.trulyrandom.seed.tooltip": "Seed that will be used to determine the randomization."
+  "selectWorld.trulyrandom.seed.tooltip": "Seed that will be used to determine the randomisation."
 }

@@ -1,6 +1,8 @@
 package com.bawnorton.trulyrandom.client.screen;
 
-import com.bawnorton.trulyrandom.TrulyRandom;
+import com.bawnorton.trulyrandom.client.keybind.KeybindManager;
+import com.bawnorton.trulyrandom.client.network.ClientNetworking;
+import com.bawnorton.trulyrandom.client.screen.widget.ColumnedOptionGrid;
 import com.bawnorton.trulyrandom.random.Modules;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -10,9 +12,12 @@ import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 public class TrulyRandomSettingsScreen extends Screen {
+    private final String randomSeed = String.valueOf(new Random().nextLong());
     private final ThreePartsLayoutWidget layout = new ThreePartsLayoutWidget(this);
     private final Screen parent;
     private final Modules modules = new Modules();
@@ -29,18 +34,30 @@ public class TrulyRandomSettingsScreen extends Screen {
     protected void init() {
         GridWidget.Adder header = layout.addHeader(new GridWidget().setColumnSpacing(10)).createAdder(2);
         header.add(new TextWidget(Text.translatable("selectWorld.trulyrandom.seed.title"), textRenderer)).setHeight(18);
-        seedBox = header.add(new EditBoxWidget(textRenderer, 0, 0, 130, 18, Text.translatable("selectWorld.trulyrandom.seed"), Text.of("")));
+        seedBox = header.add(new EditBoxWidget(textRenderer, 0, 0, 150, 18, Text.translatable("selectWorld.trulyrandom.seed"), Text.of("")));
         seedBox.setTooltip(Tooltip.of(Text.translatable("selectWorld.trulyrandom.seed.tooltip")));
+        AtomicReference<String> lastSet = new AtomicReference<>();
         seedBox.setChangeListener(s -> {
-            s = s.replaceAll("[^0-9]", "");
-            s = s.substring(0, Math.min(s.length(), 18));
-            if (s.equals(seedBox.getText())) return;
-            seedBox.setText(s);
+            if(s.isEmpty() || s.equals("-") || s.equals(lastSet.get())) {
+                lastSet.set(s);
+                return;
+            }
+            try {
+                Long.parseLong(s);
+            } catch (NumberFormatException e) {
+                seedBox.setText(lastSet.get());
+                return;
+            }
+            lastSet.set(s);
         });
-        seedBox.setText(String.valueOf(TrulyRandom.getRandomiser().getSeed()));
+        if(client.world != null) {
+            seedBox.setText(String.valueOf(ClientNetworking.getLocalSeed()));
+        } else {
+            seedBox.setText(randomSeed);
+        }
         DirectionalLayoutWidget content = layout.addBody(DirectionalLayoutWidget.vertical());
         content.add(
-                new MultilineTextWidget(Text.translatable("selectWorld.trulyrandom.info"), textRenderer).setMaxWidth(340),
+                new MultilineTextWidget(Text.translatable("selectWorld.trulyrandom.info", KeybindManager.OPEN_RANDOMISER_GUI.getBoundKeyLocalizedText()), textRenderer).setMaxWidth(340),
                 positioner -> positioner.marginBottom(15)
         );
         ColumnedOptionGrid.Builder builder = ColumnedOptionGrid.builder(2, 310);
@@ -61,10 +78,9 @@ public class TrulyRandomSettingsScreen extends Screen {
 
     private void applyAndClose() {
         modules.confirm();
-        applier.accept(modules, Long.parseLong(seedBox.getText()));
+        applier.accept(modules, Long.parseLong(seedBox.getText().isEmpty() ? randomSeed : seedBox.getText()));
         close();
     }
-
 
     private void forgetAndClose() {
         modules.cancel();
@@ -79,6 +95,8 @@ public class TrulyRandomSettingsScreen extends Screen {
     @Override
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
         super.renderBackground(context, mouseX, mouseY, delta);
+        if (client.world != null) return;
+
         context.setShaderColor(0.125F, 0.125F, 0.125F, 1.0F);
         context.drawTexture(OPTIONS_BACKGROUND_TEXTURE, 0, layout.getHeaderHeight(), 0.0F, 0.0F, width, height - layout.getHeaderHeight() - layout.getFooterHeight(), 32, 32);
         context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

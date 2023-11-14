@@ -1,26 +1,42 @@
 package com.bawnorton.trulyrandom.random;
 
-import com.bawnorton.trulyrandom.network.Networking;
-import com.bawnorton.trulyrandom.network.packet.ShuffleModelsS2CPacket;
+import net.minecraft.nbt.NbtCompound;
 
 import java.util.Random;
+import java.util.function.BiConsumer;
 
 public class Randomiser {
-    private long seed;
     private Random sessionRandom;
     private Modules modules;
+    private long seed;
 
     public Randomiser(long seed) {
         this.seed = seed;
         this.sessionRandom = new Random(seed);
+        this.modules = new Modules();
     }
 
-    public Randomiser() {
-        this(new Random().nextLong());
+    public static Randomiser fromNbt(NbtCompound nbt) {
+        Randomiser randomiser = new Randomiser(nbt.getLong("seed"));
+        randomiser.modules = new Modules();
+        randomiser.modules.readNbt(nbt.getCompound("modules"));
+        return randomiser;
+    }
+
+    public NbtCompound writeNbt(NbtCompound nbt) {
+        nbt.putLong("seed", seed);
+        NbtCompound modulesNbt = new NbtCompound();
+        modules.writeNbt(modulesNbt);
+        nbt.put("modules", modulesNbt);
+        return nbt;
     }
 
     public long getSeed() {
         return seed;
+    }
+
+    public Modules getModules() {
+        return modules;
     }
 
     public void setModules(Modules modules) {
@@ -32,33 +48,11 @@ public class Randomiser {
         sessionRandom = new Random(seed);
     }
 
-    public void newSessionRandom() {
-        newSessionRandom(new Random().nextLong());
-    }
-
     public Random getSessionRandom() {
         return sessionRandom;
     }
 
-    public int nextInt(int bound) {
-        return sessionRandom.nextInt(bound);
-    }
-
-    public void shuffleItemModels() {
-        if(modules.isDisabled(Module.ITEM_MODELS)) return;
-
-        Networking.sendToAllPlayers(new ShuffleModelsS2CPacket(true, false));
-    }
-
-    public void shuffleBlockModels() {
-        if(modules.isDisabled(Module.BLOCK_MODELS)) return;
-
-        Networking.sendToAllPlayers(new ShuffleModelsS2CPacket(false, true));
-    }
-
-    public void shuffleModels() {
-        if(modules.isDisabled(Module.ITEM_MODELS) && modules.isDisabled(Module.BLOCK_MODELS)) return;
-
-        Networking.sendToAllPlayers(new ShuffleModelsS2CPacket(modules.isEnabled(Module.ITEM_MODELS), modules.isEnabled(Module.BLOCK_MODELS)));
+    public void shouldShuffleModels(BiConsumer<Boolean, Boolean> consumer) {
+        consumer.accept(modules.isEnabled(Module.ITEM_MODELS), modules.isEnabled(Module.BLOCK_MODELS));
     }
 }

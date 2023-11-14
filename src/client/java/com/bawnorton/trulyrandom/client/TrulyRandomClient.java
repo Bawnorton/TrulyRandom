@@ -1,15 +1,13 @@
 package com.bawnorton.trulyrandom.client;
 
+import com.bawnorton.trulyrandom.client.event.ClientEventHandler;
+import com.bawnorton.trulyrandom.client.keybind.KeybindManager;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.minecraft.client.MinecraftClient;
 
 public class TrulyRandomClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            MinecraftClient.getInstance().reloadResources();
-        });
-
+        ClientEventHandler.init();
+        KeybindManager.init();
     }
 }

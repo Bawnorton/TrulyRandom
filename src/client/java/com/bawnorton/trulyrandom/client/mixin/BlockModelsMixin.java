@@ -1,13 +1,17 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
-import com.bawnorton.trulyrandom.client.util.BlockStateVariant;
+import com.bawnorton.trulyrandom.client.mixin.accessor.StateAccessor;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.block.BlockModels;
 import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.registry.Registries;
+import net.minecraft.state.property.Property;
+import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -16,48 +20,62 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.*;
 
 @Mixin(BlockModels.class)
-public abstract class BlockModelsMixin implements ModelShuffler {
+public abstract class BlockModelsMixin implements ModelShuffler.BlockStates {
+    @Unique
+    private final Map<BlockState, BakedModel> shuffledModels = new HashMap<>();
+    @Unique
+    private final Map<BlockState, BlockState> originalToRandomMap = new HashMap<>();
     @Shadow
     private Map<BlockState, BakedModel> models;
 
-    @Unique
-    private final Map<BlockState, BakedModel> shuffledModels = new HashMap<>();
-
-    @Unique
-    private final Map<String, List<BlockState>> variantMap = new HashMap<>();
-
     @WrapOperation(method = "getModel", at = @At(value = "INVOKE", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;"))
-    private Object redirectGetModel(Map<BlockState, BakedModel> instance, Object key, Operation<Object> original) {
+    private Object getShuffledModel(Map<BlockState, BakedModel> instance, Object key, Operation<Object> original) {
         return shuffledModels.getOrDefault((BlockState) key, (BakedModel) original.call(instance, key));
     }
 
     @Override
     public void trulyrandom$shuffleModels(Random rnd) {
         if (models == null) return;
-        if (MinecraftClient.getInstance().world == null) return;
+        ClientWorld world = MinecraftClient.getInstance().world;
+        if (world == null) return;
 
-        List<BlockStateVariant> properties = models.keySet().stream().map(BlockStateVariant::new).toList();
-        if (variantMap.isEmpty()) {
-            for (BlockStateVariant stateVariant : properties) {
-                variantMap.putIfAbsent(stateVariant.variant(), new ArrayList<>());
-                variantMap.get(stateVariant.variant()).add(stateVariant.state());
+        List<BlockState> blockStates = new ArrayList<>(models.keySet());
+        trulyrandom$resetModels();
+        Map<String, List<BlockState>> propertyMap = new HashMap<>();
+        for(BlockState state: blockStates) {
+            StringBuilder variant = new StringBuilder();
+            for(Map.Entry<Property<?>, Comparable<?>> entry: state.getEntries().entrySet()) {
+                variant.append(StateAccessor.getPropertyMapPrinter().apply(entry));
+            }
+            variant.append(state.isOpaque());
+            variant.append(state.getCullingShape(world, BlockPos.ORIGIN));
+            propertyMap.computeIfAbsent(variant.toString(), k -> new ArrayList<>()).add(state);
+        }
+        propertyMap.forEach((k, v) -> v.sort(Comparator.comparingInt(state -> Registries.BLOCK.getRawId(state.getBlock()))));
+        Map<BlockState, Float> originalChanceMap = new HashMap<>();
+        for(List<BlockState> variant: propertyMap.values()) {
+            Collections.shuffle(variant, rnd);
+            for(int i = 0; i < variant.size(); i++) {
+                BlockState original = variant.get(i);
+                BlockState randomised = variant.get((i + 1) % variant.size());
+                originalChanceMap.putIfAbsent(original, 1f / variant.size());
+                originalToRandomMap.put(original, randomised);
+                shuffledModels.put(original, models.get(randomised));
             }
         }
-        if (variantMap.isEmpty()) return;
+        originalChanceMap.forEach((k, v) -> {
+            if(rnd.nextFloat() < v) shuffledModels.put(k, models.get(k));
+        });
+    }
 
-        for (List<BlockState> list : variantMap.values()) {
-            Collections.shuffle(list, rnd);
-        }
+    @Override
+    public Map<BlockState, BlockState> trulyrandom$getOriginalRandomisedMap() {
+        return originalToRandomMap;
+    }
+
+    @Override
+    public void trulyrandom$resetModels() {
         shuffledModels.clear();
-        for (BlockStateVariant stateVariant : properties) {
-            List<BlockState> list = variantMap.get(stateVariant.variant());
-            if (list == null || list.isEmpty()) {
-                shuffledModels.put(stateVariant.state(), models.get(stateVariant.state()));
-                continue;
-            }
-            int index = list.indexOf(stateVariant.state());
-            BlockState newState = list.get((index + 1) % list.size());
-            shuffledModels.put(newState, models.get(stateVariant.state()));
-        }
+        originalToRandomMap.clear();
     }
 }
