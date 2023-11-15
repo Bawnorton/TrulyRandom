@@ -1,24 +1,37 @@
 package com.bawnorton.trulyrandom.random;
 
+import com.bawnorton.trulyrandom.network.packet.s2c.ShuffleModelsS2CPacket;
 import com.bawnorton.trulyrandom.random.loot.LootRandomiser;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.server.MinecraftServer;
 
 import java.util.Random;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class Randomiser {
-    private final LootRandomiser lootRandomiser;
+    private LootRandomiser lootRandomiser;
     private Random sessionRandom;
     private Modules modules;
     private long seed;
+    private boolean initialised = false;
 
     public Randomiser(long seed) {
-        this.lootRandomiser = new LootRandomiser();
         this.sessionRandom = new Random(seed);
         this.modules = new Modules();
         this.seed = seed;
+    }
+
+    public void init(MinecraftServer server) {
+        this.lootRandomiser = new LootRandomiser(server);
+        initialised = true;
+    }
+
+    public boolean initialised() {
+        return initialised;
     }
 
     public static Randomiser fromNbt(NbtCompound nbt) {
@@ -44,10 +57,6 @@ public class Randomiser {
         return modules;
     }
 
-    public void randomiseLoot(MinecraftServer server) {
-        lootRandomiser.randomiseLoot(server, sessionRandom);
-    }
-
     public void setModules(Modules modules) {
         this.modules = modules;
     }
@@ -57,20 +66,15 @@ public class Randomiser {
         sessionRandom = new Random(seed);
     }
 
-    public Random getSessionRandom() {
-        return sessionRandom;
+    public void updateLoot(MinecraftServer server) {
+        if(!initialised) throw new IllegalStateException("Randomiser not initialised");
+        if(modules.isEnabled(Module.LOOT_TABLES)) {
+            lootRandomiser.randomiseLoot(server, sessionRandom);
+        }
+        else lootRandomiser.reset(server);
     }
 
-    public void shouldShuffleModels(BiConsumer<Boolean, Boolean> consumer) {
-        consumer.accept(modules.isEnabled(Module.ITEM_MODELS), modules.isEnabled(Module.BLOCK_MODELS));
-    }
-
-    public void shouldRandomiseLoot(Runnable success, Runnable failure) {
-        if(modules.isEnabled(Module.LOOT_TABLES)) success.run();
-        else failure.run();
-    }
-
-    public LootRandomiser getLootRandomiser() {
-        return lootRandomiser;
+    public void sendModelShufflePacket(Consumer<Packet<?>> sender, boolean seedChanged) {
+        sender.accept(new ShuffleModelsS2CPacket(modules.isEnabled(Module.ITEM_MODELS), modules.isEnabled(Module.BLOCK_MODELS), seedChanged, seed));
     }
 }

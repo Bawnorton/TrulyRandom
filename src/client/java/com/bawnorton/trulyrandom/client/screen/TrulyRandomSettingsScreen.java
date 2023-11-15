@@ -38,7 +38,7 @@ public class TrulyRandomSettingsScreen extends Screen {
         seedBox.setTooltip(Tooltip.of(Text.translatable("selectWorld.trulyrandom.seed.tooltip")));
         AtomicReference<String> lastSet = new AtomicReference<>();
         seedBox.setChangeListener(s -> {
-            if(s.isEmpty() || s.equals("-") || s.equals(lastSet.get())) {
+            if (s.isEmpty() || s.equals("-") || s.equals(lastSet.get())) {
                 lastSet.set(s);
                 return;
             }
@@ -50,7 +50,7 @@ public class TrulyRandomSettingsScreen extends Screen {
             }
             lastSet.set(s);
         });
-        if(client.world != null) {
+        if (client.world != null) {
             seedBox.setText(String.valueOf(TrulyRandomClient.getRandomiser().getLocalSeed()));
         } else {
             seedBox.setText(randomSeed);

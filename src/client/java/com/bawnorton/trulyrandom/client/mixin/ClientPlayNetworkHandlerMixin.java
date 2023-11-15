@@ -31,7 +31,7 @@ public abstract class ClientPlayNetworkHandlerMixin extends ClientCommonNetworkH
 
         ClientRandomiser randomiser = TrulyRandomClient.getRandomiser();
         randomiser.setLocalSeed(packet.seed());
-        if(packet.seedChanged()) forceRandomise = true;
+        if (packet.seedChanged()) forceRandomise = true;
         randomiser.updateItemModels(client, packet.items(), forceRandomise);
         randomiser.updateBlockModels(client, packet.blocks(), forceRandomise);
         forceRandomise = false;

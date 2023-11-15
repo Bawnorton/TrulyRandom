@@ -18,20 +18,18 @@ public class BlockModelRandomiser extends RandomiserModule implements ModelRando
     }
 
     public void reloadModels(MinecraftClient client) {
-        if(client.world == null) return;
+        if (client.world == null) return;
 
         ClientChunkManager.ClientChunkMap chunkMap = ((ClientChunkManagerAccessor) client.world.getChunkManager()).getChunks();
         AtomicReferenceArray<WorldChunk> chunks = ((ClientChunkManagerAccessor.ClientChunkMapAccessor) (Object) chunkMap).getChunks();
         ChunkPos[] chunkPositions = new ChunkPos[chunks.length()];
         for (int i = 0; i < chunks.length(); i++) {
             WorldChunk chunk = chunks.get(i);
-            if (chunk != null) {
-                chunkPositions[i] = chunk.getPos();
-            }
+            if (chunk != null) chunkPositions[i] = chunk.getPos();
         }
         for (ChunkPos chunkPos : chunkPositions) {
             if (chunkPos != null) {
-                for(int y = 0; y < client.world.getTopY() << 4; y++) {
+                for (int y = 0; y < client.world.getTopY() << 4; y++) {
                     ((WorldRendererInvoker) client.worldRenderer).invokeScheduleChunkRender(chunkPos.x, y, chunkPos.z, true);
                 }
             }

@@ -18,11 +18,17 @@ public class LootRandomiser extends RandomiserModule {
     private final Set<Identifier> randomiseBlacklist = new HashSet<>();
     private Map<LootDataKey<?>, LootTable> originalKeyToValue;
 
+    public LootRandomiser(MinecraftServer server) {
+        resetOriginalKeyToValue(server);
+    }
+
     @SuppressWarnings("unchecked")
+    private void resetOriginalKeyToValue(MinecraftServer server) {
+        originalKeyToValue = (Map<LootDataKey<?>, LootTable>) ((LootManagerAccessor) server.getLootManager()).getKeyToValue();
+    }
+
     public void randomiseLoot(MinecraftServer server, Random random) {
-        LootManager lootManager = server.getLootManager();
-        LootManagerAccessor lootManagerAccessor = (LootManagerAccessor) lootManager;
-        originalKeyToValue = (Map<LootDataKey<?>, LootTable>) lootManagerAccessor.getKeyToValue();
+        resetOriginalKeyToValue(server);
         List<LootDataKey<?>> keys = originalKeyToValue.keySet().stream().sorted(Comparator.comparing(LootDataKey::id)).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         List<LootTable> values = keys.stream().map(originalKeyToValue::get).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         Collections.shuffle(values, random);
@@ -37,7 +43,7 @@ public class LootRandomiser extends RandomiserModule {
         for (Identifier id : randomiseBlacklist) {
             newKeyToValue.put(idToLootTable.get(id).getLeft(), idToLootTable.get(id).getRight());
         }
-        lootManagerAccessor.setKeyToValue(newKeyToValue);
+        ((LootManagerAccessor) server.getLootManager()).setKeyToValue(newKeyToValue);
         setRandomised(true);
     }
 

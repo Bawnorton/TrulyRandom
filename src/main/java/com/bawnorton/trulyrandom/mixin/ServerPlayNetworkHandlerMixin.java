@@ -7,7 +7,6 @@ import com.bawnorton.trulyrandom.network.packet.c2s.SyncRandomiserC2SPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.HandshakeS2CPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.ShuffleModelsS2CPacket;
 import com.bawnorton.trulyrandom.random.Randomiser;
-import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkThreadUtils;
 import net.minecraft.server.MinecraftServer;
@@ -34,11 +33,11 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
         Randomiser randomiser = TrulyRandom.getRandomiser(server);
         randomiser.setModules(packet.modules());
         boolean seedChanged = randomiser.getSeed() != packet.seed();
-        if(seedChanged) {
+        if (seedChanged) {
             randomiser.newSessionRandom(packet.seed());
-            randomiser.shouldRandomiseLoot(() -> randomiser.randomiseLoot(server), () -> randomiser.getLootRandomiser().reset(server));
+            randomiser.updateLoot(server);
         }
-        randomiser.shouldShuffleModels((items, blocks) -> sendPacket(new ShuffleModelsS2CPacket(items, blocks, seedChanged, randomiser.getSeed())));
+        randomiser.sendModelShufflePacket(this::sendPacket, seedChanged);
     }
 
     @Override

@@ -57,8 +57,8 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${project.mixin_extras_version}")))
-	modImplementation("maven.modrinth:sodium:${project.sodium_version}")
-	modImplementation("maven.modrinth:iris:${project.iris_version}")
+	modCompileOnly("maven.modrinth:sodium:${project.sodium_version}")
+	modCompileOnly("maven.modrinth:iris:${project.iris_version}")
 	// needed for iris
 	runtimeOnly("org.anarres:jcpp:1.4.14")
 	runtimeOnly("io.github.douira:glsl-transformer:2.0.0-pre13")

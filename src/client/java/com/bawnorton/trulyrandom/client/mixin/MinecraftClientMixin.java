@@ -17,23 +17,29 @@ import java.util.Random;
 
 @Mixin(MinecraftClient.class)
 public abstract class MinecraftClientMixin {
-    @Shadow public abstract BakedModelManager getBakedModelManager();
-    @Shadow public abstract ItemRenderer getItemRenderer();
+    @Shadow
+    @Final
+    public WorldRenderer worldRenderer;
+    @Shadow
+    @Final
+    private ItemRenderer itemRenderer;
 
-    @Shadow @Final public WorldRenderer worldRenderer;
+    @Shadow
+    public abstract BakedModelManager getBakedModelManager();
 
-    @Shadow @Final private ItemRenderer itemRenderer;
+    @Shadow
+    public abstract ItemRenderer getItemRenderer();
 
     @Inject(method = "onFinishedLoading", at = @At("TAIL"))
     private void reloadModels(CallbackInfo ci) {
         ModelShuffler.BlockStates blockStates = (ModelShuffler.BlockStates) getBakedModelManager().getBlockModels();
         ModelShuffler.Items items = (ModelShuffler.Items) getItemRenderer().getModels();
-        if(blockStates.trulyRandom$isShuffled()) {
+        if (blockStates.trulyRandom$isShuffled()) {
             blockStates.trulyrandom$shuffleModels(new Random(TrulyRandomClient.getRandomiser().getLocalSeed()));
         } else {
             blockStates.trulyrandom$resetModels();
         }
-        if(items.trulyRandom$isShuffled()) {
+        if (items.trulyRandom$isShuffled()) {
             items.trulyrandom$shuffleModels(new Random(TrulyRandomClient.getRandomiser().getLocalSeed()));
         } else {
             items.trulyrandom$resetModels();

@@ -1,6 +1,5 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
-import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.screen.TrulyRandomSettingsScreen;
 import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import com.llamalad7.mixinextras.sugar.Local;

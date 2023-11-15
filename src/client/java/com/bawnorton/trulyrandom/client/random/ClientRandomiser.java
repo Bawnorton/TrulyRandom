@@ -27,9 +27,9 @@ public class ClientRandomiser {
     }
 
     private void updateModels(ModelRandomiser randomiser, MinecraftClient client, boolean randomise, boolean forceRandomise) {
-        if(randomiser.isRandomised() && !randomise) {
+        if (randomiser.isRandomised() && !randomise) {
             randomiser.reset(client);
-        } else if(!randomiser.isRandomised() && randomise || (randomise && forceRandomise)) {
+        } else if (!randomiser.isRandomised() && randomise || (randomise && forceRandomise)) {
             randomiser.randomiseModels(client, localSeed);
         } else if (randomiser.isRandomised() == randomise) {
             randomiser.reloadModels(client);

@@ -12,7 +12,7 @@ public class EventHandler {
     private static void registerServerEvents() {
         ServerWorldEvents.LOAD.register((server, world) -> {
             Randomiser randomiser = TrulyRandom.getRandomiser(server);
-            randomiser.shouldRandomiseLoot(() -> randomiser.randomiseLoot(server), () -> randomiser.getLootRandomiser().reset(server));
+            randomiser.updateLoot(server);
         });
     }
 }

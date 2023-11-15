@@ -4,7 +4,8 @@ import com.bawnorton.trulyrandom.network.listener.TrulyRandomClientPlayPacketLis
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.Packet;
 
-public record ShuffleModelsS2CPacket(boolean items, boolean blocks, boolean seedChanged, long seed) implements Packet<TrulyRandomClientPlayPacketListener> {
+public record ShuffleModelsS2CPacket(boolean items, boolean blocks, boolean seedChanged,
+                                     long seed) implements Packet<TrulyRandomClientPlayPacketListener> {
     public ShuffleModelsS2CPacket(PacketByteBuf packetByteBuf) {
         this(packetByteBuf.readBoolean(), packetByteBuf.readBoolean(), packetByteBuf.readBoolean(), packetByteBuf.readLong());
     }

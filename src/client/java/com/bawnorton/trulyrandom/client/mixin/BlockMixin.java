@@ -20,7 +20,8 @@ public abstract class BlockMixin extends AbstractBlock {
         super(settings);
     }
 
-    @Shadow public abstract BlockState getDefaultState();
+    @Shadow
+    public abstract BlockState getDefaultState();
 
     @ModifyReturnValue(method = "getSoundGroup", at = @At("RETURN"))
     private BlockSoundGroup useRandomisedBlockSound(BlockSoundGroup original) {

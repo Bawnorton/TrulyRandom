@@ -5,7 +5,8 @@ import com.bawnorton.trulyrandom.random.Modules;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.Packet;
 
-public record SyncRandomiserC2SPacket(Modules modules, long seed) implements Packet<TrulyRandomServerPlayPacketListener> {
+public record SyncRandomiserC2SPacket(Modules modules,
+                                      long seed) implements Packet<TrulyRandomServerPlayPacketListener> {
     public SyncRandomiserC2SPacket(PacketByteBuf buf) {
         this(Modules.fromPacket(buf), buf.readLong());
     }

@@ -3,9 +3,9 @@
   "id": "trulyrandom",
   "version": "${version}",
   "name": "trulyrandom",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "Randomise various aspects of the game",
   "authors": [
-    "Me!"
+    "Bawnorton"
   ],
   "contact": {
     "homepage": "https://fabricmc.net/",
