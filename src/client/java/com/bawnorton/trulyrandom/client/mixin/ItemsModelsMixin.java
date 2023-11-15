@@ -58,4 +58,9 @@ public abstract class ItemsModelsMixin implements ModelShuffler.Items {
         shuffledModels = new Int2ObjectOpenHashMap<>(models.size());
         originalToRandomMap.clear();
     }
+
+    @Override
+    public boolean trulyRandom$isShuffled() {
+        return !shuffledModels.isEmpty();
+    }
 }

@@ -10,12 +10,16 @@
 		"CreateWorldScreenMixin$MoreTabMixin",
 		"ItemRendererMixin",
 		"ItemsModelsMixin",
+		"MinecraftClientMixin",
 		"accessor.AbstractBlockAccessor",
-		"accessor.StateAccessor"
+		"accessor.ClientChunkManagerAccessor$ClientChunkMapAccessor",
+		"accessor.StateAccessor",
+		"accessor.WorldRendererInvoker"
 	],
 	"injectors": {
 		"defaultRequire": 1
 	},
 	"mixins": [
+		"accessor.ClientChunkManagerAccessor"
 	]
 }

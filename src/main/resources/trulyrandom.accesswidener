@@ -2,3 +2,4 @@ accessWidener v2 named
 accessible class net/minecraft/client/gui/screen/world/WorldScreenOptionGrid
 accessible class net/minecraft/client/gui/screen/world/WorldScreenOptionGrid$Builder
 accessible class net/minecraft/network/NetworkState$InternalPacketHandler
+accessible class net/minecraft/client/world/ClientChunkManager$ClientChunkMap

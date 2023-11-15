@@ -1,6 +1,5 @@
 package com.bawnorton.trulyrandom.client.extend;
 
-import com.google.common.collect.BiMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 
@@ -13,6 +12,8 @@ public interface ModelShuffler<T> {
     Map<T, T> trulyrandom$getOriginalRandomisedMap();
 
     void trulyrandom$resetModels();
+
+    boolean trulyRandom$isShuffled();
 
     interface BlockStates extends ModelShuffler<BlockState> {
     }

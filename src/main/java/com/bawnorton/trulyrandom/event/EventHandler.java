@@ -1,17 +1,18 @@
 package com.bawnorton.trulyrandom.event;
 
-import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
+import com.bawnorton.trulyrandom.TrulyRandom;
+import com.bawnorton.trulyrandom.random.Randomiser;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 
 public class EventHandler {
     public static void init() {
-        registerWorldLoadEvents();
+        registerServerEvents();
     }
 
-    private static void registerWorldLoadEvents() {
+    private static void registerServerEvents() {
         ServerWorldEvents.LOAD.register((server, world) -> {
-//            RandomiserSaveLoader.getServerState(server);
-//            RandomiserSaveLoader.clearDefaultRandomiser();
+            Randomiser randomiser = TrulyRandom.getRandomiser(server);
+            randomiser.shouldRandomiseLoot(() -> randomiser.randomiseLoot(server), () -> randomiser.getLootRandomiser().reset(server));
         });
     }
 }

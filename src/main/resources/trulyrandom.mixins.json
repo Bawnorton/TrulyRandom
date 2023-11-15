@@ -5,6 +5,7 @@
   "mixins": [
     "NetworkStateMixin",
     "ServerPlayNetworkHandlerMixin",
+    "accessor.LootManagerAccessor",
     "invoker.NetworkState$InternalPacketHandlerInvoker"
   ],
   "injectors": {

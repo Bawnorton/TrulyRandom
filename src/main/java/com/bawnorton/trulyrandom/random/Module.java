@@ -3,7 +3,7 @@ package com.bawnorton.trulyrandom.random;
 import net.minecraft.nbt.NbtCompound;
 
 public enum Module {
-    LOOT_TABLES(false),
+    LOOT_TABLES(true),
     RECIPES(false),
     STRUCTURES(false),
     BLOCK_MODELS(true),

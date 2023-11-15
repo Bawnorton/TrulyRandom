@@ -78,4 +78,9 @@ public abstract class BlockModelsMixin implements ModelShuffler.BlockStates {
         shuffledModels.clear();
         originalToRandomMap.clear();
     }
+
+    @Override
+    public boolean trulyRandom$isShuffled() {
+        return !shuffledModels.isEmpty();
+    }
 }

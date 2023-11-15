@@ -1,7 +1,7 @@
 package com.bawnorton.trulyrandom.client.screen;
 
+import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.keybind.KeybindManager;
-import com.bawnorton.trulyrandom.client.network.ClientNetworking;
 import com.bawnorton.trulyrandom.client.screen.widget.ColumnedOptionGrid;
 import com.bawnorton.trulyrandom.random.Modules;
 import net.minecraft.client.gui.DrawContext;
@@ -51,13 +51,13 @@ public class TrulyRandomSettingsScreen extends Screen {
             lastSet.set(s);
         });
         if(client.world != null) {
-            seedBox.setText(String.valueOf(ClientNetworking.getLocalSeed()));
+            seedBox.setText(String.valueOf(TrulyRandomClient.getRandomiser().getLocalSeed()));
         } else {
             seedBox.setText(randomSeed);
         }
         DirectionalLayoutWidget content = layout.addBody(DirectionalLayoutWidget.vertical());
         content.add(
-                new MultilineTextWidget(Text.translatable("selectWorld.trulyrandom.info", KeybindManager.OPEN_RANDOMISER_GUI.getBoundKeyLocalizedText()), textRenderer).setMaxWidth(340),
+                new MultilineTextWidget(Text.translatable("selectWorld.trulyrandom.info", KeybindManager.OPEN_RANDOMISER_GUI.getKeybind().getBoundKeyLocalizedText()), textRenderer).setMaxWidth(340),
                 positioner -> positioner.marginBottom(15)
         );
         ColumnedOptionGrid.Builder builder = ColumnedOptionGrid.builder(2, 310);

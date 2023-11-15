@@ -20,6 +20,9 @@
     ],
     "client": [
       "com.bawnorton.trulyrandom.client.TrulyRandomClient"
+    ],
+    "fabric-datagen": [
+      "com.bawnorton.trulyrandom.datagen.TrulyRandomDataGenerator"
     ]
   },
   "mixins": [

@@ -9,6 +9,7 @@ import java.util.function.Function;
 
 @Mixin(NetworkState.InternalPacketHandler.class)
 public interface NetworkState$InternalPacketHandlerInvoker {
+    @SuppressWarnings("UnusedReturnValue")
     @Invoker
     NetworkState.InternalPacketHandler<?> invokeRegister(Class<?> type, Function<PacketByteBuf, ?> packetFactory);
 }

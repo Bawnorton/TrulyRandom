@@ -34,7 +34,10 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
         Randomiser randomiser = TrulyRandom.getRandomiser(server);
         randomiser.setModules(packet.modules());
         boolean seedChanged = randomiser.getSeed() != packet.seed();
-        if(seedChanged) randomiser.newSessionRandom(packet.seed());
+        if(seedChanged) {
+            randomiser.newSessionRandom(packet.seed());
+            randomiser.shouldRandomiseLoot(() -> randomiser.randomiseLoot(server), () -> randomiser.getLootRandomiser().reset(server));
+        }
         randomiser.shouldShuffleModels((items, blocks) -> sendPacket(new ShuffleModelsS2CPacket(items, blocks, seedChanged, randomiser.getSeed())));
     }
 

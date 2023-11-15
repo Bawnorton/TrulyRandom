@@ -1,19 +1,24 @@
 package com.bawnorton.trulyrandom.random;
 
+import com.bawnorton.trulyrandom.random.loot.LootRandomiser;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.MinecraftServer;
 
 import java.util.Random;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class Randomiser {
+    private final LootRandomiser lootRandomiser;
     private Random sessionRandom;
     private Modules modules;
     private long seed;
 
     public Randomiser(long seed) {
-        this.seed = seed;
+        this.lootRandomiser = new LootRandomiser();
         this.sessionRandom = new Random(seed);
         this.modules = new Modules();
+        this.seed = seed;
     }
 
     public static Randomiser fromNbt(NbtCompound nbt) {
@@ -39,6 +44,10 @@ public class Randomiser {
         return modules;
     }
 
+    public void randomiseLoot(MinecraftServer server) {
+        lootRandomiser.randomiseLoot(server, sessionRandom);
+    }
+
     public void setModules(Modules modules) {
         this.modules = modules;
     }
@@ -54,5 +63,14 @@ public class Randomiser {
 
     public void shouldShuffleModels(BiConsumer<Boolean, Boolean> consumer) {
         consumer.accept(modules.isEnabled(Module.ITEM_MODELS), modules.isEnabled(Module.BLOCK_MODELS));
+    }
+
+    public void shouldRandomiseLoot(Runnable success, Runnable failure) {
+        if(modules.isEnabled(Module.LOOT_TABLES)) success.run();
+        else failure.run();
+    }
+
+    public LootRandomiser getLootRandomiser() {
+        return lootRandomiser;
     }
 }
