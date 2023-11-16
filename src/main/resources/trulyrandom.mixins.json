@@ -4,8 +4,11 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "NetworkStateMixin",
+    "RecipeMixin",
     "ServerPlayNetworkHandlerMixin",
+    "SpecialRecipeMixin",
     "accessor.LootManagerAccessor",
+    "accessor.SmithingTrimRecipeAccessor",
     "invoker.NetworkState$InternalPacketHandlerInvoker"
   ],
   "injectors": {

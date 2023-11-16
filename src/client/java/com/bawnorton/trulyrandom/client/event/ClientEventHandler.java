@@ -16,8 +16,6 @@ public class ClientEventHandler {
     }
 
     private static void registerWorldJoinEvent() {
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            sender.sendPacket(new HandshakeC2SPacket());
-        });
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> sender.sendPacket(new HandshakeC2SPacket()));
     }
 }

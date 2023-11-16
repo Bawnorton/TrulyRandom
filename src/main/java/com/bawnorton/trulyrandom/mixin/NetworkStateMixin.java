@@ -55,7 +55,7 @@ public abstract class NetworkStateMixin {
                     )
             )
     )
-    private static <T extends PacketListener, P extends Packet<? super T>> NetworkState.InternalPacketHandler<T> trulyRandom$registerC2SPackets(NetworkState.InternalPacketHandler<T> instance) {
+    private static <T extends PacketListener> NetworkState.InternalPacketHandler<T> trulyRandom$registerC2SPackets(NetworkState.InternalPacketHandler<T> instance) {
         NetworkState$InternalPacketHandlerInvoker invoker = (NetworkState$InternalPacketHandlerInvoker) instance;
         invoker.invokeRegister(SyncRandomiserC2SPacket.class, SyncRandomiserC2SPacket::new);
         invoker.invokeRegister(HandshakeC2SPacket.class, HandshakeC2SPacket::new);

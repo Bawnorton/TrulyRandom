@@ -31,16 +31,16 @@ public abstract class MinecraftClientMixin {
     public abstract ItemRenderer getItemRenderer();
 
     @Inject(method = "onFinishedLoading", at = @At("TAIL"))
-    private void reloadModels(CallbackInfo ci) {
+    private void reloadModelsAfterResourceReload(CallbackInfo ci) {
         ModelShuffler.BlockStates blockStates = (ModelShuffler.BlockStates) getBakedModelManager().getBlockModels();
         ModelShuffler.Items items = (ModelShuffler.Items) getItemRenderer().getModels();
         if (blockStates.trulyRandom$isShuffled()) {
-            blockStates.trulyrandom$shuffleModels(new Random(TrulyRandomClient.getRandomiser().getLocalSeed()));
+            blockStates.trulyrandom$shuffleModels(TrulyRandomClient.getRandomiser().getLocalSeed());
         } else {
             blockStates.trulyrandom$resetModels();
         }
         if (items.trulyRandom$isShuffled()) {
-            items.trulyrandom$shuffleModels(new Random(TrulyRandomClient.getRandomiser().getLocalSeed()));
+            items.trulyrandom$shuffleModels(TrulyRandomClient.getRandomiser().getLocalSeed());
         } else {
             items.trulyrandom$resetModels();
         }

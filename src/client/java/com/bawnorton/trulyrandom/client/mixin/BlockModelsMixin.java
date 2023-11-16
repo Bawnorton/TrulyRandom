@@ -34,7 +34,7 @@ public abstract class BlockModelsMixin implements ModelShuffler.BlockStates {
     }
 
     @Override
-    public void trulyrandom$shuffleModels(Random rnd) {
+    public void trulyrandom$shuffleModels(long seed) {
         if (models == null) return;
         ClientWorld world = MinecraftClient.getInstance().world;
         if (world == null) return;
@@ -53,6 +53,7 @@ public abstract class BlockModelsMixin implements ModelShuffler.BlockStates {
         }
         propertyMap.forEach((k, v) -> v.sort(Comparator.comparingInt(state -> Registries.BLOCK.getRawId(state.getBlock()))));
         Map<BlockState, Float> originalChanceMap = new HashMap<>();
+        Random rnd = new Random(seed);
         for (List<BlockState> variant : propertyMap.values()) {
             Collections.shuffle(variant, rnd);
             for (int i = 0; i < variant.size(); i++) {

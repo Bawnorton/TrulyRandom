@@ -30,7 +30,7 @@ public class ClientRandomiser {
         if (randomiser.isRandomised() && !randomise) {
             randomiser.reset(client);
         } else if (!randomiser.isRandomised() && randomise || (randomise && forceRandomise)) {
-            randomiser.randomiseModels(client, localSeed);
+            randomiser.randomise(client, localSeed);
         } else if (randomiser.isRandomised() == randomise) {
             randomiser.reloadModels(client);
         }

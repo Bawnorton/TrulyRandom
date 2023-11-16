@@ -4,10 +4,9 @@ import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
 
 import java.util.Map;
-import java.util.Random;
 
 public interface ModelShuffler<T> {
-    void trulyrandom$shuffleModels(Random rnd);
+    void trulyrandom$shuffleModels(long seed);
 
     Map<T, T> trulyrandom$getOriginalRandomisedMap();
 

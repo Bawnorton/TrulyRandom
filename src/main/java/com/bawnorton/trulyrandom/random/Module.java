@@ -4,7 +4,7 @@ import net.minecraft.nbt.NbtCompound;
 
 public enum Module {
     LOOT_TABLES(true),
-    RECIPES(false),
+    RECIPES(true),
     STRUCTURES(false),
     BLOCK_MODELS(true),
     ITEM_MODELS(true);

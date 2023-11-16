@@ -2,32 +2,29 @@ package com.bawnorton.trulyrandom.random;
 
 import com.bawnorton.trulyrandom.network.packet.s2c.ShuffleModelsS2CPacket;
 import com.bawnorton.trulyrandom.random.loot.LootRandomiser;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import com.bawnorton.trulyrandom.random.recipe.RecipeRandomiser;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.server.MinecraftServer;
 
-import java.util.Random;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class Randomiser {
-    private LootRandomiser lootRandomiser;
-    private Random sessionRandom;
     private Modules modules;
     private long seed;
     private boolean initialised = false;
+    private ServerRandomiserModule lootRandomiser;
+    private ServerRandomiserModule recipeRandomiser;
 
     public Randomiser(long seed) {
-        this.sessionRandom = new Random(seed);
         this.modules = new Modules();
         this.seed = seed;
     }
 
     public void init(MinecraftServer server) {
-        this.lootRandomiser = new LootRandomiser(server);
         initialised = true;
+        this.lootRandomiser = new LootRandomiser(server);
+        this.recipeRandomiser = new RecipeRandomiser(server);
     }
 
     public boolean initialised() {
@@ -61,17 +58,25 @@ public class Randomiser {
         this.modules = modules;
     }
 
-    public void newSessionRandom(long seed) {
+    public void setSeed(long seed) {
         this.seed = seed;
-        sessionRandom = new Random(seed);
     }
 
-    public void updateLoot(MinecraftServer server) {
+    public void updateLoot(MinecraftServer server, boolean seedChanged) {
+        update(lootRandomiser, server, seedChanged);
+    }
+
+    public void updateRecipes(MinecraftServer server, boolean seedChanged) {
+        update(recipeRandomiser, server, seedChanged);
+    }
+
+    private void update(ServerRandomiserModule randomiser, MinecraftServer server, boolean seedChanged) {
         if(!initialised) throw new IllegalStateException("Randomiser not initialised");
-        if(modules.isEnabled(Module.LOOT_TABLES)) {
-            lootRandomiser.randomiseLoot(server, sessionRandom);
+        if(modules.isEnabled(randomiser.getModule()) && !randomiser.isRandomised() || (randomiser.isRandomised() && seedChanged)) {
+            randomiser.randomise(server, seed);
+        } else if (modules.isDisabled(randomiser.getModule()) && randomiser.isRandomised()) {
+            randomiser.reset(server);
         }
-        else lootRandomiser.reset(server);
     }
 
     public void sendModelShufflePacket(Consumer<Packet<?>> sender, boolean seedChanged) {

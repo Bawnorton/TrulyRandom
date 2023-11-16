@@ -10,4 +10,6 @@ public abstract class RandomiserModule {
     public void setRandomised(boolean randomised) {
         this.randomised = randomised;
     }
+
+    public abstract Module getModule();
 }

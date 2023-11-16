@@ -1,6 +1,7 @@
 package com.bawnorton.trulyrandom.client.keybind;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
+import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.screen.TrulyRandomSettingsScreen;
 import com.bawnorton.trulyrandom.network.packet.c2s.SyncRandomiserC2SPacket;
@@ -17,18 +18,16 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class KeybindManager {
     private static final List<ActionedKeybind> KEYBINDS = new ArrayList<>();
     public static final ActionedKeybind OPEN_RANDOMISER_GUI = registerKeybind("key.trulyrandom.open_randomiser_gui", GLFW.GLFW_KEY_G, client -> {
         client.setScreen(new TrulyRandomSettingsScreen(client.currentScreen, (modules, seed) -> client.getNetworkHandler().sendPacket(new SyncRandomiserC2SPacket(modules, seed))));
     });
-    public static final Optional<ActionedKeybind> RELOAD_CHUNKS = registerDevOnlyKeybind("key.trulyrandom.reload_chunks", GLFW.GLFW_KEY_KP_0, client -> {
+    public static final ActionedKeybind RELOAD_CHUNKS = registerDevOnlyKeybind("key.trulyrandom.reload_chunks", GLFW.GLFW_KEY_KP_0, client -> {
         client.worldRenderer.reload();
     });
-    public static final Optional<ActionedKeybind> QUERY_HAND = registerDevOnlyKeybind("key.trulyrandom.query_hand", GLFW.GLFW_KEY_KP_1, client -> {
+    public static final ActionedKeybind QUERY_HAND = registerDevOnlyKeybind("key.trulyrandom.query_hand", GLFW.GLFW_KEY_KP_1, client -> {
         Item handItem = client.player.getMainHandStack().getItem();
         ModelShuffler.Items items = (ModelShuffler.Items) client.getItemRenderer().getModels();
         TrulyRandom.LOGGER.info("Hand item: " + handItem + " (" + items.trulyrandom$getOriginalRandomisedMap().get(handItem) + ")");
@@ -38,6 +37,9 @@ public class KeybindManager {
             ModelShuffler.BlockStates blockStates = (ModelShuffler.BlockStates) client.getBlockRenderManager().getModels();
             TrulyRandom.LOGGER.info("Block: " + block + " (" + blockStates.trulyrandom$getOriginalRandomisedMap().get(block) + ")");
         }
+    });
+    public static final ActionedKeybind NEW_SEED = registerDevOnlyKeybind("key.trulyrandom.sync_randomiser", GLFW.GLFW_KEY_KP_2, client -> {
+        client.getNetworkHandler().sendPacket(new SyncRandomiserC2SPacket(TrulyRandom.getRandomiser(client.getServer()).getModules(), TrulyRandomClient.getRandomiser().getLocalSeed() + 1));
     });
 
     public static void init() {
@@ -54,11 +56,11 @@ public class KeybindManager {
         return keybind;
     }
 
-    private static Optional<ActionedKeybind> registerDevOnlyKeybind(String key, int code, KeybindCallback callback) {
+    private static ActionedKeybind registerDevOnlyKeybind(String key, int code, KeybindCallback callback) {
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-            return Optional.of(registerKeybind(key, code, callback));
+            return registerKeybind(key, code, callback);
         }
-        return Optional.empty();
+        return null;
     }
 
     public static void runKeybindActions(MinecraftClient client) {
@@ -87,6 +89,10 @@ public class KeybindManager {
             while (keybind.wasPressed()) {
                 callback.onKeybindPressed(client);
             }
+        }
+
+        public void invokeAction(MinecraftClient client) {
+            callback.onKeybindPressed(client);
         }
     }
 }

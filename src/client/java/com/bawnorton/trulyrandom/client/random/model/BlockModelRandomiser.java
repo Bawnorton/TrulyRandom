@@ -3,7 +3,7 @@ package com.bawnorton.trulyrandom.client.random.model;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.ClientChunkManagerAccessor;
 import com.bawnorton.trulyrandom.client.mixin.accessor.WorldRendererInvoker;
-import com.bawnorton.trulyrandom.random.RandomiserModule;
+import com.bawnorton.trulyrandom.random.Module;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.util.math.ChunkPos;
@@ -11,7 +11,7 @@ import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
-public class BlockModelRandomiser extends RandomiserModule implements ModelRandomiser {
+public class BlockModelRandomiser extends ModelRandomiser {
     @Override
     public ModelShuffler<?> getModelShuffler(MinecraftClient client) {
         return (ModelShuffler.BlockStates) client.getBakedModelManager().getBlockModels();
@@ -34,5 +34,10 @@ public class BlockModelRandomiser extends RandomiserModule implements ModelRando
                 }
             }
         }
+    }
+
+    @Override
+    public Module getModule() {
+        return Module.BLOCK_MODELS;
     }
 }

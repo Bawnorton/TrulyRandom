@@ -32,12 +32,12 @@ public abstract class ItemsModelsMixin implements ModelShuffler.Items {
     }
 
     @Override
-    public void trulyrandom$shuffleModels(Random rnd) {
+    public void trulyrandom$shuffleModels(long seed) {
         if (models == null) return;
 
         List<Integer> modelIds = new ArrayList<>(models.keySet());
         trulyrandom$resetModels();
-        Collections.shuffle(modelIds, rnd);
+        Collections.shuffle(modelIds, new Random(seed));
         for (int i = 0; i < modelIds.size(); i++) {
             int originalId = modelIds.get(i);
             int randomId = modelIds.get((i + 1) % modelIds.size());
