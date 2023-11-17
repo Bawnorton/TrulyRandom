@@ -1,0 +1,20 @@
+{
+  "required": true,
+  "package": "com.bawnorton.trulyrandom.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "NetworkStateMixin",
+    "RecipeMixin",
+    "ServerPlayNetworkHandlerMixin",
+    "SpecialRecipeMixin",
+    "accessor.LootManagerAccessor",
+    "accessor.SmithingTrimRecipeAccessor",
+    "invoker.NetworkState$InternalPacketHandlerInvoker",
+    "structure.ChunkGeneratorMixin",
+    "structure.StructureMixin",
+    "structure.StructurePlacementCalculatorMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

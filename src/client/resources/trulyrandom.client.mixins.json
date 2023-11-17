@@ -1,0 +1,28 @@
+{
+  "required": true,
+  "package": "com.bawnorton.trulyrandom.client.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+    "BlockMixin",
+    "BlockModelsMixin",
+    "ClientPlayNetworkHandlerMixin",
+    "CreateWorldScreenMixin",
+    "CreateWorldScreenMixin$MoreTabMixin",
+    "ItemRendererMixin",
+    "ItemsModelsMixin",
+    "KeyboardMixin",
+    "MinecraftClientMixin",
+    "accessor.AbstractBlockAccessor",
+    "accessor.ClientChunkManagerAccessor",
+    "accessor.ClientChunkManagerAccessor$ClientChunkMapAccessor",
+    "accessor.StateAccessor",
+    "accessor.WorldRendererInvoker"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [
+    "DataConfigurationMixin",
+    "WorldListWidget$WorldEntryMixin"
+  ]
+}
