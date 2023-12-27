@@ -21,14 +21,17 @@ import java.util.function.Function;
 public abstract class DataConfigurationMixin implements DataConfigurationExtender {
     @Unique
     private Randomiser randomiser;
+    @Unique
+    private static final ThreadLocal<Randomiser> randomiserThreadLocal = ThreadLocal.withInitial(() -> Randomiser.DEFAULT);
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     @ModifyArg(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/codecs/RecordCodecBuilder;create(Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;"))
-    private static <O> Function<RecordCodecBuilder.Instance, ?> attachRandomiserModules(Function<RecordCodecBuilder.Instance<O>, ? extends App<RecordCodecBuilder.Mu<O>, O>> builder) {
+    private static <O> Function<RecordCodecBuilder.Instance, ? extends App<RecordCodecBuilder.Mu<O>, O>> attachRandomiserModules(Function<RecordCodecBuilder.Instance, ? extends App<RecordCodecBuilder.Mu<O>, O>> builder) {
+
         return instance -> instance.group(
                 DataPackSettings.CODEC.optionalFieldOf("DataPacks", DataPackSettings.SAFE_MODE).forGetter(DataConfiguration::dataPacks),
                 FeatureFlags.CODEC.optionalFieldOf("enabled_features", FeatureFlags.DEFAULT_ENABLED_FEATURES).forGetter(DataConfiguration::enabledFeatures),
-                Randomiser.CODEC.optionalFieldOf("randomiser", new Randomiser()).forGetter(DataConfigurationExtender::trulyRandom$getRandomiser)
+                Randomiser.CODEC.optionalFieldOf("randomiser", Randomiser.DEFAULT).forGetter(DataConfigurationExtender::trulyRandom$getRandomiser)
         ).apply(instance, (a, b, c) -> {
             randomiserThreadLocal.set((Randomiser) c);
             return new DataConfiguration((DataPackSettings) a, (FeatureSet) b);

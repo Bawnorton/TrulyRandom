@@ -4,11 +4,9 @@ import com.bawnorton.trulyrandom.network.listener.TrulyRandomServerPlayPacketLis
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.Packet;
 
-public class HandshakeC2SPacket implements Packet<TrulyRandomServerPlayPacketListener> {
+public record HandshakeC2SPacket() implements Packet<TrulyRandomServerPlayPacketListener> {
     public HandshakeC2SPacket(PacketByteBuf buf) {
-    }
-
-    public HandshakeC2SPacket() {
+        this();
     }
 
     @Override

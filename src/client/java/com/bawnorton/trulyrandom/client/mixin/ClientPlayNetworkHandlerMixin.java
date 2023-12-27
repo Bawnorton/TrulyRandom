@@ -8,18 +8,23 @@ import com.bawnorton.trulyrandom.network.listener.TrulyRandomClientPlayPacketLis
 import com.bawnorton.trulyrandom.network.packet.c2s.SyncRandomiserC2SPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.HandshakeS2CPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.ShuffleModelsS2CPacket;
+import com.mojang.brigadier.ParseResults;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientCommonNetworkHandler;
 import net.minecraft.client.network.ClientConnectionState;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.command.CommandSource;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkThreadUtils;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public abstract class ClientPlayNetworkHandlerMixin extends ClientCommonNetworkHandler implements TrulyRandomClientPlayPacketListener {
+    @Shadow protected abstract ParseResults<CommandSource> parse(String command);
+
     @Unique
     private boolean forceRandomise = true;
 

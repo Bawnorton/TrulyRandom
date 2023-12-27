@@ -28,7 +28,7 @@ public abstract class BlockModelsMixin implements ModelShuffler.BlockStates {
     @Shadow
     private Map<BlockState, BakedModel> models;
 
-    @WrapOperation(method = "getModel", at = @At(value = "INVOKE", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;"))
+    @WrapOperation(method = "getModel", at = @At(value = "INVOKE", target = "java/util/Map.get(Ljava/lang/Object;)Ljava/lang/Object;"))
     private Object getShuffledModel(Map<BlockState, BakedModel> instance, Object key, Operation<Object> original) {
         return shuffledModels.getOrDefault((BlockState) key, (BakedModel) original.call(instance, key));
     }

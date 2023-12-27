@@ -3,8 +3,7 @@ package com.bawnorton.trulyrandom.random;
 import com.bawnorton.trulyrandom.network.packet.s2c.ShuffleModelsS2CPacket;
 import com.bawnorton.trulyrandom.random.loot.LootRandomiser;
 import com.bawnorton.trulyrandom.random.recipe.RecipeRandomiser;
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.*;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.Packet;
@@ -18,6 +17,8 @@ public class Randomiser {
             Codec.LONG.fieldOf("seed").forGetter(Randomiser::getSeed),
             Modules.CODEC.fieldOf("modules").forGetter(Randomiser::getModules)
     ).apply(instance, Randomiser::new));
+
+    public static final Randomiser DEFAULT = new Randomiser();
 
     private Modules modules;
     private long seed;
@@ -34,7 +35,7 @@ public class Randomiser {
         this(seed, new Modules());
     }
 
-    public Randomiser() {
+    private Randomiser() {
         this(new Random().nextLong());
     }
 
@@ -89,6 +90,7 @@ public class Randomiser {
 
     private void update(ServerRandomiserModule randomiser, MinecraftServer server, boolean seedChanged) {
         if(!initialised) throw new IllegalStateException("Randomiser not initialised");
+
         if(modules.isEnabled(randomiser.getModule()) && !randomiser.isRandomised() || (randomiser.isRandomised() && seedChanged)) {
             randomiser.randomise(server, seed);
         } else if (modules.isDisabled(randomiser.getModule()) && randomiser.isRandomised()) {
