@@ -12,7 +12,7 @@ public interface ModelShuffler<T> {
 
     void trulyrandom$resetModels();
 
-    boolean trulyRandom$isShuffled();
+    boolean trulyrandom$isShuffled();
 
     interface BlockStates extends ModelShuffler<BlockState> {
     }

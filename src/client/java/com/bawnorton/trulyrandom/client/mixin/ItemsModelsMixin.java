@@ -26,7 +26,7 @@ public abstract class ItemsModelsMixin implements ModelShuffler.Items {
     @Unique
     private Int2ObjectMap<BakedModel> shuffledModels = new Int2ObjectOpenHashMap<>(256);
 
-    @WrapOperation(method = "getModel(Lnet/minecraft/item/Item;)Lnet/minecraft/client/render/model/BakedModel;", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;get(I)Ljava/lang/Object;"))
+    @WrapOperation(method = "getModel(Lnet/minecraft/item/Item;)Lnet/minecraft/client/render/model/BakedModel;", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;get(I)Ljava/lang/Object;", remap = false))
     private Object getShuffledModel(Int2ObjectMap<BakedModel> instance, int key, Operation<Object> original) {
         return shuffledModels.getOrDefault(key, (BakedModel) original.call(instance, key));
     }
@@ -60,7 +60,7 @@ public abstract class ItemsModelsMixin implements ModelShuffler.Items {
     }
 
     @Override
-    public boolean trulyRandom$isShuffled() {
+    public boolean trulyrandom$isShuffled() {
         return !shuffledModels.isEmpty();
     }
 }

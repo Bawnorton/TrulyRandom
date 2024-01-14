@@ -25,7 +25,10 @@ public abstract class BlockMixin extends AbstractBlock {
 
     @ModifyReturnValue(method = "getSoundGroup", at = @At("RETURN"))
     private BlockSoundGroup useRandomisedBlockSound(BlockSoundGroup original) {
-        Map<BlockState, BlockState> originalToRandomMap = ((ModelShuffler.BlockStates) MinecraftClient.getInstance().getBlockRenderManager().getModels()).trulyrandom$getOriginalRandomisedMap();
-        return ((AbstractBlockAccessor) originalToRandomMap.getOrDefault(getDefaultState(), getDefaultState()).getBlock()).getSoundGroup();
+        Map<BlockState, BlockState> originalToRandomMap = ((ModelShuffler.BlockStates) MinecraftClient.getInstance()
+                .getBlockRenderManager()
+                .getModels()).trulyrandom$getOriginalRandomisedMap();
+        return ((AbstractBlockAccessor) originalToRandomMap.getOrDefault(getDefaultState(), getDefaultState())
+                .getBlock()).getSoundGroup();
     }
 }

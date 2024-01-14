@@ -1,7 +1,8 @@
 package com.bawnorton.trulyrandom.client.random.model;
 
+import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
-import com.bawnorton.trulyrandom.random.Module;
+import com.bawnorton.trulyrandom.random.module.Module;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.item.ItemModels;
 
@@ -13,7 +14,7 @@ public class ItemModelRandomiser extends ModelRandomiser {
 
     public void reloadModels(MinecraftClient client) {
         ItemModels models = client.getItemRenderer().getModels();
-        if (models != null && client.isFinishedLoading()) models.reloadModels();
+        if (models != null && ((MinecraftClientExtender) client).trulyrandom$isFinishedLoading()) models.reloadModels();
     }
 
     @Override

@@ -14,13 +14,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(WorldListWidget.WorldEntry.class)
 public abstract class WorldListWidget$WorldEntryMixin {
-    @Shadow @Final private LevelSummary level;
+    @Shadow
+    @Final
+    private LevelSummary level;
 
     @SuppressWarnings("DataFlowIssue")
     @Inject(method = "start", at = @At("HEAD"))
     private void loadRandomiserModulesFromWorld(CallbackInfo ci) {
-        DataConfigurationExtender dataConfiguration = (DataConfigurationExtender) (Object) level.getLevelInfo().getDataConfiguration();
-        Randomiser randomiser = dataConfiguration.trulyRandom$getRandomiser();
-        RandomiserSaveLoader.setDefaultRandomiser(randomiser.getSeed(), randomiser.getModules());
+        DataConfigurationExtender dataConfiguration = (DataConfigurationExtender) (Object) level.getLevelInfo()
+                .getDataConfiguration();
+        Randomiser randomiser = dataConfiguration.trulyrandom$getRandomiser();
+        RandomiserSaveLoader.setDefaultRandomiser(randomiser.getModules());
     }
 }

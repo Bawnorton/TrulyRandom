@@ -5,7 +5,6 @@
   "client": [
     "BlockMixin",
     "BlockModelsMixin",
-    "ClientPlayNetworkHandlerMixin",
     "CreateWorldScreenMixin",
     "CreateWorldScreenMixin$MoreTabMixin",
     "ItemRendererMixin",

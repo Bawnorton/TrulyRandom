@@ -1,7 +1,6 @@
-package com.bawnorton.trulyrandom.mixin;
+package com.bawnorton.trulyrandom.mixin.recipe;
 
 import com.bawnorton.trulyrandom.extend.ResultClearer;
-import com.bawnorton.trulyrandom.extend.ResultSetter;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.*;
@@ -32,12 +31,12 @@ public abstract class SpecialRecipeMixin implements ResultClearer {
 
     @ModifyReturnValue(method = "craft(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/registry/DynamicRegistryManager;)Lnet/minecraft/item/ItemStack;", at = @At("RETURN"))
     private ItemStack useRandomResult(ItemStack result) {
-        if(this.result.isEmpty()) return result;
+        if (this.result.isEmpty()) return result;
         return this.result;
     }
 
     @Override
-    public void trulyRandom$setResult(ItemStack result) {
+    public void trulyrandom$setResult(ItemStack result) {
         this.result = result;
     }
 }

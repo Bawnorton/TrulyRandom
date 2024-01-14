@@ -1,8 +1,9 @@
 package com.bawnorton.trulyrandom.world;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.random.Modules;
 import com.bawnorton.trulyrandom.random.Randomiser;
+import com.bawnorton.trulyrandom.random.ServerRandomiser;
+import com.bawnorton.trulyrandom.random.module.Modules;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
@@ -10,61 +11,79 @@ import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.World;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 public class RandomiserSaveLoader extends PersistentState {
-    private static final Type<RandomiserSaveLoader> type = new Type<>(
-            RandomiserSaveLoader::new,
-            RandomiserSaveLoader::fromNbt,
-            null
-    );
     private static boolean defaultSet = false;
-    private static long defaultSeed;
     private static Modules defaultModules;
-    private static Randomiser lastSetRandomiser;
-    private Randomiser randomiser;
+    private static ServerRandomiser lastSetRandomiser;
 
+    private ServerRandomiser serverRandomiser;
+    private Map<UUID, Modules> clientRandomisers;
 
-    public static void setDefaultRandomiser(long seed, Modules modules) {
+    public static void setDefaultRandomiser(Modules modules) {
         defaultSet = true;
-        defaultSeed = seed;
         defaultModules = modules;
     }
 
     public static RandomiserSaveLoader fromNbt(NbtCompound nbt) {
-        RandomiserSaveLoader randomiserSaveLoader = new RandomiserSaveLoader();
-        randomiserSaveLoader.randomiser = Randomiser.fromNbt(nbt.getCompound("randomiser"));
-        return randomiserSaveLoader;
+        RandomiserSaveLoader state = new RandomiserSaveLoader();
+        state.serverRandomiser = ServerRandomiser.fromNbt(nbt.getCompound("randomiser"));
+        state.clientRandomisers = new HashMap<>();
+        NbtCompound clientRandomisers = nbt.getCompound("client_randomisers");
+        clientRandomisers.getKeys().forEach(uuid -> state.clientRandomisers.put(UUID.fromString(uuid), Modules.fromNbt(clientRandomisers.getCompound(uuid))));
+        return state;
     }
 
     public static RandomiserSaveLoader getServerState(MinecraftServer server) {
         ServerWorld world = server.getWorld(World.OVERWORLD);
         if (world == null) throw new IllegalStateException("Tried to get randomiser state before world was loaded");
         PersistentStateManager manager = world.getPersistentStateManager();
-        RandomiserSaveLoader state = manager.getOrCreate(type, TrulyRandom.MOD_ID);
+        RandomiserSaveLoader state = manager.getOrCreate(RandomiserSaveLoader::fromNbt, RandomiserSaveLoader::new, TrulyRandom.MOD_ID);
         state.markDirty();
-        lastSetRandomiser = state.getRandomiser();
+        lastSetRandomiser = state.getServerRandomiser();
         return state;
     }
 
-    public static Randomiser fetchUnsafeRandomiser() {
+    public static ServerRandomiser fetchUnsafeRandomiser() {
         if (lastSetRandomiser != null) return lastSetRandomiser;
-        if (!defaultSet) throw new IllegalStateException("Default randomiser not set");
-        Randomiser defaultRandomiser = new Randomiser(defaultSeed);
-        defaultRandomiser.setModules(defaultModules);
-        return defaultRandomiser;
+
+        ServerRandomiser def = ServerRandomiser.DEFAULT;
+        setDefaultRandomiser(def.getModules());
+        return def;
     }
 
-    public Randomiser getRandomiser() {
-        if (randomiser == null) {
+    public ServerRandomiser getServerRandomiser() {
+        if (serverRandomiser == null) {
             if (!defaultSet) throw new IllegalStateException("Default randomiser not set");
-            randomiser = new Randomiser(defaultSeed);
-            randomiser.setModules(defaultModules);
+
+            serverRandomiser = new ServerRandomiser(new Modules());
+            serverRandomiser.setModules(defaultModules);
         }
-        return randomiser;
+        return serverRandomiser;
+    }
+
+    public Randomiser getClientRandomiser(UUID uuid) {
+        Modules modules = clientRandomisers.get(uuid);
+        if (modules == null) return null;
+
+        return new ServerRandomiser(modules);
+    }
+
+    public void setClientRandomiser(UUID uuid, Modules modules) {
+        clientRandomisers.put(uuid, modules);
     }
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbt) {
-        nbt.put("randomiser", randomiser.writeNbt(new NbtCompound()));
+        nbt.put("randomiser", getServerRandomiser().writeNbt(new NbtCompound()));
+        NbtCompound clientRandomisers = new NbtCompound();
+        if(this.clientRandomisers != null) {
+            this.clientRandomisers.forEach((uuid, modules) -> clientRandomisers.put(uuid.toString(), modules.writeNbt(new NbtCompound())));
+        }
+        nbt.put("client_randomisers", clientRandomisers);
         return nbt;
     }
 }

@@ -1,7 +1,6 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
 import com.bawnorton.trulyrandom.client.screen.TrulyRandomSettingsScreen;
-import com.bawnorton.trulyrandom.random.Module;
 import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.MinecraftClient;
@@ -17,17 +16,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Arrays;
-
 @Mixin(CreateWorldScreen.class)
 public abstract class CreateWorldScreenMixin extends Screen {
     protected CreateWorldScreenMixin(Text title) {
         super(title);
-    }
-
-    @Inject(method = "init", at = @At("HEAD"))
-    private void resetModules(CallbackInfo ci) {
-        Arrays.stream(Module.values()).forEach(module -> module.setEnabled(false));
     }
 
     @Mixin(targets = "net.minecraft.client.gui.screen.world.CreateWorldScreen$MoreTab")
@@ -49,7 +41,7 @@ public abstract class CreateWorldScreenMixin extends Screen {
         @Unique
         private void openTrulyRandomSettings() {
             MinecraftClient client = MinecraftClient.getInstance();
-            client.setScreen(new TrulyRandomSettingsScreen(client.currentScreen, (modules, seed) -> RandomiserSaveLoader.setDefaultRandomiser(seed, modules)));
+            client.setScreen(new TrulyRandomSettingsScreen(client.currentScreen, RandomiserSaveLoader::setDefaultRandomiser));
         }
     }
 }

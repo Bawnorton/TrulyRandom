@@ -1,4 +1,4 @@
-package com.bawnorton.trulyrandom.random;
+package com.bawnorton.trulyrandom.random.module;
 
 public abstract class RandomiserModule {
     private boolean randomised = false;

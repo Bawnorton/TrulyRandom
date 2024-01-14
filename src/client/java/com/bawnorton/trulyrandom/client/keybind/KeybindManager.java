@@ -1,11 +1,11 @@
 package com.bawnorton.trulyrandom.client.keybind;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.screen.TrulyRandomSettingsScreen;
-import com.bawnorton.trulyrandom.network.packet.c2s.SyncRandomiserC2SPacket;
+import com.bawnorton.trulyrandom.network.packet.c2s.SetServerRandomiserC2SPacket;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
@@ -14,6 +14,7 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.item.Item;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -22,7 +23,7 @@ import java.util.List;
 public class KeybindManager {
     private static final List<ActionedKeybind> KEYBINDS = new ArrayList<>();
     public static final ActionedKeybind OPEN_RANDOMISER_GUI = registerKeybind("key.trulyrandom.open_randomiser_gui", GLFW.GLFW_KEY_G, client -> {
-        client.setScreen(new TrulyRandomSettingsScreen(client.currentScreen, (modules, seed) -> client.getNetworkHandler().sendPacket(new SyncRandomiserC2SPacket(modules, seed))));
+        client.setScreen(new TrulyRandomSettingsScreen(client.currentScreen, (modules) -> ClientPlayNetworking.send(new SetServerRandomiserC2SPacket(modules))));
     });
     public static final ActionedKeybind RELOAD_CHUNKS = registerDevOnlyKeybind("key.trulyrandom.reload_chunks", GLFW.GLFW_KEY_KP_0, client -> {
         client.worldRenderer.reload();
@@ -30,16 +31,16 @@ public class KeybindManager {
     public static final ActionedKeybind QUERY_HAND = registerDevOnlyKeybind("key.trulyrandom.query_hand", GLFW.GLFW_KEY_KP_1, client -> {
         Item handItem = client.player.getMainHandStack().getItem();
         ModelShuffler.Items items = (ModelShuffler.Items) client.getItemRenderer().getModels();
-        TrulyRandom.LOGGER.info("Hand item: " + handItem + " (" + items.trulyrandom$getOriginalRandomisedMap().get(handItem) + ")");
+        TrulyRandom.LOGGER.info("Hand item: " + handItem + " (" + items.trulyrandom$getOriginalRandomisedMap()
+                .get(handItem) + ")");
         HitResult hitResult = client.crosshairTarget;
         if (hitResult instanceof BlockHitResult blockHitResult) {
             BlockState block = client.world.getBlockState(blockHitResult.getBlockPos());
-            ModelShuffler.BlockStates blockStates = (ModelShuffler.BlockStates) client.getBlockRenderManager().getModels();
-            TrulyRandom.LOGGER.info("Block: " + block + " (" + blockStates.trulyrandom$getOriginalRandomisedMap().get(block) + ")");
+            ModelShuffler.BlockStates blockStates = (ModelShuffler.BlockStates) client.getBlockRenderManager()
+                    .getModels();
+            TrulyRandom.LOGGER.info("Block: " + block + " (" + blockStates.trulyrandom$getOriginalRandomisedMap()
+                    .get(block) + ")");
         }
-    });
-    public static final ActionedKeybind NEW_SEED = registerDevOnlyKeybind("key.trulyrandom.sync_randomiser", GLFW.GLFW_KEY_KP_2, client -> {
-        client.getNetworkHandler().sendPacket(new SyncRandomiserC2SPacket(TrulyRandom.getRandomiser(client.getServer()).getModules(), TrulyRandomClient.getRandomiser().getLocalSeed() + 1));
     });
 
     public static void init() {
@@ -56,7 +57,7 @@ public class KeybindManager {
         return keybind;
     }
 
-    private static ActionedKeybind registerDevOnlyKeybind(String key, int code, KeybindCallback callback) {
+    private static @Nullable ActionedKeybind registerDevOnlyKeybind(String key, int code, KeybindCallback callback) {
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
             return registerKeybind(key, code, callback);
         }
@@ -64,7 +65,7 @@ public class KeybindManager {
     }
 
     public static void runKeybindActions(MinecraftClient client) {
-        KEYBINDS.forEach(keybind -> keybind.runAction(client));
+        KEYBINDS.forEach(keybind -> keybind.runIfPressed(client));
     }
 
     @FunctionalInterface
@@ -85,13 +86,13 @@ public class KeybindManager {
             return keybind;
         }
 
-        public void runAction(MinecraftClient client) {
+        public void runIfPressed(MinecraftClient client) {
             while (keybind.wasPressed()) {
-                callback.onKeybindPressed(client);
+                run(client);
             }
         }
 
-        public void invokeAction(MinecraftClient client) {
+        public void run(MinecraftClient client) {
             callback.onKeybindPressed(client);
         }
     }

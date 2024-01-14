@@ -2,6 +2,7 @@ package com.bawnorton.trulyrandom.client.mixin;
 
 import com.bawnorton.trulyrandom.client.extend.DataConfigurationExtender;
 import com.bawnorton.trulyrandom.random.Randomiser;
+import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.mojang.datafixers.kinds.App;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resource.DataConfiguration;
@@ -20,31 +21,38 @@ import java.util.function.Function;
 @Mixin(DataConfiguration.class)
 public abstract class DataConfigurationMixin implements DataConfigurationExtender {
     @Unique
-    private Randomiser randomiser;
+    private static final ThreadLocal<ServerRandomiser> randomiserThreadLocal = ThreadLocal.withInitial(() -> ServerRandomiser.DEFAULT);
     @Unique
-    private static final ThreadLocal<Randomiser> randomiserThreadLocal = ThreadLocal.withInitial(() -> Randomiser.DEFAULT);
+    private ServerRandomiser randomiser;
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    @ModifyArg(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/codecs/RecordCodecBuilder;create(Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;"))
+    @ModifyArg(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/codecs/RecordCodecBuilder;create(Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;", remap = false))
     private static <O> Function<RecordCodecBuilder.Instance, ? extends App<RecordCodecBuilder.Mu<O>, O>> attachRandomiserModules(Function<RecordCodecBuilder.Instance, ? extends App<RecordCodecBuilder.Mu<O>, O>> builder) {
-
         return instance -> instance.group(
-                DataPackSettings.CODEC.optionalFieldOf("DataPacks", DataPackSettings.SAFE_MODE).forGetter(DataConfiguration::dataPacks),
-                FeatureFlags.CODEC.optionalFieldOf("enabled_features", FeatureFlags.DEFAULT_ENABLED_FEATURES).forGetter(DataConfiguration::enabledFeatures),
-                Randomiser.CODEC.optionalFieldOf("randomiser", Randomiser.DEFAULT).forGetter(DataConfigurationExtender::trulyRandom$getRandomiser)
+                DataPackSettings.CODEC.optionalFieldOf("DataPacks", DataPackSettings.SAFE_MODE)
+                        .forGetter(DataConfiguration::dataPacks),
+                FeatureFlags.CODEC.optionalFieldOf("enabled_features", FeatureFlags.DEFAULT_ENABLED_FEATURES)
+                        .forGetter(DataConfiguration::enabledFeatures),
+                ServerRandomiser.CODEC.optionalFieldOf("randomiser", ServerRandomiser.DEFAULT)
+                        .forGetter(DataConfigurationExtender::trulyrandom$getRandomiser)
         ).apply(instance, (a, b, c) -> {
-            randomiserThreadLocal.set((Randomiser) c);
+            randomiserThreadLocal.set((ServerRandomiser) c);
             return new DataConfiguration((DataPackSettings) a, (FeatureSet) b);
         });
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void attachRandomiserData(DataPackSettings dataPackSettings, FeatureSet featureSet, CallbackInfo ci) {
-        this.randomiser = randomiserThreadLocal.get();
+        //noinspection ConstantValue
+        if (randomiserThreadLocal == null) {
+            this.randomiser = ServerRandomiser.DEFAULT;
+        } else {
+            this.randomiser = randomiserThreadLocal.get();
+        }
     }
 
     @Override
-    public Randomiser trulyRandom$getRandomiser() {
+    public Randomiser trulyrandom$getRandomiser() {
         return randomiser;
     }
 }

@@ -3,7 +3,7 @@ package com.bawnorton.trulyrandom.client.random.model;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.ClientChunkManagerAccessor;
 import com.bawnorton.trulyrandom.client.mixin.accessor.WorldRendererInvoker;
-import com.bawnorton.trulyrandom.random.Module;
+import com.bawnorton.trulyrandom.random.module.Module;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.util.math.ChunkPos;

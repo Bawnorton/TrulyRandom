@@ -10,7 +10,7 @@ import java.util.Map;
 @Mixin(LootManager.class)
 public interface LootManagerAccessor {
     @Accessor
-    Map<LootDataKey<?>, ?> getKeyToValue();
+    Map<LootDataKey<?>, Object> getKeyToValue();
 
     @Accessor
     void setKeyToValue(Map<LootDataKey<?>, ?> keyToValue);

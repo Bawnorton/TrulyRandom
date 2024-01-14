@@ -1,6 +1,10 @@
 {
   "selectWorld.trulyrandom": "TrulyRandom",
-  "selectWorld.trulyrandom.info": "Choose which modules to include in the randomisation, these can be toggled in game, unless specified otherwise, with the \"%s\" key.",
+  "selectWorld.trulyrandom.info": "Choose which modules should be randomised for the world.\n§cWILL OVERWRITE ALL CONNECTED CLIENTS",
+  "selectWorld.trulyrandom.targeted": "Choose which modules should be randomised for \"%s\".",
+  "selectWorld.trulyrandom.targeted.default": "Choose which modules should be randomised for \"Unknown\".",
+  "selectWorld.trulyrandom.seed_tooltip": "Seed that will be used to determine the randomisation.",
+  "selectWorld.trulyrandom.seed_tooltip_immutable": "Seed that was used to determine the randomisation.",
   "selectWorld.trulyrandom.block_models": "Block Models",
   "selectWorld.trulyrandom.block_models.tooltip": "Randomises the models of blocks that share the same shape and states.",
   "selectWorld.trulyrandom.item_models": "Item Models",
@@ -15,5 +19,6 @@
   "selectWorld.trulyrandom.seed": "Leave Blank for Random",
   "selectWorld.trulyrandom.seed.title": "Seed: ",
   "selectWorld.trulyrandom.seed.tooltip": "Seed that will be used to determine the randomisation.",
-  "trulyrandom.version_mismatch": "§c§lTruly Random Version Mismatch§r§c\nServer is running on version \"%s§c\" but this client is running on version \"%s§c\". Some features may not work as expected."
+  "trulyrandom.version_mismatch": "§c§lTruly Random Version Mismatch§r§c\nServer is running on version \"%s§c\" but this client is running on version \"%s§c\". Some features may not work as expected.",
+  "trulyrandom.no_player_found": "Player for uuid \"%s\" not found"
 }

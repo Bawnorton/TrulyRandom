@@ -1,6 +1,8 @@
 package com.bawnorton.trulyrandom.client.screen.widget;
 
+import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.*;
 import net.minecraft.screen.ScreenTexts;
@@ -8,8 +10,8 @@ import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
+import java.util.Random;
+import java.util.function.*;
 
 public class ColumnedOptionGrid {
     private final List<Option> options;
@@ -42,7 +44,7 @@ public class ColumnedOptionGrid {
         }
 
         void incrementRowIndex() {
-            rows++;
+            rows += 2;
         }
 
         void incrementColumnIndex() {
@@ -53,25 +55,10 @@ public class ColumnedOptionGrid {
             }
         }
 
-        public OptionBuilder add(Text text, BooleanSupplier getter, Consumer<Boolean> setter) {
-            OptionBuilder optionBuilder = new OptionBuilder(text, getter, setter, 44);
+        public OptionBuilder add(Text text) {
+            OptionBuilder optionBuilder = new OptionBuilder(text, width / columns - 44);
             options.add(optionBuilder);
             return optionBuilder;
-        }
-
-        public Builder marginLeft(int marginLeft) {
-            this.marginLeft = marginLeft;
-            return this;
-        }
-
-        public Builder rowSpacing(int rowSpacing) {
-            this.rowSpacing = rowSpacing;
-            return this;
-        }
-
-        public Builder columnSpacing(int columnSpacing) {
-            this.columnSpacing = columnSpacing;
-            return this;
         }
 
         public void build(Consumer<Widget> widgetConsumer) {
@@ -95,28 +82,43 @@ public class ColumnedOptionGrid {
         }
     }
 
-    public record Option(CyclingButtonWidget<Boolean> button, BooleanSupplier getter, BooleanSupplier toggleable) {
+    public record Option(CyclingButtonWidget<Boolean> button, LongEditBoxWidget seedBox, BooleanSupplier getter, LongSupplier seedGetter, BooleanSupplier toggleable) {
         public void refresh() {
             button.setValue(getter.getAsBoolean());
+            seedBox.setLong(seedGetter.getAsLong());
             if (toggleable != null) {
                 button.active = toggleable.getAsBoolean();
+                seedBox.active = toggleable.getAsBoolean();
             }
         }
     }
 
     public static class OptionBuilder {
         private final Text text;
-        private final BooleanSupplier getter;
-        private final Consumer<Boolean> setter;
         private final int width;
+        private BooleanSupplier getter;
+        private BooleanConsumer setter;
+        private LongSupplier seedGetter;
+        private LongConsumer seedSetter;
         private BooleanSupplier toggleable;
-        private Text tooltip;
+        private Supplier<Text> tooltip;
+        private Supplier<Text> seedTooltip;
 
-        private OptionBuilder(Text text, BooleanSupplier getter, Consumer<Boolean> setter, int width) {
+        private OptionBuilder(Text text, int width) {
             this.text = text;
+            this.width = width;
+        }
+
+        public OptionBuilder value(BooleanSupplier getter, BooleanConsumer setter) {
             this.getter = getter;
             this.setter = setter;
-            this.width = width;
+            return this;
+        }
+
+        public OptionBuilder seed(LongSupplier seedGetter, LongConsumer seedSetter) {
+            this.seedGetter = seedGetter;
+            this.seedSetter = seedSetter;
+            return this;
         }
 
         public OptionBuilder toggleable(BooleanSupplier toggleable) {
@@ -124,8 +126,13 @@ public class ColumnedOptionGrid {
             return this;
         }
 
-        public OptionBuilder tooltip(Text tooltip) {
+        public OptionBuilder tooltip(Supplier<Text> tooltip) {
             this.tooltip = tooltip;
+            return this;
+        }
+
+        public OptionBuilder seedTooltip(Supplier<Text> seedTooltip) {
+            this.seedTooltip = seedTooltip;
             return this;
         }
 
@@ -134,28 +141,43 @@ public class ColumnedOptionGrid {
         }
 
         Option build(Builder builder, GridWidget widget, int row, int column) {
-            TextWidget textWidget = new TextWidget(text, MinecraftClient.getInstance().textRenderer).alignLeft();
+            TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+            TextWidget textWidget = new TextWidget(text, textRenderer).alignLeft();
             textWidget.setWidth(columnAdjustedWidth(builder));
-            widget.add(textWidget, row, column, widget.copyPositioner().relative(0, 0.5f).marginLeft(builder.marginLeft));
+            widget.add(textWidget, row, column, widget.copyPositioner()
+                    .relative(0, 0.5f)
+                    .marginLeft(builder.marginLeft));
             CyclingButtonWidget.Builder<Boolean> cyclingBuilder = CyclingButtonWidget.onOffBuilder(this.getter.getAsBoolean());
             cyclingBuilder.omitKeyText();
             if (tooltip != null) {
-                Tooltip tooltip = Tooltip.of(this.tooltip);
+                Tooltip tooltip = Tooltip.of(this.tooltip.get());
                 cyclingBuilder.tooltip(value -> tooltip);
-            }
-            if (tooltip != null) {
-                cyclingBuilder.narration(button -> ScreenTexts.joinSentences(text, button.getGenericNarrationMessage(), this.tooltip));
+                cyclingBuilder.narration(button -> ScreenTexts.joinSentences(text, button.getGenericNarrationMessage(), this.tooltip.get()));
             } else {
                 cyclingBuilder.narration(button -> ScreenTexts.joinSentences(text, button.getGenericNarrationMessage()));
             }
 
-            CyclingButtonWidget<Boolean> button = cyclingBuilder.build(0, 0, width, 20, Text.empty(), (b, value) -> setter.accept(value));
+            CyclingButtonWidget<Boolean> button = cyclingBuilder.build(0, 0, 44, 20, Text.empty(), (b, value) -> setter.accept((boolean) value));
+            widget.add(button, row, column + 1, widget.copyPositioner().alignRight());
+
+            LongEditBoxWidget seedBox = new LongEditBoxWidget(textRenderer, 0, 0, columnAdjustedWidth(builder) + 44, 18, Text.of("Seed"), seedGetter.getAsLong());
+            seedBox.setChangeListener(value -> seedSetter.accept(seedBox.getLong()));
+            if (seedTooltip != null) {
+                Tooltip tooltip = Tooltip.of(seedTooltip.get());
+                seedBox.setTooltip(tooltip);
+            }
+            widget.add(seedBox, row + 1, column, widget.copyPositioner().marginLeft(builder.marginLeft));
+
+            ButtonWidget newSeedButton = ButtonWidget.builder(Text.of("NEW"), b -> seedBox.setLong(new Random().nextLong())).width(44).build();
+            widget.add(newSeedButton, row + 1, column + 1, widget.copyPositioner().alignRight());
+
             if (toggleable != null) {
                 button.active = toggleable.getAsBoolean();
+                seedBox.active = toggleable.getAsBoolean();
+                newSeedButton.active = toggleable.getAsBoolean();
             }
 
-            widget.add(button, row, column + 1, widget.copyPositioner().alignRight());
-            return new Option(button, getter, toggleable);
+            return new Option(button, seedBox, getter, seedGetter, toggleable);
         }
     }
 }

@@ -52,21 +52,21 @@ public abstract class BlockModelsMixin implements ModelShuffler.BlockStates {
             propertyMap.computeIfAbsent(variant.toString(), k -> new ArrayList<>()).add(state);
         }
         propertyMap.forEach((k, v) -> v.sort(Comparator.comparingInt(state -> Registries.BLOCK.getRawId(state.getBlock()))));
-        Map<BlockState, Float> originalChanceMap = new HashMap<>();
+//        Map<BlockState, Float> originalChanceMap = new HashMap<>();
         Random rnd = new Random(seed);
         for (List<BlockState> variant : propertyMap.values()) {
             Collections.shuffle(variant, rnd);
             for (int i = 0; i < variant.size(); i++) {
                 BlockState original = variant.get(i);
                 BlockState randomised = variant.get((i + 1) % variant.size());
-                originalChanceMap.putIfAbsent(original, 1f / variant.size());
+//                originalChanceMap.putIfAbsent(original, 1f / variant.size());
                 originalToRandomMap.put(original, randomised);
                 shuffledModels.put(original, models.get(randomised));
             }
         }
-        originalChanceMap.forEach((k, v) -> {
-            if (rnd.nextFloat() < v) shuffledModels.put(k, models.get(k));
-        });
+//        originalChanceMap.forEach((k, v) -> {
+//            if (rnd.nextFloat() < v) shuffledModels.put(k, models.get(k));
+//        });
     }
 
     @Override
@@ -81,7 +81,7 @@ public abstract class BlockModelsMixin implements ModelShuffler.BlockStates {
     }
 
     @Override
-    public boolean trulyRandom$isShuffled() {
+    public boolean trulyrandom$isShuffled() {
         return !shuffledModels.isEmpty();
     }
 }

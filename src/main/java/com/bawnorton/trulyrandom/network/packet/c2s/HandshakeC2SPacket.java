@@ -1,10 +1,13 @@
 package com.bawnorton.trulyrandom.network.packet.c2s;
 
-import com.bawnorton.trulyrandom.network.listener.TrulyRandomServerPlayPacketListener;
+import com.bawnorton.trulyrandom.TrulyRandom;
+import net.fabricmc.fabric.api.networking.v1.FabricPacket;
+import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.Packet;
 
-public record HandshakeC2SPacket() implements Packet<TrulyRandomServerPlayPacketListener> {
+public record HandshakeC2SPacket() implements FabricPacket {
+    public static final PacketType<HandshakeC2SPacket> TYPE = PacketType.create(TrulyRandom.id("handshake_c2s"), HandshakeC2SPacket::new);
+
     public HandshakeC2SPacket(PacketByteBuf buf) {
         this();
     }
@@ -14,7 +17,7 @@ public record HandshakeC2SPacket() implements Packet<TrulyRandomServerPlayPacket
     }
 
     @Override
-    public void apply(TrulyRandomServerPlayPacketListener listener) {
-        listener.trulyRandom$onHandshake(this);
+    public PacketType<HandshakeC2SPacket> getType() {
+        return TYPE;
     }
 }

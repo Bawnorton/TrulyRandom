@@ -1,7 +1,9 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
+import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
+import com.bawnorton.trulyrandom.random.module.Module;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.item.ItemRenderer;
@@ -9,14 +11,13 @@ import net.minecraft.client.render.model.BakedModelManager;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Random;
-
 @Mixin(MinecraftClient.class)
-public abstract class MinecraftClientMixin {
+public abstract class MinecraftClientMixin implements MinecraftClientExtender {
     @Shadow
     @Final
     public WorldRenderer worldRenderer;
@@ -24,27 +25,36 @@ public abstract class MinecraftClientMixin {
     @Final
     private ItemRenderer itemRenderer;
 
+    @Unique
+    private boolean trulyrandom$finishedLoading = false;
+
     @Shadow
     public abstract BakedModelManager getBakedModelManager();
 
     @Shadow
     public abstract ItemRenderer getItemRenderer();
 
-    @Inject(method = "onFinishedLoading", at = @At("TAIL"))
+    @Inject(method = "collectLoadTimes", at = @At("HEAD"))
     private void reloadModelsAfterResourceReload(CallbackInfo ci) {
+        trulyrandom$finishedLoading = true;
         ModelShuffler.BlockStates blockStates = (ModelShuffler.BlockStates) getBakedModelManager().getBlockModels();
         ModelShuffler.Items items = (ModelShuffler.Items) getItemRenderer().getModels();
-        if (blockStates.trulyRandom$isShuffled()) {
-            blockStates.trulyrandom$shuffleModels(TrulyRandomClient.getRandomiser().getLocalSeed());
+        if (blockStates.trulyrandom$isShuffled()) {
+            blockStates.trulyrandom$shuffleModels(TrulyRandomClient.getRandomiser().getModules().getSeed(Module.BLOCK_MODELS));
         } else {
             blockStates.trulyrandom$resetModels();
         }
-        if (items.trulyRandom$isShuffled()) {
-            items.trulyrandom$shuffleModels(TrulyRandomClient.getRandomiser().getLocalSeed());
+        if (items.trulyrandom$isShuffled()) {
+            items.trulyrandom$shuffleModels(TrulyRandomClient.getRandomiser().getModules().getSeed(Module.ITEM_MODELS));
         } else {
             items.trulyrandom$resetModels();
         }
         worldRenderer.reload();
         itemRenderer.getModels().reloadModels();
+    }
+
+    @Override
+    public boolean trulyrandom$isFinishedLoading() {
+        return trulyrandom$finishedLoading;
     }
 }

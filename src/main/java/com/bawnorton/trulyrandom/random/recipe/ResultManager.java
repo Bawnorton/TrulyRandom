@@ -4,6 +4,8 @@ import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.extend.ResultClearer;
 import com.bawnorton.trulyrandom.extend.ResultSetter;
 import com.bawnorton.trulyrandom.mixin.accessor.SmithingTrimRecipeAccessor;
+import com.bawnorton.trulyrandom.random.module.Module;
+import com.bawnorton.trulyrandom.random.module.Modules;
 import net.minecraft.block.Block;
 import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.block.SuspiciousStewIngredient;
@@ -40,35 +42,35 @@ public class ResultManager {
     }
 
     public ItemStack getResult(Recipe<?> recipe, MinecraftServer server) {
-        random = new Random(TrulyRandom.getRandomiser(server).getSeed());
+        random = new Random(TrulyRandom.getRandomiser(server).getModules().getSeed(Module.RECIPES));
         return getters.getOrDefault(recipe.getClass(), this::getNormalResult).getResult(recipe, server);
     }
 
     public Recipe<?> setResult(Recipe<?> recipe, ItemStack newResult) {
-        if(recipe instanceof ResultSetter resultSetter) {
-            resultSetter.trulyRandom$setResult(newResult);
+        if (recipe instanceof ResultSetter resultSetter) {
+            resultSetter.trulyrandom$setResult(newResult);
             return (Recipe<?>) resultSetter;
         }
         return recipe;
     }
 
     public Recipe<?> clearOrSetResult(Recipe<?> recipe, ItemStack result) {
-        if(recipe instanceof ResultClearer resultClearer) {
-            resultClearer.trulyRandom$clearResult();
+        if (recipe instanceof ResultClearer resultClearer) {
+            resultClearer.trulyrandom$clearResult();
             return (Recipe<?>) resultClearer;
         }
         return setResult(recipe, result);
     }
 
     private ItemStack getNormalResult(Recipe<?> recipe, MinecraftServer server) {
-        return recipe.getResult(server.getRegistryManager());
+        return recipe.getOutput(server.getRegistryManager());
     }
 
     private ItemStack getSuspiciousStewResult(Recipe<?> recipe, MinecraftServer server) {
         List<SuspiciousStewIngredient> ingredients = SuspiciousStewIngredient.getAll();
         SuspiciousStewIngredient ingredient = ingredients.get(new Random().nextInt(ingredients.size()));
         ItemStack suspiciousStew = Items.SUSPICIOUS_STEW.getDefaultStack();
-        SuspiciousStewItem.addEffectsToStew(suspiciousStew, ingredient.getStewEffects());
+        SuspiciousStewItem.addEffectToStew(suspiciousStew, ingredient.getEffectInStew(), ingredient.getEffectInStewDuration());
         return suspiciousStew;
     }
 
@@ -122,9 +124,17 @@ public class ResultManager {
     }
 
     private ItemStack getShulkerBoxColoringResult(Recipe<?> recipe, MinecraftServer server) {
-        List<Item> shulkerBoxes = Registries.BLOCK.stream().filter(ShulkerBoxBlock.class::isInstance).map(Block::asItem).toList();
+        List<Item> shulkerBoxes = Registries.BLOCK.stream()
+                .filter(ShulkerBoxBlock.class::isInstance)
+                .map(Block::asItem)
+                .toList();
         Item item = shulkerBoxes.get(random.nextInt(shulkerBoxes.size()));
         return item.getDefaultStack();
+    }
+
+    @FunctionalInterface
+    private interface ResultGetter {
+        ItemStack getResult(Recipe<?> recipe, MinecraftServer server);
     }
 
     private class SmithingTrimResultGetter implements ResultGetter {
@@ -134,17 +144,15 @@ public class ResultManager {
         public ItemStack getResult(Recipe<?> recipe, MinecraftServer server) {
             SmithingTrimRecipeAccessor accessor = (SmithingTrimRecipeAccessor) recipe;
             ItemStack template = accessor.getTemplate().getMatchingStacks()[0];
-            if(bases == null || bases.isEmpty()) bases = Stream.of(accessor.getBase().getMatchingStacks()).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-            if(additions == null || additions.isEmpty()) additions = Stream.of(accessor.getAddition().getMatchingStacks()).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+            if (bases == null || bases.isEmpty()) bases = Stream.of(accessor.getBase().getMatchingStacks())
+                    .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+            if (additions == null || additions.isEmpty())
+                additions = Stream.of(accessor.getAddition().getMatchingStacks())
+                        .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
             ItemStack base = bases.remove(random.nextInt(bases.size()));
             ItemStack addition = additions.remove(random.nextInt(additions.size()));
             Inventory inventory = new SimpleInventory(template, base, addition);
             return ((SmithingTrimRecipe) recipe).craft(inventory, server.getRegistryManager());
         }
-    }
-
-    @FunctionalInterface
-    private interface ResultGetter {
-        ItemStack getResult(Recipe<?> recipe, MinecraftServer server);
     }
 }

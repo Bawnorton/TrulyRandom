@@ -1,19 +1,21 @@
 package com.bawnorton.trulyrandom.network.packet.s2c;
 
-import com.bawnorton.trulyrandom.network.listener.TrulyRandomClientPlayPacketListener;
-import com.bawnorton.trulyrandom.random.Modules;
+import com.bawnorton.trulyrandom.TrulyRandom;
+import net.fabricmc.fabric.api.networking.v1.FabricPacket;
+import net.fabricmc.fabric.api.networking.v1.PacketType;
 import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.api.VersionParsingException;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.Packet;
 
-public record HandshakeS2CPacket(String versionString, Modules modules, long seed) implements Packet<TrulyRandomClientPlayPacketListener> {
+public record HandshakeS2CPacket(String versionString) implements FabricPacket {
+    public static final PacketType<HandshakeS2CPacket> TYPE = PacketType.create(TrulyRandom.id("handshake_s2c"), HandshakeS2CPacket::new);
+
     public HandshakeS2CPacket(PacketByteBuf packetByteBuf) {
-        this(packetByteBuf.readString(), Modules.fromPacket(packetByteBuf), packetByteBuf.readLong());
+        this(packetByteBuf.readString());
     }
 
-    public HandshakeS2CPacket(Version version, Modules modules, long seed) {
-        this(version.getFriendlyString(), modules, seed);
+    public HandshakeS2CPacket(Version version) {
+        this(version.getFriendlyString());
     }
 
     public Version version() {
@@ -27,12 +29,10 @@ public record HandshakeS2CPacket(String versionString, Modules modules, long see
     @Override
     public void write(PacketByteBuf buf) {
         buf.writeString(versionString);
-        modules.write(buf);
-        buf.writeLong(seed);
     }
 
     @Override
-    public void apply(TrulyRandomClientPlayPacketListener listener) {
-        listener.trulyRandom$onHandshake(this);
+    public PacketType<HandshakeS2CPacket> getType() {
+        return TYPE;
     }
 }
