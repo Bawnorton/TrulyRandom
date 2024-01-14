@@ -33,7 +33,7 @@ public class RandomiserSaveLoader extends PersistentState {
         state.serverRandomiser = ServerRandomiser.fromNbt(nbt.getCompound("randomiser"));
         state.clientRandomisers = new HashMap<>();
         NbtCompound clientRandomisers = nbt.getCompound("client_randomisers");
-        clientRandomisers.getKeys().forEach(uuid -> state.clientRandomisers.put(UUID.fromString(uuid), Modules.fromNbt(clientRandomisers.getCompound(uuid))));
+        clientRandomisers.getKeys().forEach(uuid -> state.getClientRandomisers().put(UUID.fromString(uuid), Modules.fromNbt(clientRandomisers.getCompound(uuid))));
         return state;
     }
 
@@ -65,24 +65,26 @@ public class RandomiserSaveLoader extends PersistentState {
         return serverRandomiser;
     }
 
+    private Map<UUID, Modules> getClientRandomisers() {
+        if (clientRandomisers == null) clientRandomisers = new HashMap<>();
+        return clientRandomisers;
+    }
+
     public Randomiser getClientRandomiser(UUID uuid) {
-        Modules modules = clientRandomisers.get(uuid);
-        if (modules == null) return null;
+        Modules modules = getClientRandomisers().computeIfAbsent(uuid, k -> new Modules());
 
         return new ServerRandomiser(modules);
     }
 
     public void setClientRandomiser(UUID uuid, Modules modules) {
-        clientRandomisers.put(uuid, modules);
+        getClientRandomisers().put(uuid, modules);
     }
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbt) {
         nbt.put("randomiser", getServerRandomiser().writeNbt(new NbtCompound()));
         NbtCompound clientRandomisers = new NbtCompound();
-        if(this.clientRandomisers != null) {
-            this.clientRandomisers.forEach((uuid, modules) -> clientRandomisers.put(uuid.toString(), modules.writeNbt(new NbtCompound())));
-        }
+        getClientRandomisers().forEach((uuid, modules) -> clientRandomisers.put(uuid.toString(), modules.writeNbt(new NbtCompound())));
         nbt.put("client_randomisers", clientRandomisers);
         return nbt;
     }
