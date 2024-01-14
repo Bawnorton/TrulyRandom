@@ -1,6 +1,8 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
+import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
+import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -8,6 +10,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.render.item.ItemModels;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.item.Item;
+import net.minecraft.registry.Registries;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -17,14 +20,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.*;
 
 @Mixin(ItemModels.class)
-public abstract class ItemsModelsMixin implements ModelShuffler.Items {
-    @Unique
-    private final Map<Item, Item> originalToRandomMap = new HashMap<>();
-    @Final
-    @Shadow
+@AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, invert = true)
+public abstract class VanillaItemsModelsMixin implements ModelShuffler.Items {
+    @Shadow @Final
     private Int2ObjectMap<BakedModel> models;
     @Unique
+    private final Map<Item, Item> originalToRandomMap = new HashMap<>();
+    @Unique
     private Int2ObjectMap<BakedModel> shuffledModels = new Int2ObjectOpenHashMap<>(256);
+
 
     @WrapOperation(method = "getModel(Lnet/minecraft/item/Item;)Lnet/minecraft/client/render/model/BakedModel;", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;get(I)Ljava/lang/Object;", remap = false))
     private Object getShuffledModel(Int2ObjectMap<BakedModel> instance, int key, Operation<Object> original) {
@@ -35,7 +39,10 @@ public abstract class ItemsModelsMixin implements ModelShuffler.Items {
     public void trulyrandom$shuffleModels(long seed) {
         if (models == null) return;
 
-        List<Integer> modelIds = new ArrayList<>(models.keySet());
+        List<Integer> modelIds = Registries.ITEM.stream()
+                                                .mapToInt(Item::getRawId)
+                                                .sorted()
+                                                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         trulyrandom$resetModels();
         Collections.shuffle(modelIds, new Random(seed));
         for (int i = 0; i < modelIds.size(); i++) {

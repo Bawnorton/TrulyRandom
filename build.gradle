@@ -62,6 +62,8 @@ dependencies {
 
     modImplementation("maven.modrinth:sodium:${project.sodium_version}")
     modImplementation("maven.modrinth:iris:${project.iris_version}")
+    modImplementation("maven.modrinth:modernfix:${project.modernfix_version}")
+
     // needed for iris
     runtimeOnly("org.anarres:jcpp:1.4.14")
     runtimeOnly("io.github.douira:glsl-transformer:2.0.0-pre13")

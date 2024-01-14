@@ -23,9 +23,6 @@
     ],
     "fabric-datagen": [
       "com.bawnorton.trulyrandom.datagen.TrulyRandomDataGenerator"
-    ],
-    "mixinsquared": [
-      "com.bawnorton.trulyrandom.TrulyRandom"
     ]
   },
   "mixins": [

@@ -1,6 +1,5 @@
 package com.bawnorton.trulyrandom;
 
-import com.bawnorton.mixinsquared.api.MixinCanceller;
 import com.bawnorton.trulyrandom.event.EventHandler;
 import com.bawnorton.trulyrandom.network.Networking;
 import com.bawnorton.trulyrandom.random.Randomiser;
@@ -15,10 +14,9 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.UUID;
 
-public class TrulyRandom implements ModInitializer, MixinCanceller {
+public class TrulyRandom implements ModInitializer {
     public static final String MOD_ID = "trulyrandom";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static final Version VERSION;
@@ -55,11 +53,6 @@ public class TrulyRandom implements ModInitializer, MixinCanceller {
         Networking.init();
         EventHandler.init();
         LOGGER.debug("TrulyRandom Initialised");
-    }
-
-    @Override
-    public boolean shouldCancel(List<String> targetClassNames, String mixinClassName) {
-        return mixinClassName.equals("net.fabricmc.loom.nativesupport.mixin.WindowMixin");
     }
 }
 

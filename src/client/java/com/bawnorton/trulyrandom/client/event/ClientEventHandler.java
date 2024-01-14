@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 
 public class ClientEventHandler {
     public static void init() {
-//        registerKeybindEvents();
+        registerKeybindEvents();
         registerWorldJoinEvent();
     }
 

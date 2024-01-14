@@ -1,17 +1,26 @@
-package com.bawnorton.trulyrandom.client.mixin;
+package com.bawnorton.trulyrandom.client.mixin.modernfix;
 
+import com.bawnorton.mixinsquared.TargetHandler;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.StateAccessor;
+import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
+import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.block.BlockModels;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.registry.Registries;
+import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.math.BlockPos;
+import org.embeddedt.modernfix.dynamicresources.DynamicModelCache;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -19,27 +28,42 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.*;
 
-@Mixin(BlockModels.class)
-public abstract class BlockModelsMixin implements ModelShuffler.BlockStates {
+@Mixin(value = BlockModels.class, priority = 1500)
+@AdvancedConditionalMixin(checker = ModernFixConditionChecker.class)
+public abstract class DynamicBlockModelsMixin implements ModelShuffler.BlockStates {
     @Unique
-    private final Map<BlockState, BakedModel> shuffledModels = new HashMap<>();
-    @Unique
-    private final Map<BlockState, BlockState> originalToRandomMap = new HashMap<>();
-    @Shadow
-    private Map<BlockState, BakedModel> models;
+    private final BiMap<BlockState, BlockState> redirectMap = HashBiMap.create();
 
-    @WrapOperation(method = "getModel", at = @At(value = "INVOKE", target = "java/util/Map.get(Ljava/lang/Object;)Ljava/lang/Object;"))
-    private Object getShuffledModel(Map<BlockState, BakedModel> instance, Object key, Operation<Object> original) {
-        return shuffledModels.getOrDefault((BlockState) key, (BakedModel) original.call(instance, key));
+    @SuppressWarnings("MixinAnnotationTarget")
+    @Shadow
+    @Final
+    private DynamicModelCache<BlockState> mfix$modelCache;
+
+    @TargetHandler(
+            mixin = "org.embeddedt.modernfix.common.mixin.perf.dynamic_resources.BlockModelShaperMixin",
+            name = "lambda$new$0"
+    )
+    @WrapOperation(
+            method = "@MixinSquared:Handler",
+            at = @At(
+                    value = "INVOKE",
+                    target = "net/minecraft/client/render/block/BlockModels.cacheBlockModel (Lnet/minecraft/block/BlockState;)Lnet/minecraft/client/render/model/BakedModel;"
+            )
+    )
+    private BakedModel getShuffledModel(BlockModels instance, BlockState blockState, Operation<BakedModel> original) {
+        BlockState redirected = redirectMap.getOrDefault(blockState, blockState);
+        return original.call(instance, redirected);
     }
 
-    @Override
     public void trulyrandom$shuffleModels(long seed) {
-        if (models == null) return;
         ClientWorld world = MinecraftClient.getInstance().world;
         if (world == null) return;
 
-        List<BlockState> blockStates = new ArrayList<>(models.keySet());
+        List<BlockState> blockStates = Registries.BLOCK.stream()
+                                                       .map(Block::getStateManager)
+                                                       .map(StateManager::getStates)
+                                                       .flatMap(Collection::stream)
+                                                       .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         trulyrandom$resetModels();
         Map<String, List<BlockState>> propertyMap = new HashMap<>();
         for (BlockState state : blockStates) {
@@ -52,36 +76,27 @@ public abstract class BlockModelsMixin implements ModelShuffler.BlockStates {
             propertyMap.computeIfAbsent(variant.toString(), k -> new ArrayList<>()).add(state);
         }
         propertyMap.forEach((k, v) -> v.sort(Comparator.comparingInt(state -> Registries.BLOCK.getRawId(state.getBlock()))));
-//        Map<BlockState, Float> originalChanceMap = new HashMap<>();
         Random rnd = new Random(seed);
         for (List<BlockState> variant : propertyMap.values()) {
             Collections.shuffle(variant, rnd);
             for (int i = 0; i < variant.size(); i++) {
                 BlockState original = variant.get(i);
                 BlockState randomised = variant.get((i + 1) % variant.size());
-//                originalChanceMap.putIfAbsent(original, 1f / variant.size());
-                originalToRandomMap.put(original, randomised);
-                shuffledModels.put(original, models.get(randomised));
+                redirectMap.put(original, randomised);
             }
         }
-//        originalChanceMap.forEach((k, v) -> {
-//            if (rnd.nextFloat() < v) shuffledModels.put(k, models.get(k));
-//        });
     }
 
-    @Override
     public Map<BlockState, BlockState> trulyrandom$getOriginalRandomisedMap() {
-        return originalToRandomMap;
+        return redirectMap.inverse();
     }
 
-    @Override
     public void trulyrandom$resetModels() {
-        shuffledModels.clear();
-        originalToRandomMap.clear();
+        redirectMap.clear();
+        mfix$modelCache.clear();
     }
 
-    @Override
     public boolean trulyrandom$isShuffled() {
-        return !shuffledModels.isEmpty();
+        return !redirectMap.isEmpty();
     }
 }
