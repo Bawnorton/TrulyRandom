@@ -1,6 +1,9 @@
 package com.bawnorton.trulyrandom.client.util.mixin;
 
+import com.bawnorton.trulyrandom.client.util.mixin.annotation.VersionPredicate;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AnnotationNode;
+import org.spongepowered.asm.util.Annotations;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -11,11 +14,14 @@ public interface AdvancedConditionChecker {
 
     boolean shouldApply();
 
-    static AdvancedConditionChecker create(Type checkerType) {
+    static AdvancedConditionChecker create(Type checkerType, AnnotationNode version) {
         try {
             Class<?> clazz = Class.forName(checkerType.getClassName());
-            MethodHandle constructorHandle = lookup.findConstructor(clazz, MethodType.methodType(void.class));
-            if (!(constructorHandle.invoke() instanceof AdvancedConditionChecker checker)) {
+            MethodType methodType = MethodType.methodType(void.class, String.class, String.class);
+            MethodHandle constructorHandle = lookup.findConstructor(clazz, methodType);
+            String min = Annotations.getValue(version, "min", "");
+            String max = Annotations.getValue(version, "max", "");
+            if (!(constructorHandle.invoke(min, max) instanceof AdvancedConditionChecker checker)) {
                 throw new RuntimeException("AdvancedConditionChecker class " + checkerType.getClassName() + " does not implement AdvancedConditionChecker");
             }
 

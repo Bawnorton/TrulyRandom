@@ -11,5 +11,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AdvancedConditionalMixin {
     Class<? extends AdvancedConditionChecker> checker();
+
     boolean invert() default false;
+
+    VersionPredicate version() default @VersionPredicate;
 }

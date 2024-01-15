@@ -1,11 +1,10 @@
-package com.bawnorton.trulyrandom.client.mixin.modernfix.v511;
+package com.bawnorton.trulyrandom.client.mixin.modernfix.v511plus;
 
 import com.bawnorton.mixinsquared.TargetHandler;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
+import com.bawnorton.trulyrandom.client.util.mixin.annotation.VersionPredicate;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.render.item.ItemModels;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Debug(export = true)
 @Mixin(value = ItemModels.class, priority = 1500)
-@AdvancedConditionalMixin(checker = ModernFixConditionChecker.class)
+@AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, version = @VersionPredicate(min = "5.11"))
 public abstract class DynamicItemsModelsMixin implements ModelShuffler.Items {
     @Unique
     private final Map<Item, Item> redirectMap = new HashMap<>();

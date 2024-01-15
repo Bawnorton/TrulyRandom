@@ -11,16 +11,18 @@
     "ItemRendererMixin",
     "KeyboardMixin",
     "MinecraftClientMixin",
+    "VanillaBlockModelsMixin",
+    "VanillaItemsModelsMixin",
     "WorldListWidget$WorldEntryMixin",
     "accessor.AbstractBlockAccessor",
     "accessor.ClientChunkManagerAccessor",
     "accessor.ClientChunkManagerAccessor$ClientChunkMapAccessor",
     "accessor.StateAccessor",
     "accessor.WorldRendererInvoker",
-    "modernfix.DynamicBlockModelsMixin",
-    "modernfix.DynamicItemsModelsMixin",
-    "VanillaBlockModelsMixin",
-    "VanillaItemsModelsMixin"
+    "modernfix.v511minus.DynamicBlockModelsMixin",
+    "modernfix.v511minus.DynamicItemsModelsMixin",
+    "modernfix.v511plus.DynamicBlockModelsMixin",
+    "modernfix.v511plus.DynamicItemsModelsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

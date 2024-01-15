@@ -1,22 +1,16 @@
 package com.bawnorton.trulyrandom.client.mixin.modernfix.v511minus;
 
-import com.bawnorton.mixinsquared.TargetHandler;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.StateAccessor;
 import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.VersionPredicate;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.block.BlockModels;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.BakedModelManager;
-import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.registry.Registries;
 import net.minecraft.state.StateManager;
@@ -29,31 +23,37 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.*;
 
 @Mixin(value = BlockModels.class, priority = 1500)
 @AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, version = @VersionPredicate(max = "5.10.1"))
 public abstract class DynamicBlockModelsMixin implements ModelShuffler.BlockStates {
-    @Shadow private Map<BlockState, BakedModel> models;
-    @Shadow @Final private BakedModelManager modelManager;
+    @Shadow
+    private Map<BlockState, BakedModel> models;
+    @Shadow
+    @Final
+    private BakedModelManager modelManager;
     @Unique
-    private final BiMap<BlockState, BlockState> redirectMap = HashBiMap.create();
+    private final Map<BlockState, BlockState> redirectMap = new HashMap<>();
 
-    @TargetHandler(
-            mixin = "org.embeddedt.modernfix.common.mixin.perf.dynamic_resources.BlockModelShaperMixin",
-            name = "lambda$replaceModelMap$0"
+    @Inject(
+            method = {
+                    "<init>",
+                    "setModels"
+            },
+            at = @At("RETURN")
     )
-    @WrapOperation(
-            method = "@MixinSquared:Handler",
-            at = @At(
-                    value = "INVOKE",
-                    target = "org/embeddedt/modernfix/dynamicresources/ModelLocationCache.get (Lnet/minecraft/block/BlockState;)Lnet/minecraft/client/util/ModelIdentifier;"
-            )
-    )
-    private ModelIdentifier getShuffledModel(BlockState instance, Operation<ModelIdentifier> original, BlockState blockState) {
-        BlockState redirected = redirectMap.getOrDefault(blockState, blockState);
-        return original.call(instance, redirected);
+    private void trulyrandom$initModels(CallbackInfo ci) {
+        trulyrandom$resetModels();
+    }
+
+    @ModifyVariable(method = "getModel", at = @At("HEAD"), argsOnly = true)
+    private BlockState trulyrandom$redirectModel(BlockState state) {
+        return redirectMap.getOrDefault(state, state);
     }
 
     public void trulyrandom$shuffleModels(long seed) {
@@ -89,12 +89,15 @@ public abstract class DynamicBlockModelsMixin implements ModelShuffler.BlockStat
     }
 
     public Map<BlockState, BlockState> trulyrandom$getOriginalRandomisedMap() {
-        return redirectMap.inverse();
+        return redirectMap;
     }
 
     public void trulyrandom$resetModels() {
         redirectMap.clear();
-        models = new DynamicOverridableMap<>(state -> modelManager.getModel(ModelLocationCache.get(redirectMap.getOrDefault(state, state))));
+        models = new DynamicOverridableMap<>(state -> {
+            state = redirectMap.getOrDefault(state, state);
+            return modelManager.getModel(ModelLocationCache.get(state));
+        });
     }
 
     public boolean trulyrandom$isShuffled() {

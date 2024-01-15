@@ -15,6 +15,7 @@ import org.embeddedt.modernfix.util.DynamicInt2ObjectMap;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.*;
@@ -35,6 +36,11 @@ public abstract class DynamicItemsModelsMixin implements ModelShuffler.Items {
     @Inject(method = "<init>", at = @At("RETURN"))
     private void trulyrandom$init(CallbackInfo ci) {
         trulyrandom$resetModels();
+    }
+
+    @ModifyVariable(method = "getModel(Lnet/minecraft/item/Item;)Lnet/minecraft/client/render/model/BakedModel;", at = @At("HEAD"), argsOnly = true)
+    private Item redirectModel(Item item) {
+        return redirectMap.getOrDefault(item, item);
     }
 
     public void trulyrandom$shuffleModels(long seed) {

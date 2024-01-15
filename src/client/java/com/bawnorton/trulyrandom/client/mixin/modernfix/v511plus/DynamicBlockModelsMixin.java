@@ -1,10 +1,11 @@
-package com.bawnorton.trulyrandom.client.mixin.modernfix.v511;
+package com.bawnorton.trulyrandom.client.mixin.modernfix.v511plus;
 
 import com.bawnorton.mixinsquared.TargetHandler;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.StateAccessor;
 import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
+import com.bawnorton.trulyrandom.client.util.mixin.annotation.VersionPredicate;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -29,10 +30,10 @@ import org.spongepowered.asm.mixin.injection.At;
 import java.util.*;
 
 @Mixin(value = BlockModels.class, priority = 1500)
-@AdvancedConditionalMixin(checker = ModernFixConditionChecker.class)
+@AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, version = @VersionPredicate(min = "5.11"))
 public abstract class DynamicBlockModelsMixin implements ModelShuffler.BlockStates {
     @Unique
-    private final BiMap<BlockState, BlockState> redirectMap = HashBiMap.create();
+    private final Map<BlockState, BlockState> redirectMap = new HashMap<>();
 
     @SuppressWarnings("MixinAnnotationTarget")
     @Shadow
@@ -88,7 +89,7 @@ public abstract class DynamicBlockModelsMixin implements ModelShuffler.BlockStat
     }
 
     public Map<BlockState, BlockState> trulyrandom$getOriginalRandomisedMap() {
-        return redirectMap.inverse();
+        return redirectMap;
     }
 
     public void trulyrandom$resetModels() {

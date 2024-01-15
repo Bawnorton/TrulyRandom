@@ -3,6 +3,7 @@ package com.bawnorton.trulyrandom.client;
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.util.mixin.AdvancedConditionChecker;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
+import com.bawnorton.trulyrandom.client.util.mixin.annotation.VersionPredicate;
 import net.fabricmc.loader.api.FabricLoader;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -37,7 +38,8 @@ public class TrulyRandomMixinConfigPlugin implements IMixinConfigPlugin {
                 if (node.desc.equals(Type.getDescriptor(AdvancedConditionalMixin.class))) {
                     Type checkerType = Annotations.getValue(node, "checker");
                     boolean invert = Annotations.getValue(node, "invert", Boolean.FALSE);
-                    AdvancedConditionChecker checker = AdvancedConditionChecker.create(checkerType);
+                    AnnotationNode version = Annotations.getValue(node, "version", VersionPredicate.class);
+                    AdvancedConditionChecker checker = AdvancedConditionChecker.create(checkerType, version);
                     boolean shouldApply = checker.shouldApply();
                     if (invert) shouldApply = !shouldApply;
                     TrulyRandom.LOGGER.debug("TrulyRandomMixinPlugin: " + mixinClassName + " is" + (shouldApply ? " " : " not ") + "being applied because " + checkerType.getClassName() + " returned " + shouldApply);
