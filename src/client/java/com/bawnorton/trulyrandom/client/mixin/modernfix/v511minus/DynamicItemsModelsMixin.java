@@ -1,49 +1,40 @@
-package com.bawnorton.trulyrandom.client.mixin.modernfix;
+package com.bawnorton.trulyrandom.client.mixin.modernfix.v511minus;
 
-import com.bawnorton.mixinsquared.TargetHandler;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.bawnorton.trulyrandom.client.util.mixin.annotation.VersionPredicate;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.render.item.ItemModels;
 import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.BakedModelManager;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
-import org.spongepowered.asm.mixin.Debug;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
+import org.embeddedt.modernfix.dynamicresources.ModelLocationCache;
+import org.embeddedt.modernfix.util.DynamicInt2ObjectMap;
+import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Debug(export = true)
 @Mixin(value = ItemModels.class, priority = 1500)
-@AdvancedConditionalMixin(checker = ModernFixConditionChecker.class)
+@AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, version = @VersionPredicate(max = "5.10.1"))
 public abstract class DynamicItemsModelsMixin implements ModelShuffler.Items {
     @Unique
     private final Map<Item, Item> redirectMap = new HashMap<>();
 
-    @Shadow public abstract void reloadModels();
+    @Mutable
+    @Shadow @Final private Int2ObjectMap<BakedModel> models;
 
-    @TargetHandler(
-            mixin = "org.embeddedt.modernfix.common.mixin.perf.dynamic_resources.ItemModelShaperMixin",
-            name = "lambda$new$0"
-    )
-    @WrapOperation(
-            method = "@MixinSquared:Handler",
-            at = @At(
-                    value = "INVOKE",
-                    target = "net/minecraft/client/render/item/ItemModels.mfix$getModelForItem (Lnet/minecraft/item/Item;)Lnet/minecraft/client/render/model/BakedModel;"
-            )
-    )
-    private BakedModel getShuffledModel(ItemModels instance, Item item, Operation<BakedModel> original) {
-        Item redirected = redirectMap.getOrDefault(item, item);
-        return original.call(instance, redirected);
+    @Shadow public abstract BakedModelManager getModelManager();
+
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void trulyrandom$init(CallbackInfo ci) {
+        trulyrandom$resetModels();
     }
 
     public void trulyrandom$shuffleModels(long seed) {
@@ -65,7 +56,10 @@ public abstract class DynamicItemsModelsMixin implements ModelShuffler.Items {
 
     public void trulyrandom$resetModels() {
         redirectMap.clear();
-        reloadModels();
+        models = new DynamicInt2ObjectMap<>(index -> {
+            Item item = Item.byRawId(index);
+            return getModelManager().getModel(ModelLocationCache.get(redirectMap.getOrDefault(item, item)));
+        });
     }
 
     public boolean trulyrandom$isShuffled() {
