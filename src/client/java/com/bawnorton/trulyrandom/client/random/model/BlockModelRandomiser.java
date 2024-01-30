@@ -1,5 +1,6 @@
 package com.bawnorton.trulyrandom.client.random.model;
 
+import com.bawnorton.trulyrandom.client.event.ClientRandomiseEvents;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.ClientChunkManagerAccessor;
 import com.bawnorton.trulyrandom.client.mixin.accessor.WorldRendererInvoker;
@@ -8,15 +9,27 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
-
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class BlockModelRandomiser extends ModelRandomiser {
     @Override
-    public ModelShuffler<?> getModelShuffler(MinecraftClient client) {
-        return (ModelShuffler.BlockStates) client.getBakedModelManager().getBlockModels();
+    public void randomise(MinecraftClient client, long seed) {
+        ModelShuffler.BlockStates modelShuffler = (ModelShuffler.BlockStates) client.getBlockRenderManager().getModels();
+        modelShuffler.trulyrandom$shuffleModels(seed);
+        ClientRandomiseEvents.BLOCK_MODELS.invoker().onBlockModels(modelShuffler.trulyrandom$getOriginalRandomisedMap());
+        setRandomised(true);
+        reloadModels(client);
     }
 
+    @Override
+    public void reset(MinecraftClient client) {
+        ModelShuffler.BlockStates modelShuffler = (ModelShuffler.BlockStates) client.getBlockRenderManager().getModels();
+        modelShuffler.trulyrandom$resetModels();
+        setRandomised(false);
+        reloadModels(client);
+    }
+
+    @Override
     public void reloadModels(MinecraftClient client) {
         if (client.world == null) return;
 

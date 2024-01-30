@@ -5,8 +5,6 @@
   "plugin": "com.bawnorton.trulyrandom.client.TrulyRandomMixinConfigPlugin",
   "client": [
     "BlockMixin",
-    "CreateWorldScreenMixin",
-    "CreateWorldScreenMixin$MoreTabMixin",
     "DataConfigurationMixin",
     "ItemRendererMixin",
     "KeyboardMixin",

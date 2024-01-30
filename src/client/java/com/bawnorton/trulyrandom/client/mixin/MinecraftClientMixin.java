@@ -1,6 +1,7 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
+import com.bawnorton.trulyrandom.client.event.ClientRandomiseEvents;
 import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.random.module.Module;
@@ -41,11 +42,13 @@ public abstract class MinecraftClientMixin implements MinecraftClientExtender {
         ModelShuffler.Items items = (ModelShuffler.Items) getItemRenderer().getModels();
         if (blockStates.trulyrandom$isShuffled()) {
             blockStates.trulyrandom$shuffleModels(TrulyRandomClient.getRandomiser().getModules().getSeed(Module.BLOCK_MODELS));
+            ClientRandomiseEvents.BLOCK_MODELS.invoker().onBlockModels(blockStates.trulyrandom$getOriginalRandomisedMap());
         } else {
             blockStates.trulyrandom$resetModels();
         }
         if (items.trulyrandom$isShuffled()) {
             items.trulyrandom$shuffleModels(TrulyRandomClient.getRandomiser().getModules().getSeed(Module.ITEM_MODELS));
+            ClientRandomiseEvents.ITEM_MODELS.invoker().onItemModels(items.trulyrandom$getOriginalRandomisedMap());
         } else {
             items.trulyrandom$resetModels();
         }

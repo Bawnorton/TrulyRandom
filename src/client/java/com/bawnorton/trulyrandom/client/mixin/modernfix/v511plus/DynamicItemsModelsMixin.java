@@ -2,6 +2,7 @@ package com.bawnorton.trulyrandom.client.mixin.modernfix.v511plus;
 
 import com.bawnorton.mixinsquared.TargetHandler;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
+import com.bawnorton.trulyrandom.client.extend.modernfix.DynamicItemModelShuffler;
 import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.VersionPredicate;
@@ -10,20 +11,18 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.render.item.ItemModels;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
 import org.spongepowered.asm.mixin.Debug;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 @Debug(export = true)
 @Mixin(value = ItemModels.class, priority = 1500)
 @AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, version = @VersionPredicate(min = "5.11"))
-public abstract class DynamicItemsModelsMixin implements ModelShuffler.Items {
+public abstract class DynamicItemsModelsMixin implements DynamicItemModelShuffler {
     @Unique
     private final Map<Item, Item> redirectMap = new HashMap<>();
 
@@ -43,19 +42,6 @@ public abstract class DynamicItemsModelsMixin implements ModelShuffler.Items {
     private BakedModel getShuffledModel(ItemModels instance, Item item, Operation<BakedModel> original) {
         Item redirected = redirectMap.getOrDefault(item, item);
         return original.call(instance, redirected);
-    }
-
-    public void trulyrandom$shuffleModels(long seed) {
-        List<Item> items = Registries.ITEM.stream()
-                                          .sorted(Comparator.comparingInt(Registries.ITEM::getRawId))
-                                          .collect(Collectors.toList());
-        Collections.shuffle(items, new Random(seed));
-        trulyrandom$resetModels();
-        for (int i = 0; i < items.size(); i++) {
-            Item originalItem = items.get(i);
-            Item randomItem = items.get((i + 1) % items.size());
-            redirectMap.put(originalItem, randomItem);
-        }
     }
 
     public Map<Item, Item> trulyrandom$getOriginalRandomisedMap() {

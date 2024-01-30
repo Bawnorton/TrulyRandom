@@ -16,7 +16,7 @@ import java.util.Map;
 
 @Mixin(Block.class)
 public abstract class BlockMixin extends AbstractBlock {
-    protected BlockMixin(Settings settings) {
+    public BlockMixin(Settings settings) {
         super(settings);
     }
 
@@ -29,6 +29,15 @@ public abstract class BlockMixin extends AbstractBlock {
                 .getBlockRenderManager()
                 .getModels()).trulyrandom$getOriginalRandomisedMap();
         return ((AbstractBlockAccessor) originalToRandomMap.getOrDefault(getDefaultState(), getDefaultState())
-                .getBlock()).getSoundGroup();
+                                                           .getBlock()).trulyrandom$getSoundGroup();
+    }
+
+    @ModifyReturnValue(method = "getSlipperiness", at = @At("RETURN"))
+    private float useRandomisedSlipperiness(float original) {
+        Map<BlockState, BlockState> originalToRandomMap = ((ModelShuffler.BlockStates) MinecraftClient.getInstance()
+                .getBlockRenderManager()
+                .getModels()).trulyrandom$getOriginalRandomisedMap();
+        return ((AbstractBlockAccessor) originalToRandomMap.getOrDefault(getDefaultState(), getDefaultState())
+                                                           .getBlock()).trulyrandom$getSlipperiness();
     }
 }

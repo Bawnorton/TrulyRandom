@@ -37,26 +37,20 @@ public abstract class VanillaBlockModelsMixin implements ModelShuffler.BlockStat
     }
 
     @Override
+    public List<BlockState> trulyrandom$getBlockStates() {
+        return new ArrayList<>(models.keySet());
+    }
+
+    @Override
     public void trulyrandom$shuffleModels(long seed) {
         if (models == null) return;
         ClientWorld world = MinecraftClient.getInstance().world;
         if (world == null) return;
 
-        List<BlockState> blockStates = new ArrayList<>(models.keySet());
         trulyrandom$resetModels();
-        Map<String, List<BlockState>> propertyMap = new HashMap<>();
-        for (BlockState state : blockStates) {
-            StringBuilder variant = new StringBuilder();
-            for (Map.Entry<Property<?>, Comparable<?>> entry : state.getEntries().entrySet()) {
-                variant.append(StateAccessor.getPropertyMapPrinter().apply(entry));
-            }
-            variant.append(state.isOpaque());
-            variant.append(state.getCullingShape(world, BlockPos.ORIGIN));
-            propertyMap.computeIfAbsent(variant.toString(), k -> new ArrayList<>()).add(state);
-        }
-        propertyMap.forEach((k, v) -> v.sort(Comparator.comparingInt(state -> Registries.BLOCK.getRawId(state.getBlock()))));
+
         Random rnd = new Random(seed);
-        for (List<BlockState> variant : propertyMap.values()) {
+        for (List<BlockState> variant : buildPropertyMap().values()) {
             Collections.shuffle(variant, rnd);
             for (int i = 0; i < variant.size(); i++) {
                 BlockState original = variant.get(i);
