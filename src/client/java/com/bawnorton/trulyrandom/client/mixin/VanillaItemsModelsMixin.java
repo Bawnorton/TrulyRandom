@@ -6,7 +6,6 @@ import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditiona
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.render.item.ItemModels;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.item.Item;
@@ -16,23 +15,26 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 @Mixin(ItemModels.class)
 @AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, invert = true)
 public abstract class VanillaItemsModelsMixin implements ModelShuffler.Items {
+    @Unique
+    private final Map<Item, Item> redirectMap = new HashMap<>();
     @Shadow @Final
     private Int2ObjectMap<BakedModel> models;
-    @Unique
-    private final Map<Item, Item> originalToRandomMap = new HashMap<>();
-    @Unique
-    private Int2ObjectMap<BakedModel> shuffledModels = new Int2ObjectOpenHashMap<>(256);
 
 
-    @WrapOperation(method = "getModel(Lnet/minecraft/item/Item;)Lnet/minecraft/client/render/model/BakedModel;", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;get(I)Ljava/lang/Object;", remap = false))
-    private Object getShuffledModel(Int2ObjectMap<BakedModel> instance, int key, Operation<Object> original) {
-        return shuffledModels.getOrDefault(key, (BakedModel) original.call(instance, key));
+    @WrapOperation(method = "getModel(Lnet/minecraft/item/Item;)Lnet/minecraft/client/render/model/BakedModel;", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/item/ItemModels;getModelId(Lnet/minecraft/item/Item;)I", remap = false))
+    private int getShuffledModel(Item item, Operation<Integer> original) {
+        Item redirected = redirectMap.getOrDefault(item, item);
+        return original.call(redirected);
     }
 
     @Override
@@ -48,26 +50,23 @@ public abstract class VanillaItemsModelsMixin implements ModelShuffler.Items {
         for (int i = 0; i < modelIds.size(); i++) {
             int originalId = modelIds.get(i);
             int randomId = modelIds.get((i + 1) % modelIds.size());
-            BakedModel shuffledModel = models.get(randomId);
-            shuffledModels.put(originalId, shuffledModel);
-            originalToRandomMap.put(Item.byRawId(originalId), Item.byRawId(randomId));
+            redirectMap.put(Item.byRawId(originalId), Item.byRawId(randomId));
         }
     }
 
     @Unique
     @Override
     public Map<Item, Item> trulyrandom$getOriginalRandomisedMap() {
-        return originalToRandomMap;
+        return redirectMap;
     }
 
     @Override
     public void trulyrandom$resetModels() {
-        shuffledModels = new Int2ObjectOpenHashMap<>(models.size());
-        originalToRandomMap.clear();
+        redirectMap.clear();
     }
 
     @Override
     public boolean trulyrandom$isShuffled() {
-        return !shuffledModels.isEmpty();
+        return !redirectMap.isEmpty();
     }
 }
