@@ -32,7 +32,7 @@ public abstract class VanillaItemsModelsMixin implements ModelShuffler.Items {
     private Int2ObjectMap<BakedModel> models;
 
 
-    @WrapOperation(method = "getModel(Lnet/minecraft/item/Item;)Lnet/minecraft/client/render/model/BakedModel;", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/item/ItemModels;getModelId(Lnet/minecraft/item/Item;)I", remap = false))
+    @WrapOperation(method = "getModel(Lnet/minecraft/item/Item;)Lnet/minecraft/client/render/model/BakedModel;", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/item/ItemModels;getModelId(Lnet/minecraft/item/Item;)I"))
     private int getShuffledModel(Item item, Operation<Integer> original) {
         Item redirected = redirectMap.getOrDefault(item, item);
         return original.call(redirected);
