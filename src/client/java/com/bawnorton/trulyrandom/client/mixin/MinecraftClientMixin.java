@@ -42,13 +42,13 @@ public abstract class MinecraftClientMixin implements MinecraftClientExtender {
         ModelShuffler.Items items = (ModelShuffler.Items) getItemRenderer().getModels();
         if (blockStates.trulyrandom$isShuffled()) {
             blockStates.trulyrandom$shuffleModels(TrulyRandomClient.getRandomiser().getModules().getSeed(Module.BLOCK_MODELS));
-            ClientRandomiseEvents.BLOCK_MODELS.invoker().onBlockModels(blockStates.trulyrandom$getOriginalRandomisedMap());
+            ClientRandomiseEvents.BLOCK_MODELS.invoker().onBlockModels(blockStates.trulyrandom$getRedirectMap());
         } else {
             blockStates.trulyrandom$resetModels();
         }
         if (items.trulyrandom$isShuffled()) {
             items.trulyrandom$shuffleModels(TrulyRandomClient.getRandomiser().getModules().getSeed(Module.ITEM_MODELS));
-            ClientRandomiseEvents.ITEM_MODELS.invoker().onItemModels(items.trulyrandom$getOriginalRandomisedMap());
+            ClientRandomiseEvents.ITEM_MODELS.invoker().onItemModels(items.trulyrandom$getRedirectMap());
         } else {
             items.trulyrandom$resetModels();
         }

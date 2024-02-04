@@ -48,7 +48,7 @@ public abstract class DynamicBlockModelsMixin implements DynamicBlockModelShuffl
         return redirectMap.getOrDefault(state, state);
     }
 
-    public Map<BlockState, BlockState> trulyrandom$getOriginalRandomisedMap() {
+    public Map<BlockState, BlockState> trulyrandom$getRedirectMap() {
         return redirectMap;
     }
 

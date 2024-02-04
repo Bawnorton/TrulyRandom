@@ -25,10 +25,10 @@ public abstract class ItemRendererMixin {
                     target = "Lnet/minecraft/client/render/model/BakedModel;getTransformation()Lnet/minecraft/client/render/model/json/ModelTransformation;"
             )
     )
-    private void replaceWithSeenItem(CallbackInfo ci, @Local LocalRef<ItemStack> stackLocalRef) {
+    private void replaceWithSeenItem(CallbackInfo ci, @Local(argsOnly = true) LocalRef<ItemStack> stackLocalRef) {
         ItemModels models = getModels();
         ItemStack stack = stackLocalRef.get();
-        Item seenItem = ((ModelShuffler.Items) models).trulyrandom$getOriginalRandomisedMap().get(stack.getItem());
+        Item seenItem = ((ModelShuffler.Items) models).trulyrandom$getRedirectMap().get(stack.getItem());
         stackLocalRef.set(seenItem == null ? stack : seenItem.getDefaultStack());
     }
 }

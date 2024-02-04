@@ -27,7 +27,7 @@ public abstract class BlockMixin extends AbstractBlock {
     private BlockSoundGroup useRandomisedBlockSound(BlockSoundGroup original) {
         Map<BlockState, BlockState> originalToRandomMap = ((ModelShuffler.BlockStates) MinecraftClient.getInstance()
                 .getBlockRenderManager()
-                .getModels()).trulyrandom$getOriginalRandomisedMap();
+                .getModels()).trulyrandom$getRedirectMap();
         return ((AbstractBlockAccessor) originalToRandomMap.getOrDefault(getDefaultState(), getDefaultState())
                                                            .getBlock()).trulyrandom$getSoundGroup();
     }
@@ -36,7 +36,7 @@ public abstract class BlockMixin extends AbstractBlock {
     private float useRandomisedSlipperiness(float original) {
         Map<BlockState, BlockState> originalToRandomMap = ((ModelShuffler.BlockStates) MinecraftClient.getInstance()
                 .getBlockRenderManager()
-                .getModels()).trulyrandom$getOriginalRandomisedMap();
+                .getModels()).trulyrandom$getRedirectMap();
         return ((AbstractBlockAccessor) originalToRandomMap.getOrDefault(getDefaultState(), getDefaultState())
                                                            .getBlock()).trulyrandom$getSlipperiness();
     }

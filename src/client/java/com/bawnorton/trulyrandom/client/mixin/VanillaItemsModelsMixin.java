@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,22 +42,20 @@ public abstract class VanillaItemsModelsMixin implements ModelShuffler.Items {
     public void trulyrandom$shuffleModels(long seed) {
         if (models == null) return;
 
-        List<Integer> modelIds = Registries.ITEM.stream()
-                                                .mapToInt(Item::getRawId)
-                                                .sorted()
-                                                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        List<Item> items = Registries.ITEM.stream()
+                                          .sorted(Comparator.comparingInt(Registries.ITEM::getRawId))
+                                          .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         trulyrandom$resetModels();
-        Collections.shuffle(modelIds, new Random(seed));
-        for (int i = 0; i < modelIds.size(); i++) {
-            int originalId = modelIds.get(i);
-            int randomId = modelIds.get((i + 1) % modelIds.size());
-            redirectMap.put(Item.byRawId(originalId), Item.byRawId(randomId));
+        Collections.shuffle(items, new Random(seed));
+        for (int i = 0; i < items.size(); i++) {
+            Item originalItem = items.get(i);
+            Item randomItem = items.get((i + 1) % items.size());
+            redirectMap.put(originalItem, randomItem);
         }
     }
 
-    @Unique
     @Override
-    public Map<Item, Item> trulyrandom$getOriginalRandomisedMap() {
+    public Map<Item, Item> trulyrandom$getRedirectMap() {
         return redirectMap;
     }
 

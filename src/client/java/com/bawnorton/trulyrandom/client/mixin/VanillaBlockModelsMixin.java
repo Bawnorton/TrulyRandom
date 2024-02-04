@@ -56,7 +56,7 @@ public abstract class VanillaBlockModelsMixin implements ModelShuffler.BlockStat
     }
 
     @Override
-    public Map<BlockState, BlockState> trulyrandom$getOriginalRandomisedMap() {
+    public Map<BlockState, BlockState> trulyrandom$getRedirectMap() {
         return redirectMap;
     }
 

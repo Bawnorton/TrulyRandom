@@ -41,7 +41,7 @@ public abstract class DynamicItemsModelsMixin implements DynamicItemModelShuffle
         return redirectMap.getOrDefault(item, item);
     }
 
-    public Map<Item, Item> trulyrandom$getOriginalRandomisedMap() {
+    public Map<Item, Item> trulyrandom$getRedirectMap() {
         return redirectMap;
     }
 
