@@ -31,14 +31,14 @@ public class KeybindManager {
     public static final ActionedKeybind QUERY_HAND = registerDevOnlyKeybind("key.trulyrandom.query_hand", GLFW.GLFW_KEY_KP_1, client -> {
         Item handItem = client.player.getMainHandStack().getItem();
         ModelShuffler.Items items = (ModelShuffler.Items) client.getItemRenderer().getModels();
-        TrulyRandom.LOGGER.info("Hand item: " + handItem + " (" + items.trulyrandom$getOriginalRandomisedMap()
+        TrulyRandom.LOGGER.info("Hand item: " + handItem + " (" + items.trulyrandom$getRedirectMap()
                 .get(handItem) + ")");
         HitResult hitResult = client.crosshairTarget;
         if (hitResult instanceof BlockHitResult blockHitResult) {
             BlockState block = client.world.getBlockState(blockHitResult.getBlockPos());
             ModelShuffler.BlockStates blockStates = (ModelShuffler.BlockStates) client.getBlockRenderManager()
                     .getModels();
-            TrulyRandom.LOGGER.info("Block: " + block + " (" + blockStates.trulyrandom$getOriginalRandomisedMap()
+            TrulyRandom.LOGGER.info("Block: " + block + " (" + blockStates.trulyrandom$getRedirectMap()
                     .get(block) + ")");
         }
     });

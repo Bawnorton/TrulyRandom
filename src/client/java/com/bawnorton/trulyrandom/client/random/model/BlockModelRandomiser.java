@@ -5,10 +5,12 @@ import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.ClientChunkManagerAccessor;
 import com.bawnorton.trulyrandom.client.mixin.accessor.WorldRendererInvoker;
 import com.bawnorton.trulyrandom.random.module.Module;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class BlockModelRandomiser extends ModelRandomiser {
@@ -16,9 +18,8 @@ public class BlockModelRandomiser extends ModelRandomiser {
     public void randomise(MinecraftClient client, long seed) {
         ModelShuffler.BlockStates modelShuffler = (ModelShuffler.BlockStates) client.getBlockRenderManager().getModels();
         modelShuffler.trulyrandom$shuffleModels(seed);
-        ClientRandomiseEvents.BLOCK_MODELS.invoker().onBlockModels(modelShuffler.trulyrandom$getOriginalRandomisedMap());
+        ClientRandomiseEvents.BLOCK_MODELS.invoker().onBlockModels(modelShuffler.trulyrandom$getRedirectMap());
         setRandomised(true);
-        reloadModels(client);
     }
 
     @Override
@@ -52,5 +53,10 @@ public class BlockModelRandomiser extends ModelRandomiser {
     @Override
     public Module getModule() {
         return Module.BLOCK_MODELS;
+    }
+
+    public void updateBlockModels(Map<BlockState, BlockState> redirectMap) {
+        ModelShuffler.BlockStates modelShuffler = (ModelShuffler.BlockStates) MinecraftClient.getInstance().getBlockRenderManager().getModels();
+        modelShuffler.trulyrandom$updateModels(redirectMap);
     }
 }

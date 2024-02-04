@@ -25,6 +25,5 @@ public class TrulyRandomClient implements ClientModInitializer {
         ClientNetworking.init();
         ClientEventHandler.init();
 //        KeybindManager.init();
-
     }
 }

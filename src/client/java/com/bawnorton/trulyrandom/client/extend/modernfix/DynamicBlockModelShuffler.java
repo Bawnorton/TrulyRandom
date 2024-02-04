@@ -1,6 +1,5 @@
 package com.bawnorton.trulyrandom.client.extend.modernfix;
 
-import com.bawnorton.trulyrandom.api.TrulyRandomApi;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -35,7 +34,7 @@ public interface DynamicBlockModelShuffler extends ModelShuffler.BlockStates {
             for (int i = 0; i < variant.size(); i++) {
                 BlockState original = variant.get(i);
                 BlockState randomised = variant.get((i + 1) % variant.size());
-                trulyrandom$getOriginalRandomisedMap().put(original, randomised);
+                trulyrandom$getRedirectMap().put(original, randomised);
             }
         }
     }

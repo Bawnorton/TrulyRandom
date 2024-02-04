@@ -1,9 +1,11 @@
 package com.bawnorton.trulyrandom.client.event;
 
+import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
+import java.util.HashMap;
 import java.util.Map;
 
 public class ClientRandomiseEvents {
@@ -14,12 +16,14 @@ public class ClientRandomiseEvents {
         for (BlockModels callback : callbacks) {
             callback.onBlockModels(randomisedMap);
         }
+        TrulyRandomClient.getRandomiser().updateBlockModels(new HashMap<>(randomisedMap));
     });
 
     public static final Event<ItemModels> ITEM_MODELS = EventFactory.createArrayBacked(ItemModels.class, callbacks -> randomisedMap -> {
         for (ItemModels callback : callbacks) {
             callback.onItemModels(randomisedMap);
         }
+        TrulyRandomClient.getRandomiser().updateItemModels(new HashMap<>(randomisedMap));
     });
 
     @FunctionalInterface

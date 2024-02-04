@@ -18,7 +18,12 @@ import java.util.Map;
 public interface ModelShuffler<T> {
     void trulyrandom$shuffleModels(long seed);
 
-    Map<T, T> trulyrandom$getOriginalRandomisedMap();
+    Map<T, T> trulyrandom$getRedirectMap();
+
+    default void trulyrandom$updateModels(Map<T, T> redirectMap) {
+        trulyrandom$resetModels();
+        trulyrandom$getRedirectMap().putAll(redirectMap);
+    }
 
     void trulyrandom$resetModels();
 

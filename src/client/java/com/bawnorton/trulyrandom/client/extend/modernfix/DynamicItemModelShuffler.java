@@ -19,7 +19,7 @@ public interface DynamicItemModelShuffler extends ModelShuffler.Items {
         for (int i = 0; i < items.size(); i++) {
             Item originalItem = items.get(i);
             Item randomItem = items.get((i + 1) % items.size());
-            trulyrandom$getOriginalRandomisedMap().put(originalItem, randomItem);
+            trulyrandom$getRedirectMap().put(originalItem, randomItem);
         }
     }
 }
