@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "CommandManagerMixin",
+    "MathHelperMixin",
     "accessor.LootManagerAccessor",
     "accessor.RecipeManagerAccessor",
     "accessor.SmithingTrimRecipeAccessor",

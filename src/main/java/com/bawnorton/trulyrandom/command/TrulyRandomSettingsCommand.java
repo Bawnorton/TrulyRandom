@@ -22,17 +22,11 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 
 public class TrulyRandomSettingsCommand {
-    private CommandRunnable openRandomiserScreen = () -> {
-    };
-    private boolean shouldOpenRandomiserScreen = false;
+    private final PostExecuteRunner runner;
 
     public TrulyRandomSettingsCommand() {
-        PostExecuteCallback.EVENT.register((commandSource, command) -> {
-            if (shouldOpenRandomiserScreen) {
-                openRandomiserScreen.run();
-                shouldOpenRandomiserScreen = false;
-            }
-        });
+        runner = new PostExecuteRunner();
+        runner.register();
     }
 
     private static void executeOpenRandomiserScreen(CommandContext<ServerCommandSource> context, Selection selection) throws CommandSyntaxException {
@@ -62,52 +56,51 @@ public class TrulyRandomSettingsCommand {
         dispatcher.register(CommandManager.literal("trulyrandom")
                 .requires(source -> source.hasPermissionLevel(2))
                 .then(CommandManager.argument("selection", SetStringArgumentType.of("server", "all"))
-                        .executes(context -> {
-                            openRandomiserScreen = () -> executeOpenRandomiserScreen(context, Selection.SERVER);
-                            shouldOpenRandomiserScreen = true;
-                            return 1;
-                        }))
+                        .executes(context -> execute(context, Selection.SERVER)))
                 .then(CommandManager.argument("player", EntityArgumentType.player())
-                        .executes(context -> {
-                            openRandomiserScreen = () -> executeOpenRandomiserScreen(context, Selection.PLAYER);
-                            shouldOpenRandomiserScreen = true;
-                            return 1;
-                        }))
-                .then(CommandManager.literal("test")
-                        .then(CommandManager.literal("drops")
-                                .executes(context -> {
-                                    context.getSource().sendFeedback(() -> Text.of("Triggering all loot tables, world will lag for a bit"), true);
-                                    ServerPlayerEntity player = context.getSource().getPlayer();
-                                    assert player != null;
-                                    ServerWorld world = player.getServerWorld();
-                                    BlockPos up = player.getBlockPos().add(0, 20, 0);
-                                    Registries.BLOCK.forEach((block -> {
-                                        world.setBlockState(up, block.getDefaultState(), 0);
-                                        world.breakBlock(up, true, player);
-                                    }));
-                                    Registries.ENTITY_TYPE.forEach((entityType -> {
-                                        Entity entity = entityType.create(world);
-                                        if(!(entity instanceof LivingEntity)) return;
-                                        entity.updatePosition(player.getX(), player.getY() + 1, player.getZ());
-                                        world.spawnEntity(entity);
-                                        entity.damage(world.getDamageSources().playerAttack(player), Float.MAX_VALUE);
-                                    }));
-                                    return 1;
-                                })
+                        .executes(context -> execute(context, Selection.PLAYER))
+                        .then(CommandManager.literal("test")
+                                .then(CommandManager.literal("drops")
+                                        .executes(context -> {
+                                            context.getSource()
+                                                    .sendFeedback(() -> Text.of("Triggering all loot tables, world will lag for a bit"), true);
+                                            ServerPlayerEntity player = context.getSource()
+                                                    .getPlayer();
+                                            assert player != null;
+                                            ServerWorld world = player.getServerWorld();
+                                            BlockPos up = player.getBlockPos()
+                                                    .add(0, 20, 0);
+                                            Registries.BLOCK.forEach((block -> {
+                                                world.setBlockState(up, block.getDefaultState(), 0);
+                                                world.breakBlock(up, true, player);
+                                            }));
+                                            Registries.ENTITY_TYPE.forEach((entityType -> {
+                                                Entity entity = entityType.create(world);
+                                                if (!(entity instanceof LivingEntity))
+                                                    return;
+                                                entity.updatePosition(player.getX(), player.getY() + 1, player.getZ());
+                                                world.spawnEntity(entity);
+                                                entity.damage(world.getDamageSources()
+                                                        .playerAttack(player), Float.MAX_VALUE);
+                                            }));
+                                            return 1;
+                                        })
+                                )
+                                .then(CommandManager.literal("newseed")
+                                        .executes(context -> {
+                                            context.getSource()
+                                                    .sendFeedback(() -> Text.of("Unimplemented"), true);
+                                            return 1;
+                                        })
+                                )
                         )
-                        .then(CommandManager.literal("newseed")
-                                .executes(context -> {
-                                    context.getSource().sendFeedback(() -> Text.of("Unimplemented"), true);
-                                    return 1;
-                                })
-                        )
-                )
-                .executes(context -> {
-                    openRandomiserScreen = () -> executeOpenRandomiserScreen(context, Selection.SELF);
-                    shouldOpenRandomiserScreen = true;
-                    return 1;
-                })
+                        .executes(context -> execute(context, Selection.SELF)))
         );
+    }
+
+    private int execute(CommandContext<ServerCommandSource> context, Selection selection) {
+        runner.setRunnable((() -> executeOpenRandomiserScreen(context, selection)));
+        return 1;
     }
 
     private enum Selection {
@@ -116,8 +109,31 @@ public class TrulyRandomSettingsCommand {
         SERVER
     }
 
-    @FunctionalInterface
-    public interface CommandRunnable {
-        void run() throws CommandSyntaxException;
+
+    private static class PostExecuteRunner implements PostExecuteCallback {
+        private CommandRunnable runnable = () -> {};
+        private boolean run = false;
+
+        @Override
+        public void postExecute(ServerCommandSource commandSource, String command) throws CommandSyntaxException {
+            if (run) {
+                runnable.run();
+                run = false;
+            }
+        }
+
+        public void register() {
+            PostExecuteCallback.EVENT.register(this);
+        }
+
+        public void setRunnable(CommandRunnable runnable) {
+            this.runnable = runnable;
+
+        }
+
+        @FunctionalInterface
+        public interface CommandRunnable {
+            void run() throws CommandSyntaxException;
+        }
     }
 }

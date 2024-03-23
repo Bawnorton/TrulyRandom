@@ -5,7 +5,6 @@ import com.bawnorton.trulyrandom.extend.ResultClearer;
 import com.bawnorton.trulyrandom.extend.ResultSetter;
 import com.bawnorton.trulyrandom.mixin.accessor.SmithingTrimRecipeAccessor;
 import com.bawnorton.trulyrandom.random.module.Module;
-import com.bawnorton.trulyrandom.random.module.Modules;
 import net.minecraft.block.Block;
 import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.block.SuspiciousStewIngredient;

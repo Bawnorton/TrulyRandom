@@ -42,10 +42,11 @@ public class Networking {
         MinecraftServer server = player.getServer();
         assert server != null;
 
+        // other client requesting the randomiser data
         UUID requestee = packet.requestee();
         ServerPlayerEntity requesteePlayer = server.getPlayerManager().getPlayer(requestee);
         if (requesteePlayer == null) {
-            player.sendMessage(Text.translatable("trulyrandom.no_player_found", requestee), false);
+            player.sendMessage(Text.translatable("trulyrandom.no_player_found", requestee.toString()), false);
             return;
         }
         ServerPlayNetworking.send(requesteePlayer, new OpenTargetedRandomiserScreenS2CPacket(player.getUuid(), packet.modules()));
