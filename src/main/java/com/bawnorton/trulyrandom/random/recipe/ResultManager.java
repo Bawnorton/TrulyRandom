@@ -8,16 +8,24 @@ import com.bawnorton.trulyrandom.random.module.Module;
 import net.minecraft.block.Block;
 import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.block.SuspiciousStewIngredient;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.*;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.potion.Potion;
-import net.minecraft.potion.PotionUtil;
 import net.minecraft.recipe.*;
+import net.minecraft.recipe.input.SmithingRecipeInput;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.MinecraftServer;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ResultManager {
@@ -40,89 +48,93 @@ public class ResultManager {
         getters.put(ShulkerBoxColoringRecipe.class, this::getShulkerBoxColoringResult);
     }
 
-    public ItemStack getResult(Recipe<?> recipe, MinecraftServer server) {
+    public ItemStack getResult(RecipeEntry<?> recipe, MinecraftServer server) {
         random = new Random(TrulyRandom.getRandomiser(server).getModules().getSeed(Module.RECIPES));
-        return getters.getOrDefault(recipe.getClass(), this::getNormalResult).getResult(recipe, server);
+        //noinspection SuspiciousMethodCalls
+        return getters.getOrDefault(recipe.value().getClass(), this::getNormalResult).getResult(recipe, server);
     }
 
-    public Recipe<?> setResult(Recipe<?> recipe, ItemStack newResult) {
-        if (recipe instanceof ResultSetter resultSetter) {
+    public RecipeEntry<?> setResult(RecipeEntry<?> recipe, ItemStack newResult) {
+        if (recipe.value() instanceof ResultSetter resultSetter) {
             resultSetter.trulyrandom$setResult(newResult);
-            return (Recipe<?>) resultSetter;
+            return recipe;
         }
         return recipe;
     }
 
-    public Recipe<?> clearOrSetResult(Recipe<?> recipe, ItemStack result) {
-        if (recipe instanceof ResultClearer resultClearer) {
+    public RecipeEntry<?> clearOrSetResult(RecipeEntry<?> recipe, ItemStack result) {
+        if (recipe.value() instanceof ResultClearer resultClearer) {
             resultClearer.trulyrandom$clearResult();
-            return (Recipe<?>) resultClearer;
+            return recipe;
         }
         return setResult(recipe, result);
     }
 
-    private ItemStack getNormalResult(Recipe<?> recipe, MinecraftServer server) {
-        return recipe.getOutput(server.getRegistryManager());
+    private ItemStack getNormalResult(RecipeEntry<?> recipe, MinecraftServer server) {
+        return recipe.value().getResult(server.getRegistryManager());
     }
 
-    private ItemStack getSuspiciousStewResult(Recipe<?> recipe, MinecraftServer server) {
+    private ItemStack getSuspiciousStewResult(RecipeEntry<?> recipe, MinecraftServer server) {
         List<SuspiciousStewIngredient> ingredients = SuspiciousStewIngredient.getAll();
-        SuspiciousStewIngredient ingredient = ingredients.get(new Random().nextInt(ingredients.size()));
+        SuspiciousStewIngredient ingredient = ingredients.get(random.nextInt(ingredients.size()));
         ItemStack suspiciousStew = Items.SUSPICIOUS_STEW.getDefaultStack();
-        SuspiciousStewItem.addEffectToStew(suspiciousStew, ingredient.getEffectInStew(), ingredient.getEffectInStewDuration());
+        suspiciousStew.set(DataComponentTypes.SUSPICIOUS_STEW_EFFECTS, ingredient.getStewEffects());
         return suspiciousStew;
     }
 
-    private ItemStack getBookCloningResult(Recipe<?> recipe, MinecraftServer server) {
+    private ItemStack getBookCloningResult(RecipeEntry<?> recipe, MinecraftServer server) {
         return Items.WRITABLE_BOOK.getDefaultStack();
     }
 
-    private ItemStack getBannerDuplicateResult(Recipe<?> recipe, MinecraftServer server) {
+    private ItemStack getBannerDuplicateResult(RecipeEntry<?> recipe, MinecraftServer server) {
         return Items.WHITE_BANNER.getDefaultStack();
     }
 
-    private ItemStack getFireworkStarFadeResult(Recipe<?> recipe, MinecraftServer server) {
+    private ItemStack getFireworkStarFadeResult(RecipeEntry<?> recipe, MinecraftServer server) {
         return Items.FIREWORK_STAR.getDefaultStack();
     }
 
-    private ItemStack getFireworkStarResult(Recipe<?> recipe, MinecraftServer server) {
+    private ItemStack getFireworkStarResult(RecipeEntry<?> recipe, MinecraftServer server) {
         return Items.FIREWORK_STAR.getDefaultStack();
     }
 
-    private ItemStack getShieldDecorationResult(Recipe<?> recipe, MinecraftServer server) {
+    private ItemStack getShieldDecorationResult(RecipeEntry<?> recipe, MinecraftServer server) {
         return Items.SHIELD.getDefaultStack();
     }
 
-    private ItemStack getTippedArrowResult(Recipe<?> recipe, MinecraftServer server) {
-        Potion potion = Registries.POTION.get(new Random().nextInt(Registries.POTION.getIds().size()));
+    private ItemStack getTippedArrowResult(RecipeEntry<?> recipe, MinecraftServer server) {
+        List<RegistryEntry<Potion>> list = Registries.POTION
+                .streamEntries()
+                .filter(entry -> !entry.value().getEffects().isEmpty())
+                .collect(Collectors.toList());
+        RegistryEntry<Potion> registryEntry = list.get(random.nextInt(list.size()));
         ItemStack arrow = Items.TIPPED_ARROW.getDefaultStack();
         arrow.setCount(8);
-        PotionUtil.setPotion(arrow, potion);
-        PotionUtil.setCustomPotionEffects(arrow, potion.getEffects());
+        arrow.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(registryEntry));
         return arrow;
     }
 
-    private ItemStack getArmorDyeResult(Recipe<?> recipe, MinecraftServer server) {
-        List<Item> dyeableItems = Registries.ITEM.stream().filter(DyeableItem.class::isInstance).toList();
-        Item item = dyeableItems.get(new Random().nextInt(dyeableItems.size()));
+    private ItemStack getArmorDyeResult(RecipeEntry<?> recipe, MinecraftServer server) {
+        List<Item> dyeableItems = Registries.ITEM.streamEntries().filter(ref -> ref.isIn(ItemTags.DYEABLE)).map(RegistryEntry.Reference::value).toList();
+        Item item = dyeableItems.get(random.nextInt(dyeableItems.size()));
         return item.getDefaultStack();
     }
 
-    private ItemStack getMapCloningResult(Recipe<?> recipe, MinecraftServer server) {
+    private ItemStack getMapCloningResult(RecipeEntry<?> recipe, MinecraftServer server) {
         return Items.MAP.getDefaultStack();
     }
 
-    private ItemStack getDecoratedPotResult(Recipe<?> recipe, MinecraftServer server) {
+    private ItemStack getDecoratedPotResult(RecipeEntry<?> recipe, MinecraftServer server) {
         return Items.DECORATED_POT.getDefaultStack();
     }
 
-    private ItemStack getRepairItemResult(Recipe<?> recipe, MinecraftServer server) {
-        List<Item> damageables = Registries.ITEM.stream().filter(Item::isDamageable).toList();
-        Item item = damageables.get(new Random().nextInt(damageables.size()));
+    private ItemStack getRepairItemResult(RecipeEntry<?> recipe, MinecraftServer server) {
+        List<Item> damageables = Registries.ITEM.stream().filter(item -> item.getComponents().contains(DataComponentTypes.MAX_DAMAGE)).toList();
+        Item item = damageables.get(random.nextInt(damageables.size()));
         return item.getDefaultStack();
     }
 
-    private ItemStack getShulkerBoxColoringResult(Recipe<?> recipe, MinecraftServer server) {
+    private ItemStack getShulkerBoxColoringResult(RecipeEntry<?> recipe, MinecraftServer server) {
         List<Item> shulkerBoxes = Registries.BLOCK.stream()
                 .filter(ShulkerBoxBlock.class::isInstance)
                 .map(Block::asItem)
@@ -131,27 +143,31 @@ public class ResultManager {
         return item.getDefaultStack();
     }
 
-    @FunctionalInterface
-    private interface ResultGetter {
-        ItemStack getResult(Recipe<?> recipe, MinecraftServer server);
-    }
 
     private class SmithingTrimResultGetter implements ResultGetter {
         private List<ItemStack> bases;
         private List<ItemStack> additions;
 
-        public ItemStack getResult(Recipe<?> recipe, MinecraftServer server) {
-            SmithingTrimRecipeAccessor accessor = (SmithingTrimRecipeAccessor) recipe;
+        public ItemStack getResult(RecipeEntry<?> recipe, MinecraftServer server) {
+            SmithingTrimRecipeAccessor accessor = (SmithingTrimRecipeAccessor) recipe.value();
             ItemStack template = accessor.getTemplate().getMatchingStacks()[0];
-            if (bases == null || bases.isEmpty()) bases = Stream.of(accessor.getBase().getMatchingStacks())
-                    .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
-            if (additions == null || additions.isEmpty())
+            if (bases == null || bases.isEmpty()) {
+                bases = Stream.of(accessor.getBase().getMatchingStacks())
+                        .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+            }
+            if (additions == null || additions.isEmpty()) {
                 additions = Stream.of(accessor.getAddition().getMatchingStacks())
                         .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+            }
             ItemStack base = bases.remove(random.nextInt(bases.size()));
             ItemStack addition = additions.remove(random.nextInt(additions.size()));
-            Inventory inventory = new SimpleInventory(template, base, addition);
-            return ((SmithingTrimRecipe) recipe).craft(inventory, server.getRegistryManager());
+            SmithingRecipeInput input = new SmithingRecipeInput(template, base, addition);
+            return ((SmithingTrimRecipe) recipe.value()).craft(input, server.getRegistryManager());
         }
+    }
+
+    @FunctionalInterface
+    private interface ResultGetter {
+        ItemStack getResult(RecipeEntry<?> recipe, MinecraftServer server);
     }
 }

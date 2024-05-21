@@ -9,12 +9,12 @@ import net.minecraft.server.command.ServerCommandSource;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(CommandManager.class)
 public abstract class CommandManagerMixin {
-    @Inject(method = "execute", at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/CommandDispatcher;execute(Lcom/mojang/brigadier/ParseResults;)I", remap = false, shift = At.Shift.AFTER))
-    private void postExecute(ParseResults<ServerCommandSource> parseResults, String command, CallbackInfoReturnable<Integer> cir, @Local ServerCommandSource serverCommandSource) throws CommandSyntaxException {
-        PostExecuteCallback.EVENT.invoker().postExecute(serverCommandSource, command);
+    @Inject(method = "execute", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/command/CommandManager;callWithContext(Lnet/minecraft/server/command/ServerCommandSource;Ljava/util/function/Consumer;)V", shift = At.Shift.AFTER))
+    private <T> void postExecute(ParseResults<ServerCommandSource> parseResults, String command, CallbackInfo ci, @Local ServerCommandSource commandSource) throws CommandSyntaxException {
+        PostExecuteCallback.EVENT.invoker().postExecute(commandSource);
     }
 }

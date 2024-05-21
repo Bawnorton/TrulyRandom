@@ -27,12 +27,14 @@ public class TrulyRandom implements ModInitializer {
 
     public static ServerRandomiser getRandomiser(MinecraftServer server) {
         ServerRandomiser randomiser = RandomiserSaveLoader.getServerState(server).getServerRandomiser();
-        if (!randomiser.initialised()) randomiser.init(server);
+        if (!randomiser.initialised()) {
+            randomiser.init(server);
+        }
 
         return randomiser;
     }
 
-    public static Randomiser getUnsafeRandomiser() {
+    public static ServerRandomiser getUnsafeRandomiser() {
         return RandomiserSaveLoader.fetchUnsafeRandomiser();
     }
 

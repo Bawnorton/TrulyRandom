@@ -2,8 +2,11 @@ package com.bawnorton.trulyrandom.random.module;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
 
 import java.util.Random;
 
@@ -14,6 +17,12 @@ public final class ModuleState {
             Codec.LONG.optionalFieldOf("seed", new Random().nextLong()).forGetter(ModuleState::getSeed)
     ).apply(instance, ModuleState::new));
 
+    public static final PacketCodec<ByteBuf, ModuleState> PACKET_CODEC = PacketCodec.tuple(
+            PacketCodecs.BOOL, ModuleState::isEnabled,
+            PacketCodecs.VAR_LONG, ModuleState::getSeed,
+            ModuleState::new
+    );
+
     private boolean enabled;
     private boolean visible;
     private long seed;
@@ -22,6 +31,10 @@ public final class ModuleState {
         this.enabled = enabled;
         this.visible = visible;
         this.seed = seed;
+    }
+
+    private ModuleState(boolean enabled, long seed) {
+        this(enabled, true, seed);
     }
 
     public ModuleState() {
@@ -66,16 +79,6 @@ public final class ModuleState {
 
     public ModuleState copy() {
         return new ModuleState(enabled, visible, seed);
-    }
-
-    public void write(PacketByteBuf buf) {
-        buf.writeBoolean(enabled);
-        buf.writeLong(seed);
-    }
-
-    public void read(PacketByteBuf buf) {
-        enabled = buf.readBoolean();
-        seed = buf.readLong();
     }
 
     public void writeNbt(NbtCompound nbt) {

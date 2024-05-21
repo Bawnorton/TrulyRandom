@@ -1,6 +1,6 @@
 {
   "selectWorld.trulyrandom": "TrulyRandom",
-  "selectWorld.trulyrandom.info": "Choose which modules should be randomised for the world.\n§cWILL OVERWRITE ALL CONNECTED CLIENTS",
+  "selectWorld.trulyrandom.info": "Choose which modules should be randomised for the world.",
   "selectWorld.trulyrandom.targeted": "Choose which modules should be randomised for \"%s\".",
   "selectWorld.trulyrandom.targeted.default": "Choose which modules should be randomised for \"Unknown\".",
   "selectWorld.trulyrandom.seed_tooltip": "Seed that will be used to determine the randomisation.",

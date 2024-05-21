@@ -19,14 +19,12 @@ public class BlockModelRandomiser extends ModelRandomiser {
         ModelShuffler.BlockStates modelShuffler = (ModelShuffler.BlockStates) client.getBlockRenderManager().getModels();
         modelShuffler.trulyrandom$shuffleModels(seed);
         ClientRandomiseEvents.BLOCK_MODELS.invoker().onBlockModels(modelShuffler.trulyrandom$getRedirectMap());
-        setRandomised(true);
     }
 
     @Override
     public void reset(MinecraftClient client) {
         ModelShuffler.BlockStates modelShuffler = (ModelShuffler.BlockStates) client.getBlockRenderManager().getModels();
         modelShuffler.trulyrandom$resetModels();
-        setRandomised(false);
         reloadModels(client);
     }
 

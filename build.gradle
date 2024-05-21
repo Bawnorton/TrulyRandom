@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.4-SNAPSHOT'
+    id 'fabric-loom' version '1.6-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -60,10 +60,9 @@ dependencies {
 
     include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:0.1.1")))
 
-    modImplementation("maven.modrinth:sodium:${project.sodium_version}")
-    modImplementation("maven.modrinth:iris:${project.iris_version}")
-    modCompileOnly("maven.modrinth:modernfix:${project.modernfix_511minus_version}")
-    modCompileOnly("maven.modrinth:modernfix:${project.modernfix_511plus_version}")
+//    modImplementation("maven.modrinth:sodium:${project.sodium_version}")
+//    modImplementation("maven.modrinth:iris:${project.iris_version}")
+    modCompileOnly("maven.modrinth:modernfix:${project.modernfix_version}")
 
     // needed for iris
     runtimeOnly("org.anarres:jcpp:1.4.14")

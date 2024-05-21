@@ -4,7 +4,7 @@ import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.command.argument.SetStringArgumentType;
 import com.bawnorton.trulyrandom.event.PostExecuteCallback;
 import com.bawnorton.trulyrandom.network.packet.s2c.OpenRandomiserScreenS2CPacket;
-import com.bawnorton.trulyrandom.network.packet.s2c.RequestRandomiserS2CPacket;
+import com.bawnorton.trulyrandom.network.packet.s2c.RequestOtherClientRandomiserS2CPacket;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -48,7 +48,7 @@ public class TrulyRandomSettingsCommand {
             ServerRandomiser randomiser = TrulyRandom.getRandomiser(source.getServer());
             ServerPlayNetworking.send(executor, new OpenRandomiserScreenS2CPacket(randomiser.getModules()));
         } else {
-            ServerPlayNetworking.send(target, new RequestRandomiserS2CPacket(executor.getUuid()));
+            ServerPlayNetworking.send(target, new RequestOtherClientRandomiserS2CPacket(executor.getUuid()));
         }
     }
 
@@ -114,21 +114,21 @@ public class TrulyRandomSettingsCommand {
         private CommandRunnable runnable = () -> {};
         private boolean run = false;
 
+        public void register() {
+            PostExecuteCallback.EVENT.register(this);
+        }
+
         @Override
-        public void postExecute(ServerCommandSource commandSource, String command) throws CommandSyntaxException {
+        public void postExecute(ServerCommandSource source) throws CommandSyntaxException {
             if (run) {
                 runnable.run();
                 run = false;
             }
         }
 
-        public void register() {
-            PostExecuteCallback.EVENT.register(this);
-        }
-
         public void setRunnable(CommandRunnable runnable) {
             this.runnable = runnable;
-
+            this.run = true;
         }
 
         @FunctionalInterface

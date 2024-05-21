@@ -5,6 +5,7 @@ import com.bawnorton.trulyrandom.random.Randomiser;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.PersistentState;
@@ -20,6 +21,12 @@ public class RandomiserSaveLoader extends PersistentState {
     private static Modules defaultModules;
     private static ServerRandomiser lastSetRandomiser;
 
+    public static final PersistentState.Type<RandomiserSaveLoader> TYPE = new Type<>(
+            RandomiserSaveLoader::new,
+            RandomiserSaveLoader::fromNbt,
+            null
+    );
+
     private ServerRandomiser serverRandomiser;
     private Map<UUID, Modules> clientRandomisers;
 
@@ -28,7 +35,7 @@ public class RandomiserSaveLoader extends PersistentState {
         defaultModules = modules;
     }
 
-    public static RandomiserSaveLoader fromNbt(NbtCompound nbt) {
+    public static RandomiserSaveLoader fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         RandomiserSaveLoader state = new RandomiserSaveLoader();
         state.serverRandomiser = ServerRandomiser.fromNbt(nbt.getCompound("randomiser"));
         state.clientRandomisers = new HashMap<>();
@@ -40,8 +47,9 @@ public class RandomiserSaveLoader extends PersistentState {
     public static RandomiserSaveLoader getServerState(MinecraftServer server) {
         ServerWorld world = server.getWorld(World.OVERWORLD);
         if (world == null) throw new IllegalStateException("Tried to get randomiser state before world was loaded");
+
         PersistentStateManager manager = world.getPersistentStateManager();
-        RandomiserSaveLoader state = manager.getOrCreate(RandomiserSaveLoader::fromNbt, RandomiserSaveLoader::new, TrulyRandom.MOD_ID);
+        RandomiserSaveLoader state = manager.getOrCreate(TYPE, TrulyRandom.MOD_ID);
         state.markDirty();
         lastSetRandomiser = state.getServerRandomiser();
         return state;
@@ -66,7 +74,9 @@ public class RandomiserSaveLoader extends PersistentState {
     }
 
     private Map<UUID, Modules> getClientRandomisers() {
-        if (clientRandomisers == null) clientRandomisers = new HashMap<>();
+        if (clientRandomisers == null) {
+            clientRandomisers = new HashMap<>();
+        }
         return clientRandomisers;
     }
 
@@ -81,7 +91,7 @@ public class RandomiserSaveLoader extends PersistentState {
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound nbt) {
+    public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         nbt.put("randomiser", getServerRandomiser().writeNbt(new NbtCompound()));
         NbtCompound clientRandomisers = new NbtCompound();
         getClientRandomisers().forEach((uuid, modules) -> clientRandomisers.put(uuid.toString(), modules.writeNbt(new NbtCompound())));

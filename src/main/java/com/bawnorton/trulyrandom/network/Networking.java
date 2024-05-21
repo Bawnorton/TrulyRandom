@@ -3,45 +3,64 @@ package com.bawnorton.trulyrandom.network;
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.network.packet.c2s.HandshakeC2SPacket;
 import com.bawnorton.trulyrandom.network.packet.c2s.ProvidedRandomiserC2SPacket;
+import com.bawnorton.trulyrandom.network.packet.c2s.RequestServerRandomiserC2SPacket;
 import com.bawnorton.trulyrandom.network.packet.c2s.SetServerRandomiserC2SPacket;
 import com.bawnorton.trulyrandom.network.packet.c2s.SetTargetClientRandomiserC2SPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.HandshakeS2CPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.OpenTargetedRandomiserScreenS2CPacket;
+import com.bawnorton.trulyrandom.network.packet.s2c.RequestOtherClientRandomiserS2CPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.SetClientRandomiserS2CPacket;
 import com.bawnorton.trulyrandom.random.Randomiser;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-
 import java.util.UUID;
 
 public class Networking {
     public static void init() {
-        ServerPlayNetworking.registerGlobalReceiver(HandshakeC2SPacket.TYPE, Networking::handleHandshake);
-        ServerPlayNetworking.registerGlobalReceiver(ProvidedRandomiserC2SPacket.TYPE, Networking::handleProvidedRandomiser);
-        ServerPlayNetworking.registerGlobalReceiver(SetServerRandomiserC2SPacket.TYPE, Networking::handleSetServerRandomiser);
-        ServerPlayNetworking.registerGlobalReceiver(SetTargetClientRandomiserC2SPacket.TYPE, Networking::handleSetTargetClientRandomiser);
+        PayloadTypeRegistry<RegistryByteBuf> playC2S = PayloadTypeRegistry.playC2S();
+        playC2S.register(HandshakeC2SPacket.PACKET_ID, HandshakeC2SPacket.PACKET_CODEC);
+        playC2S.register(ProvidedRandomiserC2SPacket.PACKET_ID, ProvidedRandomiserC2SPacket.PACKET_CODEC);
+        playC2S.register(SetServerRandomiserC2SPacket.PACKET_ID, SetServerRandomiserC2SPacket.PACKET_CODEC);
+        playC2S.register(SetTargetClientRandomiserC2SPacket.PACKET_ID, SetTargetClientRandomiserC2SPacket.PACKET_CODEC);
+        playC2S.register(RequestServerRandomiserC2SPacket.PACKET_ID, RequestServerRandomiserC2SPacket.PACKET_CODEC);
+
+        ServerPlayNetworking.registerGlobalReceiver(HandshakeC2SPacket.PACKET_ID, Networking::handleHandshake);
+        ServerPlayNetworking.registerGlobalReceiver(ProvidedRandomiserC2SPacket.PACKET_ID, Networking::handleProvidedRandomiser);
+        ServerPlayNetworking.registerGlobalReceiver(SetServerRandomiserC2SPacket.PACKET_ID, Networking::handleSetServerRandomiser);
+        ServerPlayNetworking.registerGlobalReceiver(SetTargetClientRandomiserC2SPacket.PACKET_ID, Networking::handleSetTargetClientRandomiser);
+        ServerPlayNetworking.registerGlobalReceiver(RequestServerRandomiserC2SPacket.PACKET_ID, Networking::handleRequestRandomiser);
     }
 
-    private static void handleHandshake(HandshakeC2SPacket packet, ServerPlayerEntity player, PacketSender sender) {
+    private static void handleRequestRandomiser(RequestServerRandomiserC2SPacket requestServerRandomiserC2SPacket, ServerPlayNetworking.Context context) {
+        ServerPlayerEntity player = context.player();
         MinecraftServer server = player.getServer();
-        assert server != null;
+        ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
+        context.responseSender().sendPacket(new SetClientRandomiserS2CPacket(randomiser.getModules()));
+    }
 
+    private static void handleHandshake(HandshakeC2SPacket packet, ServerPlayNetworking.Context context) {
+        ServerPlayerEntity player = context.player();
+        MinecraftServer server = player.getServer();
         Randomiser randomiser = TrulyRandom.getClientRandomiser(server, player.getUuid());
-        if(randomiser == null) randomiser = TrulyRandom.getRandomiser(server);
+        if(randomiser == null) {
+            randomiser = TrulyRandom.getRandomiser(server);
+        }
+        PacketSender sender = context.responseSender();
         sender.sendPacket(new HandshakeS2CPacket(TrulyRandom.VERSION));
         sender.sendPacket(new SetClientRandomiserS2CPacket(randomiser.getModules()));
     }
 
-    private static void handleProvidedRandomiser(ProvidedRandomiserC2SPacket packet, ServerPlayerEntity player, PacketSender sender) {
+    private static void handleProvidedRandomiser(ProvidedRandomiserC2SPacket packet, ServerPlayNetworking.Context context) {
+        ServerPlayerEntity player = context.player();
         MinecraftServer server = player.getServer();
-        assert server != null;
-
         // other client requesting the randomiser data
         UUID requestee = packet.requestee();
         ServerPlayerEntity requesteePlayer = server.getPlayerManager().getPlayer(requestee);
@@ -52,10 +71,9 @@ public class Networking {
         ServerPlayNetworking.send(requesteePlayer, new OpenTargetedRandomiserScreenS2CPacket(player.getUuid(), packet.modules()));
     }
 
-    private static void handleSetServerRandomiser(SetServerRandomiserC2SPacket packet, ServerPlayerEntity player, PacketSender sender) {
+    private static void handleSetServerRandomiser(SetServerRandomiserC2SPacket packet, ServerPlayNetworking.Context context) {
+        ServerPlayerEntity player = context.player();
         MinecraftServer server = player.getServer();
-        assert server != null;
-
         ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
 
         boolean lootSeedChanged = randomiser.getModules().getSeed(Module.LOOT_TABLES) != packet.modules().getSeed(Module.LOOT_TABLES);
@@ -67,10 +85,9 @@ public class Networking {
         randomiser.updateClients(server);
     }
 
-    private static void handleSetTargetClientRandomiser(SetTargetClientRandomiserC2SPacket packet, ServerPlayerEntity player, PacketSender sender) {
+    private static void handleSetTargetClientRandomiser(SetTargetClientRandomiserC2SPacket packet, ServerPlayNetworking.Context context) {
+        ServerPlayerEntity player = context.player();
         MinecraftServer server = player.getServer();
-        assert server != null;
-
         UUID target = packet.target();
         ServerPlayerEntity targetPlayer = server.getPlayerManager().getPlayer(target);
         if (targetPlayer == null) {

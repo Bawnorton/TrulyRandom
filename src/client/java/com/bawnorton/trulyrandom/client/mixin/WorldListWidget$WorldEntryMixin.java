@@ -16,10 +16,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class WorldListWidget$WorldEntryMixin {
     @Shadow
     @Final
-    private LevelSummary level;
+    LevelSummary level;
 
     @SuppressWarnings("DataFlowIssue")
-    @Inject(method = "start", at = @At("HEAD"))
+    @Inject(method = "play", at = @At("HEAD"))
     private void loadRandomiserModulesFromWorld(CallbackInfo ci) {
         DataConfigurationExtender dataConfiguration = (DataConfigurationExtender) (Object) level.getLevelInfo()
                 .getDataConfiguration();

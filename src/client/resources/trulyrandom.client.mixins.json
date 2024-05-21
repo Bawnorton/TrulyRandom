@@ -4,10 +4,12 @@
   "compatibilityLevel": "JAVA_17",
   "plugin": "com.bawnorton.trulyrandom.client.TrulyRandomMixinConfigPlugin",
   "client": [
+    "AbstractBlockMixin",
     "BlockMixin",
+    "CreateWorldScreenMixin",
+    "CreateWorldScreenMixin$MoreTabMixin",
     "DataConfigurationMixin",
     "ItemRendererMixin",
-    "KeyboardMixin",
     "MinecraftClientMixin",
     "VanillaBlockModelsMixin",
     "VanillaItemsModelsMixin",
@@ -17,10 +19,8 @@
     "accessor.ClientChunkManagerAccessor$ClientChunkMapAccessor",
     "accessor.StateAccessor",
     "accessor.WorldRendererInvoker",
-    "modernfix.v511minus.DynamicBlockModelsMixin",
-    "modernfix.v511minus.DynamicItemsModelsMixin",
-    "modernfix.v511plus.DynamicBlockModelsMixin",
-    "modernfix.v511plus.DynamicItemsModelsMixin"
+    "modernfix.DynamicBlockModelsMixin",
+    "modernfix.DynamicItemsModelsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -29,7 +29,7 @@ public abstract class SpecialRecipeMixin implements ResultClearer {
     @Unique
     private ItemStack result = ItemStack.EMPTY;
 
-    @ModifyReturnValue(method = "craft(Lnet/minecraft/inventory/Inventory;Lnet/minecraft/registry/DynamicRegistryManager;)Lnet/minecraft/item/ItemStack;", at = @At("RETURN"))
+    @ModifyReturnValue(method = "craft(Lnet/minecraft/recipe/input/RecipeInput;Lnet/minecraft/registry/RegistryWrapper$WrapperLookup;)Lnet/minecraft/item/ItemStack;", at = @At("RETURN"))
     private ItemStack useRandomResult(ItemStack result) {
         if (this.result.isEmpty()) return result;
         return this.result;

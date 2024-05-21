@@ -1,8 +1,11 @@
 package com.bawnorton.trulyrandom.random.module;
 
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Comparator;
@@ -14,6 +17,8 @@ import java.util.function.Consumer;
 public class Modules implements Iterable<Module> {
     public static final Codec<Modules> CODEC = Codec.unboundedMap(Module.CODEC, ModuleState.CODEC)
             .xmap(Modules::new, Modules::getModules);
+    public static final PacketCodec<ByteBuf, Modules> PACKET_CODEC = PacketCodecs.map(HashMap::new, Module.PACKET_CODEC, ModuleState.PACKET_CODEC)
+            .xmap(Modules::new, modules -> new HashMap<>(modules.getModules()));
 
     private final Map<Module, ModuleState> modules;
     private final Map<Module, Boolean> enabledMemento = new HashMap<>();
@@ -30,12 +35,6 @@ public class Modules implements Iterable<Module> {
         this.modules = modules;
     }
 
-    public static Modules fromPacket(PacketByteBuf buf) {
-        Modules modules = new Modules();
-        modules.read(buf);
-        return modules;
-    }
-
     public static Modules fromNbt(NbtCompound nbt) {
         Modules modules = new Modules();
         modules.readNbt(nbt);
@@ -44,27 +43,6 @@ public class Modules implements Iterable<Module> {
 
     public Map<Module, ModuleState> getModules() {
         return modules;
-    }
-
-    public void write(PacketByteBuf buf) {
-        buf.writeVarInt(modules.size());
-        modules.forEach((module, state) -> {
-            buf.writeString(module.name());
-            state.write(buf);
-        });
-    }
-
-    public void read(PacketByteBuf buf) {
-        int size = buf.readVarInt();
-        for (int i = 0; i < size; i++) {
-            Module module = Module.valueOf(buf.readString());
-            ModuleState state = modules.get(module);
-            state.read(buf);
-        }
-    }
-
-    public boolean isDisabled(Module module) {
-        return !isEnabled(module);
     }
 
     public boolean isEnabled(Module module) {

@@ -15,14 +15,12 @@ public class ItemModelRandomiser extends ModelRandomiser {
         ModelShuffler.Items modelShuffler = (ModelShuffler.Items) client.getItemRenderer().getModels();
         modelShuffler.trulyrandom$shuffleModels(seed);
         ClientRandomiseEvents.ITEM_MODELS.invoker().onItemModels(modelShuffler.trulyrandom$getRedirectMap());
-        setRandomised(true);
     }
 
     @Override
     public void reset(MinecraftClient client) {
         ModelShuffler.Items modelShuffler = (ModelShuffler.Items) client.getItemRenderer().getModels();
         modelShuffler.trulyrandom$resetModels();
-        setRandomised(false);
         reloadModels(client);
     }
 

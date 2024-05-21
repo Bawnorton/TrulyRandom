@@ -2,27 +2,22 @@ package com.bawnorton.trulyrandom.network.packet.c2s;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.random.module.Modules;
-import net.fabricmc.fabric.api.networking.v1.FabricPacket;
-import net.fabricmc.fabric.api.networking.v1.PacketType;
-import net.minecraft.network.PacketByteBuf;
-
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.util.Uuids;
 import java.util.UUID;
 
-public record ProvidedRandomiserC2SPacket(Modules modules, UUID requestee) implements FabricPacket {
-    public static final PacketType<ProvidedRandomiserC2SPacket> TYPE = PacketType.create(TrulyRandom.id("providedrandomiser_c2s"), ProvidedRandomiserC2SPacket::new);
-
-    public ProvidedRandomiserC2SPacket(PacketByteBuf buf) {
-        this(Modules.fromPacket(buf), buf.readUuid());
-    }
-
-    @Override
-    public void write(PacketByteBuf buf) {
-        modules.write(buf);
-        buf.writeUuid(requestee);
-    }
+public record ProvidedRandomiserC2SPacket(Modules modules, UUID requestee) implements CustomPayload {
+    public static final Id<ProvidedRandomiserC2SPacket> PACKET_ID = new Id<>(TrulyRandom.id("providedrandomiser_c2s"));
+    public static final PacketCodec<ByteBuf, ProvidedRandomiserC2SPacket> PACKET_CODEC = PacketCodec.tuple(
+            Modules.PACKET_CODEC, ProvidedRandomiserC2SPacket::modules,
+            Uuids.PACKET_CODEC, ProvidedRandomiserC2SPacket::requestee,
+            ProvidedRandomiserC2SPacket::new
+    );
 
     @Override
-    public PacketType<ProvidedRandomiserC2SPacket> getType() {
-        return TYPE;
+    public Id<? extends CustomPayload> getId() {
+        return PACKET_ID;
     }
 }

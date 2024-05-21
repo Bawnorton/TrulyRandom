@@ -45,8 +45,10 @@ public class ClientRandomiser extends Randomiser {
     private void update(ModelRandomiser randomiser, MinecraftClient client, boolean randomise, boolean forceRandomise) {
         if (randomiser.isRandomised() && !randomise) {
             randomiser.reset(client);
+            randomiser.setRandomised(false);
         } else if (!randomiser.isRandomised() && randomise || (randomise && forceRandomise)) {
             randomiser.randomise(client, modules.getSeed(randomiser.getModule()));
+            randomiser.setRandomised(true);
         } else if (randomiser.isRandomised() == randomise) {
             randomiser.reloadModels(client);
         }

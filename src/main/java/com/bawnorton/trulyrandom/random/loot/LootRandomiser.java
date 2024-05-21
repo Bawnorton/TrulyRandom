@@ -1,72 +1,47 @@
 package com.bawnorton.trulyrandom.random.loot;
 
-import com.bawnorton.trulyrandom.mixin.accessor.LootManagerAccessor;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
-import net.minecraft.loot.LootDataKey;
-import net.minecraft.loot.LootManager;
 import net.minecraft.loot.LootTable;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.tag.BlockTags;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
 import java.util.*;
 
 public class LootRandomiser extends ServerRandomiserModule {
-    private final Map<LootDataKey<?>, Object> originalLootTables;
-    private final Set<Identifier> randomiseBlacklist = new HashSet<>();
+    private final Map<RegistryKey<LootTable>, LootTable> originalLootTables = new HashMap<>();
+    private final Map<RegistryKey<LootTable>, RegistryKey<LootTable>> redirectMap = new HashMap<>();
 
     public LootRandomiser(MinecraftServer server) {
-        originalLootTables = ((LootManagerAccessor) server.getLootManager()).getKeyToValue();
+        Registry<LootTable> lootTableRegistry = server.getReloadableRegistries()
+                .getRegistryManager()
+                .get(RegistryKeys.LOOT_TABLE);
+        Set<RegistryKey<LootTable>> keys = lootTableRegistry.getKeys();
+        keys.forEach(key -> {
+            LootTable lootTable = lootTableRegistry.get(key);
+            originalLootTables.put(key, lootTable);
+        });
+    }
+
+    public RegistryKey<LootTable> getLootTable(RegistryKey<LootTable> key) {
+        return redirectMap.getOrDefault(key, key);
     }
 
     public void randomise(MinecraftServer server, long seed) {
-        readBlacklist();
-
-        Map<LootDataKey<?>, Object> modifiableOriginalLootTables = new HashMap<>(this.originalLootTables);
-        List<Map.Entry<LootDataKey<?>, Object>> ignored = new ArrayList<>();
-        for (Map.Entry<LootDataKey<?>, Object> lootDataKeyObjectEntry : modifiableOriginalLootTables.entrySet()) {
-            if (randomiseBlacklist.contains(lootDataKeyObjectEntry.getKey().id())) {
-                ignored.add(lootDataKeyObjectEntry);
-            }
+        List<RegistryKey<LootTable>> keys = new ArrayList<>(originalLootTables.keySet());
+        keys.sort(Comparator.comparing(RegistryKey::getValue));
+        Random random = new Random(seed);
+        Collections.shuffle(keys, random);
+        for (int i = 0; i < keys.size(); i++) {
+            RegistryKey<LootTable> originalKey = keys.get(i);
+            RegistryKey<LootTable> randomKey = keys.get((i + 1) % keys.size());
+            redirectMap.put(originalKey, randomKey);
         }
-        Map<LootDataKey<?>, Object> unrandomisedLootTables = new HashMap<>();
-        for (Map.Entry<LootDataKey<?>, Object> entry : ignored) {
-            unrandomisedLootTables.put(entry.getKey(), entry.getValue());
-            modifiableOriginalLootTables.remove(entry.getKey());
-        }
-
-        List<LootDataKey<?>> sortedLootTableKeys = new ArrayList<>(modifiableOriginalLootTables.keySet());
-        sortedLootTableKeys.sort(Comparator.comparing(LootDataKey::id));
-
-        List<Object> randomLootTables = new ArrayList<>(modifiableOriginalLootTables.values());
-        Collections.shuffle(randomLootTables, new Random(seed));
-
-        Map<LootDataKey<?>, Object> randomisedLootTables = new HashMap<>();
-        for (int i = 0; i < sortedLootTableKeys.size(); i++) {
-            randomisedLootTables.put(sortedLootTableKeys.get(i), randomLootTables.get(i));
-        }
-        randomisedLootTables.putAll(unrandomisedLootTables);
-        ((LootManagerAccessor) server.getLootManager()).setKeyToValue(randomisedLootTables);
-        setRandomised(true);
-    }
-
-    private void readBlacklist() {
-        randomiseBlacklist.clear();
-        Registries.BLOCK.streamEntries()
-                        .filter(entry -> entry.isIn(BlockTags.SHULKER_BOXES))
-                        .forEach(entry -> randomiseBlacklist.add(entry.value().getLootTableId()));
-        originalLootTables.entrySet().stream()
-                          .filter(entry -> !(entry.getValue() instanceof LootTable))
-                          .map(entry -> entry.getKey().id())
-                          .forEach(randomiseBlacklist::add);
     }
 
     public void reset(MinecraftServer server) {
-        LootManager lootManager = server.getLootManager();
-        LootManagerAccessor lootManagerAccessor = (LootManagerAccessor) lootManager;
-        lootManagerAccessor.setKeyToValue(originalLootTables);
-        setRandomised(false);
+        redirectMap.clear();
     }
 
     @Override

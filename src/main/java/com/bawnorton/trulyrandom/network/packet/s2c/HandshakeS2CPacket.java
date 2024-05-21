@@ -1,18 +1,16 @@
 package com.bawnorton.trulyrandom.network.packet.s2c;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import net.fabricmc.fabric.api.networking.v1.FabricPacket;
-import net.fabricmc.fabric.api.networking.v1.PacketType;
+import io.netty.buffer.ByteBuf;
 import net.fabricmc.loader.api.Version;
 import net.fabricmc.loader.api.VersionParsingException;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.network.packet.CustomPayload;
 
-public record HandshakeS2CPacket(String versionString) implements FabricPacket {
-    public static final PacketType<HandshakeS2CPacket> TYPE = PacketType.create(TrulyRandom.id("handshake_s2c"), HandshakeS2CPacket::new);
-
-    public HandshakeS2CPacket(PacketByteBuf packetByteBuf) {
-        this(packetByteBuf.readString());
-    }
+public record HandshakeS2CPacket(String versionString) implements CustomPayload {
+    public static final Id<HandshakeS2CPacket> PACKET_ID = new Id<>(TrulyRandom.id("handshake_s2c"));
+    public static final PacketCodec<ByteBuf, HandshakeS2CPacket> PACKET_CODEC = PacketCodecs.STRING.xmap(HandshakeS2CPacket::new, HandshakeS2CPacket::versionString);
 
     public HandshakeS2CPacket(Version version) {
         this(version.getFriendlyString());
@@ -27,12 +25,7 @@ public record HandshakeS2CPacket(String versionString) implements FabricPacket {
     }
 
     @Override
-    public void write(PacketByteBuf buf) {
-        buf.writeString(versionString);
-    }
-
-    @Override
-    public PacketType<HandshakeS2CPacket> getType() {
-        return TYPE;
+    public Id<? extends CustomPayload> getId() {
+        return PACKET_ID;
     }
 }

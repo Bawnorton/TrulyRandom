@@ -1,9 +1,13 @@
 package com.bawnorton.trulyrandom.client.keybind;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
+import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
+import com.bawnorton.trulyrandom.client.network.ClientNetworking;
 import com.bawnorton.trulyrandom.client.screen.TrulyRandomSettingsScreen;
+import com.bawnorton.trulyrandom.network.packet.c2s.RequestServerRandomiserC2SPacket;
 import com.bawnorton.trulyrandom.network.packet.c2s.SetServerRandomiserC2SPacket;
+import com.bawnorton.trulyrandom.network.packet.s2c.SetClientRandomiserS2CPacket;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
@@ -12,6 +16,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.item.Item;
+import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import org.jetbrains.annotations.Nullable;
@@ -23,7 +28,14 @@ import java.util.List;
 public class KeybindManager {
     private static final List<ActionedKeybind> KEYBINDS = new ArrayList<>();
     public static final ActionedKeybind OPEN_RANDOMISER_GUI = registerKeybind("key.trulyrandom.open_randomiser_gui", GLFW.GLFW_KEY_G, client -> {
-        client.setScreen(new TrulyRandomSettingsScreen(client.currentScreen, (modules) -> ClientPlayNetworking.send(new SetServerRandomiserC2SPacket(modules))));
+        ClientNetworking.registerRecievedCallback(SetClientRandomiserS2CPacket.PACKET_ID, () -> {
+            client.setScreen(new TrulyRandomSettingsScreen(
+                    client.currentScreen,
+                    TrulyRandomClient.getRandomiser().getModules(),
+                    (modules) -> ClientPlayNetworking.send(new SetServerRandomiserC2SPacket(modules))
+            ));
+        });
+        ClientPlayNetworking.send(RequestServerRandomiserC2SPacket.INSTANCE);
     });
     public static final ActionedKeybind RELOAD_CHUNKS = registerDevOnlyKeybind("key.trulyrandom.reload_chunks", GLFW.GLFW_KEY_KP_0, client -> {
         client.worldRenderer.reload();

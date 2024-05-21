@@ -11,10 +11,10 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(ShapedRecipe.class)
 public abstract class ShapedRecipeMixin implements ResultSetter {
     @Shadow @Final @Mutable
-    ItemStack output;
+    ItemStack result;
 
     @Override
     public void trulyrandom$setResult(ItemStack result) {
-        output = result;
+        this.result = result;
     }
 }

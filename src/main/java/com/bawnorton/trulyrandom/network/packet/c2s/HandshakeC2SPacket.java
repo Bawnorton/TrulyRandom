@@ -1,23 +1,17 @@
 package com.bawnorton.trulyrandom.network.packet.c2s;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import net.fabricmc.fabric.api.networking.v1.FabricPacket;
-import net.fabricmc.fabric.api.networking.v1.PacketType;
-import net.minecraft.network.PacketByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
 
-public record HandshakeC2SPacket() implements FabricPacket {
-    public static final PacketType<HandshakeC2SPacket> TYPE = PacketType.create(TrulyRandom.id("handshake_c2s"), HandshakeC2SPacket::new);
-
-    public HandshakeC2SPacket(PacketByteBuf buf) {
-        this();
-    }
+public record HandshakeC2SPacket() implements CustomPayload {
+    public static final HandshakeC2SPacket INSTANCE = new HandshakeC2SPacket();
+    public static final Id<HandshakeC2SPacket> PACKET_ID = new Id<>(TrulyRandom.id("handshake_c2s"));
+    public static final PacketCodec<ByteBuf, HandshakeC2SPacket> PACKET_CODEC = PacketCodec.unit(INSTANCE);
 
     @Override
-    public void write(PacketByteBuf buf) {
-    }
-
-    @Override
-    public PacketType<HandshakeC2SPacket> getType() {
-        return TYPE;
+    public Id<? extends CustomPayload> getId() {
+        return PACKET_ID;
     }
 }

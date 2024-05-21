@@ -6,11 +6,11 @@ import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.server.command.ServerCommandSource;
 
 public interface PostExecuteCallback {
-    Event<PostExecuteCallback> EVENT = EventFactory.createArrayBacked(PostExecuteCallback.class, (listeners) -> (commandSource, command) -> {
+    Event<PostExecuteCallback> EVENT = EventFactory.createArrayBacked(PostExecuteCallback.class, (listeners) -> (source) -> {
         for (PostExecuteCallback listener : listeners) {
-            listener.postExecute(commandSource, command);
+            listener.postExecute(source);
         }
     });
 
-    void postExecute(ServerCommandSource commandSource, String command) throws CommandSyntaxException;
+    void postExecute(ServerCommandSource source) throws CommandSyntaxException;
 }

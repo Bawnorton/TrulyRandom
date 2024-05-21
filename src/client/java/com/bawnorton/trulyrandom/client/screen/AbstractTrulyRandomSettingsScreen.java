@@ -3,7 +3,6 @@ package com.bawnorton.trulyrandom.client.screen;
 import com.bawnorton.trulyrandom.client.screen.widget.ColumnedOptionGrid;
 import com.bawnorton.trulyrandom.client.screen.widget.DirectionalLayoutWidget;
 import com.bawnorton.trulyrandom.random.module.Modules;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.GridWidget;
@@ -12,7 +11,6 @@ import net.minecraft.client.gui.widget.ThreePartsLayoutWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-
 import java.util.function.Consumer;
 
 public abstract class AbstractTrulyRandomSettingsScreen extends Screen {
@@ -109,23 +107,7 @@ public abstract class AbstractTrulyRandomSettingsScreen extends Screen {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context);
-        super.render(context, mouseX, mouseY, delta);
-    }
-
-    @Override
     protected void initTabNavigation() {
         layout.refreshPositions();
-    }
-
-    @Override
-    public void renderBackground(DrawContext context) {
-        super.renderBackground(context);
-        if (client.world != null) return;
-
-        context.setShaderColor(0.125F, 0.125F, 0.125F, 1.0F);
-        context.drawTexture(OPTIONS_BACKGROUND_TEXTURE, 0, layout.getHeaderHeight(), 0.0F, 0.0F, width, height - layout.getHeaderHeight() - layout.getFooterHeight(), 32, 32);
-        context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
 }

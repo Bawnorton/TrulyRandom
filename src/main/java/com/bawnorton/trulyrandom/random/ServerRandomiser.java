@@ -20,8 +20,8 @@ public class ServerRandomiser extends Randomiser {
 
     public static final ServerRandomiser DEFAULT = new ServerRandomiser();
 
-    private ServerRandomiserModule lootRandomiser;
-    private ServerRandomiserModule recipeRandomiser;
+    private LootRandomiser lootRandomiser;
+    private RecipeRandomiser recipeRandomiser;
 
     private boolean initialised = false;
 
@@ -49,6 +49,14 @@ public class ServerRandomiser extends Randomiser {
         return initialised;
     }
 
+    public LootRandomiser getLootRandomiser() {
+        return lootRandomiser;
+    }
+
+    public RecipeRandomiser getRecipeRandomiser() {
+        return recipeRandomiser;
+    }
+
     public void updateLoot(MinecraftServer server, boolean seedChanged) {
         update(lootRandomiser, server, seedChanged);
     }
@@ -69,10 +77,17 @@ public class ServerRandomiser extends Randomiser {
     private void update(ServerRandomiserModule randomiser, MinecraftServer server, boolean seedChanged) {
         if (!initialised) throw new IllegalStateException("Randomiser not initialised");
 
-        if (modules.isEnabled(randomiser.getModule()) && !randomiser.isRandomised() || (randomiser.isRandomised() && seedChanged)) {
+        boolean moduleEnabled = modules.isEnabled(randomiser.getModule());
+        boolean isRandomised = randomiser.isRandomised();
+
+        if(!moduleEnabled) {
+            if(isRandomised) {
+                randomiser.reset(server);
+                randomiser.setRandomised(false);
+            }
+        } else if (!isRandomised || seedChanged) {
             randomiser.randomise(server, modules.getSeed(randomiser.getModule()));
-        } else if (modules.isDisabled(randomiser.getModule()) && randomiser.isRandomised()) {
-            randomiser.reset(server);
+            randomiser.setRandomised(true);
         }
     }
 }
