@@ -30,7 +30,8 @@ public abstract class DynamicItemsModelsMixin implements DynamicItemModelShuffle
 
     @TargetHandler(
             mixin = "org.embeddedt.modernfix.common.mixin.perf.dynamic_resources.ItemModelShaperMixin",
-            name = "lambda$new$0"
+            name = "lambda$new$0",
+            prefix = "handler"
     )
     @WrapOperation(
             method = "@MixinSquared:Handler",

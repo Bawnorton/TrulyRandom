@@ -14,8 +14,12 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 @Mixin(BlockModels.class)
 @AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, invert = true)
@@ -39,6 +43,7 @@ public abstract class VanillaBlockModelsMixin implements ModelShuffler.BlockStat
     @Override
     public void trulyrandom$shuffleModels(long seed) {
         if (models == null) return;
+
         ClientWorld world = MinecraftClient.getInstance().world;
         if (world == null) return;
 
