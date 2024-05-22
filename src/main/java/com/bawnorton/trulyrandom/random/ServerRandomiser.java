@@ -6,10 +6,13 @@ import com.bawnorton.trulyrandom.random.loot.LootRandomiser;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
 import com.bawnorton.trulyrandom.random.recipe.RecipeRandomiser;
+import com.bawnorton.trulyrandom.tracker.Tracker;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryEntryLookup;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,6 +27,7 @@ public class ServerRandomiser extends Randomiser {
     private RecipeRandomiser recipeRandomiser;
 
     private boolean initialised = false;
+    private NbtCompound lootRandomiserData;
 
     public ServerRandomiser(@NotNull Modules modules) {
         super(modules);
@@ -33,16 +37,33 @@ public class ServerRandomiser extends Randomiser {
         this(new Modules());
     }
 
-    public static ServerRandomiser fromNbt(NbtCompound nbt) {
+    public static ServerRandomiser fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
         ServerRandomiser randomiser = new ServerRandomiser();
-        randomiser.readNbt(nbt);
+        randomiser.readNbt(nbt, lookup);
         return randomiser;
+    }
+
+    @Override
+    public NbtCompound writeNbt(NbtCompound nbt) {
+        super.writeNbt(nbt);
+        nbt.put("loot_randomiser", lootRandomiser.writeNbt(new NbtCompound()));
+        return nbt;
+    }
+
+    @Override
+    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+        super.readNbt(nbt, lookup);
+        lootRandomiserData = nbt.getCompound("loot_randomiser");
     }
 
     public void init(MinecraftServer server) {
         initialised = true;
         this.lootRandomiser = new LootRandomiser(server);
         this.recipeRandomiser = new RecipeRandomiser(server);
+
+        if (lootRandomiserData != null) {
+            lootRandomiser.readNbt(lootRandomiserData);
+        }
     }
 
     public boolean initialised() {
@@ -84,10 +105,14 @@ public class ServerRandomiser extends Randomiser {
             if(isRandomised) {
                 randomiser.reset(server);
                 randomiser.setRandomised(false);
+                randomiser.getTrackers().forEach(Tracker::reset);
             }
         } else if (!isRandomised || seedChanged) {
             randomiser.randomise(server, modules.getSeed(randomiser.getModule()));
             randomiser.setRandomised(true);
+            if(seedChanged) {
+                randomiser.getTrackers().forEach(Tracker::reset);
+            }
         }
     }
 }

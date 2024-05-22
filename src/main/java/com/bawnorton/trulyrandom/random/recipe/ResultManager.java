@@ -1,10 +1,8 @@
 package com.bawnorton.trulyrandom.random.recipe;
 
-import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.extend.ResultClearer;
 import com.bawnorton.trulyrandom.extend.ResultSetter;
 import com.bawnorton.trulyrandom.mixin.accessor.SmithingTrimRecipeAccessor;
-import com.bawnorton.trulyrandom.random.module.Module;
 import net.minecraft.block.Block;
 import net.minecraft.block.ShulkerBoxBlock;
 import net.minecraft.block.SuspiciousStewIngredient;
@@ -48,8 +46,8 @@ public class ResultManager {
         getters.put(ShulkerBoxColoringRecipe.class, this::getShulkerBoxColoringResult);
     }
 
-    public ItemStack getResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        random = new Random(TrulyRandom.getRandomiser(server).getModules().getSeed(Module.RECIPES));
+    public ItemStack getResult(RecipeEntry<?> recipe, MinecraftServer server, long seed) {
+        random = new Random(seed);
         //noinspection SuspiciousMethodCalls
         return getters.getOrDefault(recipe.value().getClass(), this::getNormalResult).getResult(recipe, server);
     }

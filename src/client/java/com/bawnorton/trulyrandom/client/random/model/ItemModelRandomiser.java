@@ -3,6 +3,7 @@ package com.bawnorton.trulyrandom.client.random.model;
 import com.bawnorton.trulyrandom.client.event.ClientRandomiseEvents;
 import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
+import com.bawnorton.trulyrandom.collection.UnaryMap;
 import com.bawnorton.trulyrandom.random.module.Module;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.item.ItemModels;
@@ -34,7 +35,7 @@ public class ItemModelRandomiser extends ModelRandomiser {
         return Module.ITEM_MODELS;
     }
 
-    public void updateItemModels(Map<Item, Item> redirectMap) {
+    public void updateItemModels(UnaryMap<Item> redirectMap) {
         ModelShuffler.Items modelShuffler = (ModelShuffler.Items) MinecraftClient.getInstance().getItemRenderer().getModels();
         modelShuffler.trulyrandom$updateModels(redirectMap);
     }

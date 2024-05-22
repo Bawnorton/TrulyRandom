@@ -6,6 +6,8 @@ import com.bawnorton.trulyrandom.client.extend.modernfix.DynamicItemModelShuffle
 import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.VersionPredicate;
+import com.bawnorton.trulyrandom.collection.UnaryHashMap;
+import com.bawnorton.trulyrandom.collection.UnaryMap;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.render.item.ItemModels;
@@ -24,7 +26,7 @@ import java.util.Map;
 @AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, version = @VersionPredicate(min = "5.11"))
 public abstract class DynamicItemsModelsMixin implements DynamicItemModelShuffler {
     @Unique
-    private final Map<Item, Item> redirectMap = new HashMap<>();
+    private final UnaryMap<Item> redirectMap = new UnaryHashMap<>();
 
     @Shadow public abstract void reloadModels();
 
@@ -45,7 +47,7 @@ public abstract class DynamicItemsModelsMixin implements DynamicItemModelShuffle
         return original.call(instance, redirected);
     }
 
-    public Map<Item, Item> trulyrandom$getRedirectMap() {
+    public UnaryMap<Item> trulyrandom$getRedirectMap() {
         return redirectMap;
     }
 

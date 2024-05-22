@@ -9,6 +9,7 @@
     "CreateWorldScreenMixin",
     "CreateWorldScreenMixin$MoreTabMixin",
     "DataConfigurationMixin",
+    "HandledScreenMixin",
     "ItemRendererMixin",
     "MinecraftClientMixin",
     "VanillaBlockModelsMixin",

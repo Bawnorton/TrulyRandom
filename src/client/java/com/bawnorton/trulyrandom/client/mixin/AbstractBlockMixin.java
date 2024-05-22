@@ -2,6 +2,7 @@ package com.bawnorton.trulyrandom.client.mixin;
 
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.AbstractBlockAccessor;
+import com.bawnorton.trulyrandom.collection.UnaryMap;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
@@ -16,7 +17,7 @@ import java.util.Map;
 public abstract class AbstractBlockMixin {
     @ModifyReturnValue(method = "getSoundGroup", at = @At("RETURN"))
     private BlockSoundGroup useRandomisedBlockSound(BlockSoundGroup original) {
-        Map<BlockState, BlockState> originalToRandomMap = ((ModelShuffler.BlockStates) MinecraftClient.getInstance()
+        UnaryMap<BlockState> originalToRandomMap = ((ModelShuffler.BlockStates) MinecraftClient.getInstance()
                 .getBlockRenderManager()
                 .getModels()).trulyrandom$getRedirectMap();
         BlockState defaultState;

@@ -3,6 +3,8 @@ package com.bawnorton.trulyrandom.client.mixin;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
+import com.bawnorton.trulyrandom.collection.UnaryHashMap;
+import com.bawnorton.trulyrandom.collection.UnaryMap;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -27,7 +29,7 @@ import java.util.Random;
 @AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, invert = true)
 public abstract class VanillaItemsModelsMixin implements ModelShuffler.Items {
     @Unique
-    private final Map<Item, Item> redirectMap = new HashMap<>();
+    private final UnaryMap<Item> redirectMap = new UnaryHashMap<>();
     @Shadow @Final
     private Int2ObjectMap<BakedModel> models;
 
@@ -55,7 +57,7 @@ public abstract class VanillaItemsModelsMixin implements ModelShuffler.Items {
     }
 
     @Override
-    public Map<Item, Item> trulyrandom$getRedirectMap() {
+    public UnaryMap<Item> trulyrandom$getRedirectMap() {
         return redirectMap;
     }
 

@@ -4,6 +4,7 @@ import com.bawnorton.trulyrandom.client.event.ClientRandomiseEvents;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.ClientChunkManagerAccessor;
 import com.bawnorton.trulyrandom.client.mixin.accessor.WorldRendererInvoker;
+import com.bawnorton.trulyrandom.collection.UnaryMap;
 import com.bawnorton.trulyrandom.random.module.Module;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
@@ -53,7 +54,7 @@ public class BlockModelRandomiser extends ModelRandomiser {
         return Module.BLOCK_MODELS;
     }
 
-    public void updateBlockModels(Map<BlockState, BlockState> redirectMap) {
+    public void updateBlockModels(UnaryMap<BlockState> redirectMap) {
         ModelShuffler.BlockStates modelShuffler = (ModelShuffler.BlockStates) MinecraftClient.getInstance().getBlockRenderManager().getModels();
         modelShuffler.trulyrandom$updateModels(redirectMap);
     }

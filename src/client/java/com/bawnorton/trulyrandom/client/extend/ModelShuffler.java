@@ -1,6 +1,7 @@
 package com.bawnorton.trulyrandom.client.extend;
 
 import com.bawnorton.trulyrandom.client.mixin.accessor.StateAccessor;
+import com.bawnorton.trulyrandom.collection.UnaryMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
@@ -18,9 +19,9 @@ import java.util.Map;
 public interface ModelShuffler<T> {
     void trulyrandom$shuffleModels(long seed);
 
-    Map<T, T> trulyrandom$getRedirectMap();
+    UnaryMap<T> trulyrandom$getRedirectMap();
 
-    default void trulyrandom$updateModels(Map<T, T> redirectMap) {
+    default void trulyrandom$updateModels(UnaryMap<T> redirectMap) {
         trulyrandom$resetModels();
         trulyrandom$getRedirectMap().putAll(redirectMap);
     }

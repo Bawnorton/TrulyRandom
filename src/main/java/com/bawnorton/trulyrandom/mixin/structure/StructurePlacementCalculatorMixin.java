@@ -15,7 +15,7 @@ public abstract class StructurePlacementCalculatorMixin {
     private static <T> Predicate<? super T> setBiomeValidIfStructureRandomiserEnabled(Predicate<? super T> original) {
         return (biome) -> {
             if (original.test(biome)) return true;
-            return TrulyRandom.getUnsafeRandomiser().getModules().isEnabled(Module.STRUCTURES);
+            return TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.STRUCTURES);
         };
     }
 
@@ -23,7 +23,7 @@ public abstract class StructurePlacementCalculatorMixin {
     private <T> Predicate<? super T> allBiomesValidIfStructureRandomiserEnabled(Predicate<? super T> original) {
         return (biome) -> {
             if (original.test(biome)) return true;
-            return TrulyRandom.getUnsafeRandomiser().getModules().isEnabled(Module.STRUCTURES);
+            return TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.STRUCTURES);
         };
     }
 }

@@ -3,6 +3,8 @@ package com.bawnorton.trulyrandom.client.mixin;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
+import com.bawnorton.trulyrandom.collection.UnaryHashMap;
+import com.bawnorton.trulyrandom.collection.UnaryMap;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.block.BlockState;
@@ -25,7 +27,7 @@ import java.util.Random;
 @AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, invert = true)
 public abstract class VanillaBlockModelsMixin implements ModelShuffler.BlockStates {
     @Unique
-    private final Map<BlockState, BlockState> redirectMap = new HashMap<>();
+    private final UnaryMap<BlockState> redirectMap = new UnaryHashMap<>();
     @Shadow
     private Map<BlockState, BakedModel> models;
 
@@ -61,7 +63,7 @@ public abstract class VanillaBlockModelsMixin implements ModelShuffler.BlockStat
     }
 
     @Override
-    public Map<BlockState, BlockState> trulyrandom$getRedirectMap() {
+    public UnaryMap<BlockState> trulyrandom$getRedirectMap() {
         return redirectMap;
     }
 

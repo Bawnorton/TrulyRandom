@@ -10,6 +10,8 @@ import com.bawnorton.trulyrandom.network.packet.s2c.HandshakeS2CPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.OpenTargetedRandomiserScreenS2CPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.RequestOtherClientRandomiserS2CPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.SetClientRandomiserS2CPacket;
+import com.bawnorton.trulyrandom.network.packet.s2c.SyncLootTableTrackerS2CPacket;
+import com.bawnorton.trulyrandom.network.packet.s2c.SyncRecipeTrackerS2CPacket;
 import com.bawnorton.trulyrandom.random.Randomiser;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.Module;

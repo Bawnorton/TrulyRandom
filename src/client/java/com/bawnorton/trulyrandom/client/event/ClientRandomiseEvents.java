@@ -1,6 +1,8 @@
 package com.bawnorton.trulyrandom.client.event;
 
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
+import com.bawnorton.trulyrandom.collection.UnaryHashMap;
+import com.bawnorton.trulyrandom.collection.UnaryMap;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.block.BlockState;
@@ -16,23 +18,23 @@ public class ClientRandomiseEvents {
         for (BlockModels callback : callbacks) {
             callback.onBlockModels(randomisedMap);
         }
-        TrulyRandomClient.getRandomiser().updateBlockModels(new HashMap<>(randomisedMap));
+        TrulyRandomClient.getRandomiser().updateBlockModels(new UnaryHashMap<>(randomisedMap));
     });
 
     public static final Event<ItemModels> ITEM_MODELS = EventFactory.createArrayBacked(ItemModels.class, callbacks -> randomisedMap -> {
         for (ItemModels callback : callbacks) {
             callback.onItemModels(randomisedMap);
         }
-        TrulyRandomClient.getRandomiser().updateItemModels(new HashMap<>(randomisedMap));
+        TrulyRandomClient.getRandomiser().updateItemModels(new UnaryHashMap<>(randomisedMap));
     });
 
     @FunctionalInterface
     public interface BlockModels {
-        void onBlockModels(Map<BlockState, BlockState> randomisedMap);
+        void onBlockModels(UnaryMap<BlockState> randomisedMap);
     }
 
     @FunctionalInterface
     public interface ItemModels {
-        void onItemModels(Map<Item, Item> randomisedMap);
+        void onItemModels(UnaryMap<Item> randomisedMap);
     }
 }

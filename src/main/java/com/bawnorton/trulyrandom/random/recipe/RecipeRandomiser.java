@@ -1,34 +1,36 @@
 package com.bawnorton.trulyrandom.random.recipe;
 
+import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.mixin.accessor.RecipeManagerAccessor;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
+import com.bawnorton.trulyrandom.tracker.RecipeTracker;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
-import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeManager;
+import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class RecipeRandomiser extends ServerRandomiserModule {
-    private final ResultManager resultManager;
-    private final Map<Identifier, ItemStack> originalOutputs;
+    private final Map<UUID, RecipeTracker> trackers = new HashMap<>();
+    private final ResultManager resultManager = new ResultManager();
+    private final Map<Identifier, ItemStack> originalOutputs = new HashMap<>();
     private Map<ServerPlayerEntity, Collection<RecipeEntry<?>>> playerKnownRecipes;
 
     public RecipeRandomiser(MinecraftServer server) {
         this.playerKnownRecipes = getPlayerKnownRecipes(server);
-        this.originalOutputs = new HashMap<>();
-        this.resultManager = new ResultManager();
+        long seed = TrulyRandom.getRandomiser(server).getModules().getSeed(Module.RECIPES);
         ((RecipeManagerAccessor) server.getRecipeManager()).getRecipesById().forEach((id, recipe) -> {
-            ItemStack result = resultManager.getResult(recipe, server);
+            ItemStack result = resultManager.getResult(recipe, server, seed);
             originalOutputs.put(id, result);
         });
-
     }
 
     @Override
@@ -42,7 +44,7 @@ public class RecipeRandomiser extends ServerRandomiserModule {
         for (Map.Entry<Identifier, RecipeEntry<?>> recipeEntry : recipeEntries) {
             Identifier id = recipeEntry.getKey();
             RecipeEntry<?> recipe = recipeEntry.getValue();
-            ItemStack result = resultManager.getResult(recipe, server);
+            ItemStack result = resultManager.getResult(recipe, server, seed);
             recipes.put(id, recipe);
             outputs.add(result);
         }
@@ -76,6 +78,16 @@ public class RecipeRandomiser extends ServerRandomiserModule {
             newRecipeEntries.add(newRecipe);
         }
         server.getRecipeManager().setRecipes(newRecipeEntries);
+    }
+
+    @Override
+    public RecipeTracker getTracker(PlayerEntity player) {
+        return trackers.get(player.getUuid());
+    }
+
+    @Override
+    public List<RecipeTracker> getTrackers() {
+        return new ArrayList<>(trackers.values());
     }
 
     private void resyncPlayerRecipes(MinecraftServer server) {

@@ -5,6 +5,8 @@ import com.bawnorton.trulyrandom.client.extend.modernfix.DynamicBlockModelShuffl
 import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.VersionPredicate;
+import com.bawnorton.trulyrandom.collection.UnaryHashMap;
+import com.bawnorton.trulyrandom.collection.UnaryMap;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.block.BlockState;
@@ -23,7 +25,7 @@ import java.util.*;
 @AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, version = @VersionPredicate(min = "5.11"))
 public abstract class DynamicBlockModelsMixin implements DynamicBlockModelShuffler {
     @Unique
-    private final Map<BlockState, BlockState> redirectMap = new HashMap<>();
+    private final UnaryMap<BlockState> redirectMap = new UnaryHashMap<>();
 
     @SuppressWarnings("MixinAnnotationTarget")
     @Shadow
@@ -46,7 +48,7 @@ public abstract class DynamicBlockModelsMixin implements DynamicBlockModelShuffl
         return original.call(instance, redirected);
     }
 
-    public Map<BlockState, BlockState> trulyrandom$getRedirectMap() {
+    public UnaryMap<BlockState> trulyrandom$getRedirectMap() {
         return redirectMap;
     }
 

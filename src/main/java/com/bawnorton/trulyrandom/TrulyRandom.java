@@ -34,8 +34,12 @@ public class TrulyRandom implements ModInitializer {
         return randomiser;
     }
 
-    public static ServerRandomiser getUnsafeRandomiser() {
+    public static ServerRandomiser getCachedRandomiser() {
         return RandomiserSaveLoader.fetchUnsafeRandomiser();
+    }
+
+    public static boolean isCachedRandomiserSet() {
+        return RandomiserSaveLoader.isUnsafeRandomiserSet();
     }
 
     public static Randomiser getClientRandomiser(MinecraftServer server, UUID uuid) {
@@ -48,6 +52,10 @@ public class TrulyRandom implements ModInitializer {
 
     public static Identifier id(String path) {
         return new Identifier(MOD_ID, path);
+    }
+
+    public static RandomiserSaveLoader getRandomiserLoader(MinecraftServer server) {
+        return RandomiserSaveLoader.getServerState(server);
     }
 
     @Override

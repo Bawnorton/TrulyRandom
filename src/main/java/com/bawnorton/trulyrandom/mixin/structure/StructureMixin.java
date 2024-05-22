@@ -12,6 +12,6 @@ public abstract class StructureMixin {
     @ModifyReturnValue(method = "isBiomeValid", at = @At("RETURN"))
     private static boolean setBiomeValidIfStructureRandomiserEnabled(boolean original) {
         if (original) return true;
-        return TrulyRandom.getUnsafeRandomiser().getModules().isEnabled(Module.STRUCTURES);
+        return TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.STRUCTURES);
     }
 }

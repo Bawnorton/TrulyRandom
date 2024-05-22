@@ -2,6 +2,8 @@ package com.bawnorton.trulyrandom.client.mixin;
 
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.AbstractBlockAccessor;
+import com.bawnorton.trulyrandom.collection.UnaryHashMap;
+import com.bawnorton.trulyrandom.collection.UnaryMap;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -18,7 +20,7 @@ public abstract class BlockMixin extends AbstractBlockMixin {
 
     @ModifyReturnValue(method = "getSlipperiness", at = @At("RETURN"))
     private float useRandomisedSlipperiness(float original) {
-        Map<BlockState, BlockState> originalToRandomMap = ((ModelShuffler.BlockStates) MinecraftClient.getInstance()
+        UnaryMap<BlockState> originalToRandomMap = ((ModelShuffler.BlockStates) MinecraftClient.getInstance()
                 .getBlockRenderManager()
                 .getModels()).trulyrandom$getRedirectMap();
         return ((AbstractBlockAccessor) originalToRandomMap.getOrDefault(getDefaultState(), getDefaultState()).getBlock()).trulyrandom$getSlipperiness();
