@@ -7,7 +7,7 @@ import com.bawnorton.trulyrandom.collection.UnaryMap;
 import com.bawnorton.trulyrandom.random.Randomiser;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
-import com.bawnorton.trulyrandom.tracker.RecipeTracker;
+import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
@@ -17,8 +17,9 @@ public class ClientRandomiser extends Randomiser {
     public static final ClientRandomiser DEFAULT = new ClientRandomiser();
     private final BlockModelRandomiser blockModelRandomiser = new BlockModelRandomiser();
     private final ItemModelRandomiser itemModelRandomiser = new ItemModelRandomiser();
-    private final LootTableTracker lootTableTracker = new LootTableTracker();
-    private final RecipeTracker recipeTracker = new RecipeTracker();
+
+    private LootTableTracker lootTableTracker = new LootTableTracker();
+    private RecipeTracker recipeTracker = new RecipeTracker();
 
     private ClientRandomiser(@NotNull Modules modules) {
         super(modules);
@@ -37,11 +38,11 @@ public class ClientRandomiser extends Randomiser {
     }
 
     public void setLootTableTracker(LootTableTracker tracker) {
-        lootTableTracker.copy(tracker);
+        lootTableTracker = tracker;
     }
 
     public void setRecipeTracker(RecipeTracker tracker) {
-        recipeTracker.copy(tracker);
+        recipeTracker = tracker;
     }
 
     public void updateBlockModels(MinecraftClient client, boolean seedChanged) {
@@ -63,13 +64,15 @@ public class ClientRandomiser extends Randomiser {
     }
 
     private void update(ModelRandomiser randomiser, MinecraftClient client, boolean randomise, boolean forceRandomise) {
-        if (randomiser.isRandomised() && !randomise) {
+        boolean isRandomised = randomiser.isRandomised();
+
+        if (!randomise && isRandomised) {
             randomiser.reset(client);
             randomiser.setRandomised(false);
-        } else if (!randomiser.isRandomised() && randomise || (randomise && forceRandomise)) {
+        } else if (randomise && (!isRandomised || forceRandomise)) {
             randomiser.randomise(client, modules.getSeed(randomiser.getModule()));
             randomiser.setRandomised(true);
-        } else if (randomiser.isRandomised() == randomise) {
+        } else {
             randomiser.reloadModels(client);
         }
     }

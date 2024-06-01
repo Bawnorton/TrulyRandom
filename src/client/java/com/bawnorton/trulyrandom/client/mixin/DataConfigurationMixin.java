@@ -19,19 +19,19 @@ import java.util.function.Function;
 @Mixin(DataConfiguration.class)
 public abstract class DataConfigurationMixin implements DataConfigurationExtender {
     @Unique
-    private static final ThreadLocal<ServerRandomiser> randomiserThreadLocal = ThreadLocal.withInitial(() -> ServerRandomiser.DEFAULT);
+    private static final ThreadLocal<ServerRandomiser> trulyrandom$randomiserThreadLocal = ThreadLocal.withInitial(() -> ServerRandomiser.DEFAULT);
     @Unique
-    private ServerRandomiser randomiser;
+    private ServerRandomiser trulyrandom$randomiser;
 
     @ModifyArg(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/codecs/RecordCodecBuilder;create(Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;", remap = false))
     private static Function<RecordCodecBuilder.Instance<DataConfiguration>, ? extends App<RecordCodecBuilder.Mu<DataConfiguration>, DataConfiguration>> attachRandomiserModules(Function<RecordCodecBuilder.Instance<DataConfiguration>, ? extends App<RecordCodecBuilder.Mu<DataConfiguration>, DataConfiguration>> builder) {
         return instance -> instance.group(
                 RecordCodecBuilder.mapCodec(builder).forGetter(Function.identity()),
                 ServerRandomiser.CODEC
-                        .optionalFieldOf("randomiser", ServerRandomiser.DEFAULT)
+                        .optionalFieldOf("trulyrandom$randomiser", ServerRandomiser.DEFAULT)
                         .forGetter(dataConfig -> ((DataConfigurationExtender) (Object) dataConfig).trulyrandom$getRandomiser())
         ).apply(instance, (dataConfig, randomiser) -> {
-            randomiserThreadLocal.set((ServerRandomiser) randomiser);
+            trulyrandom$randomiserThreadLocal.set((ServerRandomiser) randomiser);
             return dataConfig;
         });
     }
@@ -39,15 +39,15 @@ public abstract class DataConfigurationMixin implements DataConfigurationExtende
     @Inject(method = "<init>", at = @At("TAIL"))
     private void attachRandomiserData(DataPackSettings dataPackSettings, FeatureSet featureSet, CallbackInfo ci) {
         //noinspection ConstantValue
-        if (randomiserThreadLocal == null) {
-            this.randomiser = ServerRandomiser.DEFAULT;
+        if (trulyrandom$randomiserThreadLocal == null) {
+            this.trulyrandom$randomiser = ServerRandomiser.DEFAULT;
         } else {
-            this.randomiser = randomiserThreadLocal.get();
+            this.trulyrandom$randomiser = trulyrandom$randomiserThreadLocal.get();
         }
     }
 
     @Override
     public Randomiser trulyrandom$getRandomiser() {
-        return randomiser;
+        return trulyrandom$randomiser;
     }
 }

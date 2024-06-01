@@ -28,6 +28,6 @@ public abstract class CatEntity$SleepWithOwnerGoalMixin {
         LootTableTracker.LOOT_CAUSERS.remove();
         if(owner == null) return;
 
-        LootTableTracker.LOOT_CAUSERS.set(List.of(owner.getUuid()));
+        LootTableTracker.LOOT_CAUSERS.set(List.of(owner.trulyrandom$getTeam()));
     }
 }

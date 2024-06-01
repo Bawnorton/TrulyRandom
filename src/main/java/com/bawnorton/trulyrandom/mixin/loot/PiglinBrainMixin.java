@@ -21,6 +21,6 @@ public abstract class PiglinBrainMixin {
         if (piglin.getWorld().isClient()) return;
 
         LootTableTracker.LOOT_CAUSERS.remove();
-        piglin.getBrain().getOptionalRegisteredMemory(MemoryModuleType.NEAREST_VISIBLE_PLAYER).ifPresent(player -> LootTableTracker.LOOT_CAUSERS.set(List.of(player.getUuid())));
+        piglin.getBrain().getOptionalRegisteredMemory(MemoryModuleType.NEAREST_VISIBLE_PLAYER).ifPresent(player -> LootTableTracker.LOOT_CAUSERS.set(List.of(player.trulyrandom$getTeam())));
     }
 }

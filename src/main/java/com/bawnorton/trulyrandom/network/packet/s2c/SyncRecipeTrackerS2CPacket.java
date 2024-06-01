@@ -1,7 +1,7 @@
 package com.bawnorton.trulyrandom.network.packet.s2c;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.tracker.RecipeTracker;
+import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;

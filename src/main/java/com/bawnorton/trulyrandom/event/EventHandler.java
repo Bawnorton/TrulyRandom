@@ -4,8 +4,10 @@ import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.command.CommandHandler;
 import com.bawnorton.trulyrandom.command.argument.SetStringArgumentType;
 import com.bawnorton.trulyrandom.command.argument.SetStringArgumentTypeSerializer;
+import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.network.packet.s2c.SyncLootTableTrackerS2CPacket;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
+import com.bawnorton.trulyrandom.random.loot.LootRandomiser;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -38,7 +40,9 @@ public class EventHandler {
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
-            LootTableTracker tracker = randomiser.getLootRandomiser().getTracker(handler.player);
+            LootRandomiser lootRandomiser = randomiser.getLootRandomiser();
+            lootRandomiser.initTracker(handler.player);
+            LootTableTracker tracker = lootRandomiser.getTracker(handler.player);
             if (tracker == null) return;
 
             ServerPlayNetworking.send(handler.player, new SyncLootTableTrackerS2CPacket(tracker));

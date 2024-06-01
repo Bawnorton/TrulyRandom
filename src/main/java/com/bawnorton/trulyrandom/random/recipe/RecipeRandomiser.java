@@ -1,25 +1,30 @@
 package com.bawnorton.trulyrandom.random.recipe;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
+import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.mixin.accessor.RecipeManagerAccessor;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
-import com.bawnorton.trulyrandom.tracker.RecipeTracker;
-import net.minecraft.entity.player.PlayerEntity;
+import com.bawnorton.trulyrandom.tracker.Team;
+import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeManager;
-import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 public class RecipeRandomiser extends ServerRandomiserModule {
-    private final Map<UUID, RecipeTracker> trackers = new HashMap<>();
+    private final Map<Team, RecipeTracker> trackers = new HashMap<>();
     private final ResultManager resultManager = new ResultManager();
     private final Map<Identifier, ItemStack> originalOutputs = new HashMap<>();
     private Map<ServerPlayerEntity, Collection<RecipeEntry<?>>> playerKnownRecipes;
@@ -81,8 +86,8 @@ public class RecipeRandomiser extends ServerRandomiserModule {
     }
 
     @Override
-    public RecipeTracker getTracker(PlayerEntity player) {
-        return trackers.get(player.getUuid());
+    public RecipeTracker getTracker(TeamMember teamMember) {
+        return trackers.get(teamMember.trulyrandom$getTeam());
     }
 
     @Override

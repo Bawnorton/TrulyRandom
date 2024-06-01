@@ -29,6 +29,6 @@ public abstract class SnifferEntityMixin extends AnimalEntity {
         PlayerEntity nearest = getWorld().getClosestPlayer(this, 32D);
         if(nearest == null) return;
 
-        LootTableTracker.LOOT_CAUSERS.set(List.of(nearest.getUuid()));
+        LootTableTracker.LOOT_CAUSERS.set(List.of(nearest.trulyrandom$getTeam()));
     }
 }

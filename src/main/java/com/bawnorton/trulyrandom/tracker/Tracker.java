@@ -1,20 +1,24 @@
 package com.bawnorton.trulyrandom.tracker;
 
+import com.bawnorton.trulyrandom.extend.TeamMember;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.Map;
-import java.util.UUID;
 
 public abstract class Tracker<F, T> {
     private boolean dirty = false;
-    protected @Nullable UUID playerId;
+    protected @Nullable Team team;
 
-    protected Tracker(@Nullable UUID playerId) {
-        this.playerId = playerId;
+    protected Tracker(@Nullable Team team) {
+        this.team = team;
     }
 
-    public void setPlayerId(@NotNull UUID playerId) {
-        this.playerId = playerId;
+    public void setTeam(@NotNull Team team) {
+        this.team = team;
+    }
+
+    public @Nullable Team getTeam() {
+        return team;
     }
 
     public boolean isDirty() {
@@ -31,12 +35,7 @@ public abstract class Tracker<F, T> {
 
     public abstract void track(F from, T to);
 
-    public void copy(Tracker<F, T> other) {
-        reset();
-        other.known().forEach(entry -> track(entry.getKey(), entry.getValue()));
-    }
-
-    public abstract Iterable<Map.Entry<F, T>> known();
+    public abstract Map<F, T> known();
 
     public abstract void reset();
 }

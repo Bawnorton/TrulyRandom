@@ -18,7 +18,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -27,13 +26,13 @@ import java.util.Random;
 @AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, invert = true)
 public abstract class VanillaBlockModelsMixin implements ModelShuffler.BlockStates {
     @Unique
-    private final UnaryMap<BlockState> redirectMap = new UnaryHashMap<>();
+    private final UnaryMap<BlockState> trulyrandom$redirectMap = new UnaryHashMap<>();
     @Shadow
     private Map<BlockState, BakedModel> models;
 
     @WrapOperation(method = "getModel", at = @At(value = "INVOKE", target = "java/util/Map.get(Ljava/lang/Object;)Ljava/lang/Object;"))
     private Object getShuffledModel(Map<BlockState, BakedModel> instance, Object key, Operation<Object> original) {
-        BlockState redirected = redirectMap.getOrDefault((BlockState) key, (BlockState) key);
+        BlockState redirected = trulyrandom$redirectMap.getOrDefault((BlockState) key, (BlockState) key);
         return original.call(instance, redirected);
     }
 
@@ -57,23 +56,23 @@ public abstract class VanillaBlockModelsMixin implements ModelShuffler.BlockStat
             for (int i = 0; i < variant.size(); i++) {
                 BlockState original = variant.get(i);
                 BlockState randomised = variant.get((i + 1) % variant.size());
-                redirectMap.put(original, randomised);
+                trulyrandom$redirectMap.put(original, randomised);
             }
         }
     }
 
     @Override
     public UnaryMap<BlockState> trulyrandom$getRedirectMap() {
-        return redirectMap;
+        return trulyrandom$redirectMap;
     }
 
     @Override
     public void trulyrandom$resetModels() {
-        redirectMap.clear();
+        trulyrandom$redirectMap.clear();
     }
 
     @Override
     public boolean trulyrandom$isShuffled() {
-        return !redirectMap.isEmpty();
+        return !trulyrandom$redirectMap.isEmpty();
     }
 }

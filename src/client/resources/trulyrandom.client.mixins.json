@@ -9,7 +9,6 @@
     "CreateWorldScreenMixin",
     "CreateWorldScreenMixin$MoreTabMixin",
     "DataConfigurationMixin",
-    "HandledScreenMixin",
     "ItemRendererMixin",
     "MinecraftClientMixin",
     "VanillaBlockModelsMixin",
@@ -21,11 +20,15 @@
     "accessor.StateAccessor",
     "accessor.WorldRendererInvoker",
     "modernfix.DynamicBlockModelsMixin",
-    "modernfix.DynamicItemsModelsMixin"
+    "modernfix.DynamicItemsModelsMixin",
+    "tracker.AbstractInventoryScreenMixin",
+    "tracker.HandledScreenMixin",
+    "tracker.InGameHudMixin",
+    "tracker.InventoryScreenMixin"
+  ],
+  "mixins": [
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "mixins": [
-  ]
+  }
 }

@@ -1,6 +1,7 @@
 package com.bawnorton.trulyrandom.mixin.loot;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
+import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.mixin.accessor.TrialSpawnerDataAccessor;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
@@ -16,6 +17,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.ArrayList;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Mixin(TrialSpawnerLogic.class)
 public abstract class TrialSpawnerLogicMixin {
@@ -26,6 +29,12 @@ public abstract class TrialSpawnerLogicMixin {
     private void trackCause(ServerWorld world, BlockPos pos, RegistryKey<LootTable> lootTable, CallbackInfo ci) {
         if(!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
 
-        LootTableTracker.LOOT_CAUSERS.set(new ArrayList<>(((TrialSpawnerDataAccessor) getData()).getPlayers()));
+
+        LootTableTracker.LOOT_CAUSERS.set(((TrialSpawnerDataAccessor) getData()).getPlayers()
+                .stream()
+                .map(world::getPlayerByUuid)
+                .filter(Objects::nonNull)
+                .map(TeamMember::trulyrandom$getTeam)
+                .collect(Collectors.toList()));
     }
 }

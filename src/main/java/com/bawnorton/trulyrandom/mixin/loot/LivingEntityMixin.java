@@ -32,7 +32,7 @@ public abstract class LivingEntityMixin extends Entity {
 
         LootTableTracker.LOOT_CAUSERS.remove();
         if (causedByPlayer && attackingPlayer != null) {
-            LootTableTracker.LOOT_CAUSERS.set(List.of(attackingPlayer.getUuid()));
+            LootTableTracker.LOOT_CAUSERS.set(List.of(attackingPlayer.trulyrandom$getTeam()));
         }
     }
 }

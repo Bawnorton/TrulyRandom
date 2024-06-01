@@ -33,7 +33,7 @@ public abstract class FishingBobberEntityMixin extends ProjectileEntity {
         LootTableTracker.LOOT_CAUSERS.remove();
         PlayerEntity owner = getPlayerOwner();
         if(owner != null) {
-            LootTableTracker.LOOT_CAUSERS.set(List.of(owner.getUuid()));
+            LootTableTracker.LOOT_CAUSERS.set(List.of(owner.trulyrandom$getTeam()));
         }
     }
 }

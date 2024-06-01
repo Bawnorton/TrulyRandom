@@ -1,7 +1,6 @@
 package com.bawnorton.trulyrandom.client.mixin.modernfix;
 
 import com.bawnorton.mixinsquared.TargetHandler;
-import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.extend.modernfix.DynamicItemModelShuffler;
 import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
@@ -13,20 +12,16 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.render.item.ItemModels;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.item.Item;
-import org.spongepowered.asm.mixin.Debug;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import java.util.HashMap;
-import java.util.Map;
 
-@Debug(export = true)
 @Mixin(value = ItemModels.class, priority = 1500)
 @AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, version = @VersionPredicate(min = "5.11"))
 public abstract class DynamicItemsModelsMixin implements DynamicItemModelShuffler {
     @Unique
-    private final UnaryMap<Item> redirectMap = new UnaryHashMap<>();
+    private final UnaryMap<Item> trulyrandom$redirectMap = new UnaryHashMap<>();
 
     @Shadow public abstract void reloadModels();
 
@@ -43,20 +38,20 @@ public abstract class DynamicItemsModelsMixin implements DynamicItemModelShuffle
             )
     )
     private BakedModel getShuffledModel(ItemModels instance, Item item, Operation<BakedModel> original) {
-        Item redirected = redirectMap.getOrDefault(item, item);
+        Item redirected = trulyrandom$redirectMap.getOrDefault(item, item);
         return original.call(instance, redirected);
     }
 
     public UnaryMap<Item> trulyrandom$getRedirectMap() {
-        return redirectMap;
+        return trulyrandom$redirectMap;
     }
 
     public void trulyrandom$resetModels() {
-        redirectMap.clear();
+        trulyrandom$redirectMap.clear();
         reloadModels();
     }
 
     public boolean trulyrandom$isShuffled() {
-        return !redirectMap.isEmpty();
+        return !trulyrandom$redirectMap.isEmpty();
     }
 }

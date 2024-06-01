@@ -19,6 +19,7 @@
   "selectWorld.trulyrandom.seed": "Leave Blank for Random",
   "selectWorld.trulyrandom.seed.title": "Seed: ",
   "selectWorld.trulyrandom.seed.tooltip": "Seed that will be used to determine the randomisation.",
+  "itemGroup.trulyrandom.search": "Search Drops",
   "trulyrandom.version_mismatch": "§c§lTruly Random Version Mismatch§r§c\nServer is running on version \"%s§c\" but this client is running on version \"%s§c\". Some features may not work as expected.",
   "trulyrandom.no_player_found": "Player for uuid \"%s\" not found"
 }

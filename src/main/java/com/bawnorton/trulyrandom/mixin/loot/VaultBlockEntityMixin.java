@@ -23,7 +23,7 @@ public abstract class VaultBlockEntityMixin {
 
         LootTableTracker.LOOT_CAUSERS.remove();
         if (player != null) {
-            LootTableTracker.LOOT_CAUSERS.set(List.of(player.getUuid()));
+            LootTableTracker.LOOT_CAUSERS.set(List.of(player.trulyrandom$getTeam()));
         }
     }
 }

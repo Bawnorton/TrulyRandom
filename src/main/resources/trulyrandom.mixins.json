@@ -29,7 +29,8 @@
     "recipe.SpecialRecipeMixin",
     "structure.ChunkGeneratorMixin",
     "structure.StructureMixin",
-    "structure.StructurePlacementCalculatorMixin"
+    "structure.StructurePlacementCalculatorMixin",
+    "tracker.PlayerEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

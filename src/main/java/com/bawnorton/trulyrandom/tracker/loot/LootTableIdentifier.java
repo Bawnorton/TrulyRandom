@@ -15,15 +15,16 @@ public class LootTableIdentifier {
         return new LootTableIdentifier(lootTableId);
     }
 
-    public boolean isBlock() {
+    public boolean isFromBlock() {
         if(segments.length == 0) return false;
 
         return segments[0].equals("blocks");
     }
 
-    public Identifier getBlockId() {
-        if(!isBlock()) return null;
-
-        return new Identifier(namespace, segments[1]);
+    public Identifier getSourceId() {
+        if(isFromBlock()) {
+            return new Identifier(namespace, segments[1]);
+        }
+        return null;
     }
 }

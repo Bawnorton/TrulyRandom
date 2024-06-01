@@ -22,7 +22,7 @@ public abstract class GiveGiftsToHeroTaskMixin {
 
         LootTableTracker.LOOT_CAUSERS.remove();
         if(recipient instanceof PlayerEntity player) {
-            LootTableTracker.LOOT_CAUSERS.set(List.of(player.getUuid()));
+            LootTableTracker.LOOT_CAUSERS.set(List.of(player.trulyrandom$getTeam()));
         }
     }
 }

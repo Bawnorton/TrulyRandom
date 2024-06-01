@@ -19,13 +19,11 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
-import java.util.*;
-
 @Mixin(value = BlockModels.class, priority = 1500)
 @AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, version = @VersionPredicate(min = "5.11"))
 public abstract class DynamicBlockModelsMixin implements DynamicBlockModelShuffler {
     @Unique
-    private final UnaryMap<BlockState> redirectMap = new UnaryHashMap<>();
+    private final UnaryMap<BlockState> trulyrandom$redirectMap = new UnaryHashMap<>();
 
     @SuppressWarnings("MixinAnnotationTarget")
     @Shadow
@@ -44,20 +42,20 @@ public abstract class DynamicBlockModelsMixin implements DynamicBlockModelShuffl
             )
     )
     private BakedModel getShuffledModel(BlockModels instance, BlockState blockState, Operation<BakedModel> original) {
-        BlockState redirected = redirectMap.getOrDefault(blockState, blockState);
+        BlockState redirected = trulyrandom$redirectMap.getOrDefault(blockState, blockState);
         return original.call(instance, redirected);
     }
 
     public UnaryMap<BlockState> trulyrandom$getRedirectMap() {
-        return redirectMap;
+        return trulyrandom$redirectMap;
     }
 
     public void trulyrandom$resetModels() {
-        redirectMap.clear();
+        trulyrandom$redirectMap.clear();
         mfix$modelCache.clear();
     }
 
     public boolean trulyrandom$isShuffled() {
-        return !redirectMap.isEmpty();
+        return !trulyrandom$redirectMap.isEmpty();
     }
 }

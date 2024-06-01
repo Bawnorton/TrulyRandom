@@ -18,6 +18,6 @@ public abstract class BrushableBlockEntityMixin {
         if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if (player.getWorld().isClient()) return;
 
-        LootTableTracker.LOOT_CAUSERS.set(List.of(player.getUuid()));
+        LootTableTracker.LOOT_CAUSERS.set(List.of(player.trulyrandom$getTeam()));
     }
 }
