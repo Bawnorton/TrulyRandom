@@ -115,13 +115,5 @@ public class ItemLootMap extends HashMap<Item, ItemLootMap.Result> {
         public int hashCode() {
             return Objects.hash(withSilk, associatedBlocks);
         }
-
-        @Override
-        public String toString() {
-            return "Result[" +
-                    "withSilk=" + withSilk + ", " +
-                    "associatedBlocks=" + associatedBlocks + ']';
-        }
-
     }
 }

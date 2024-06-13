@@ -1,7 +1,7 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
 import com.bawnorton.trulyrandom.client.extend.DataConfigurationExtender;
-import com.bawnorton.trulyrandom.random.Randomiser;
+import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import net.minecraft.client.gui.screen.world.WorldListWidget;
 import net.minecraft.world.level.storage.LevelSummary;
@@ -21,9 +21,8 @@ public abstract class WorldListWidget$WorldEntryMixin {
     @SuppressWarnings("DataFlowIssue")
     @Inject(method = "play", at = @At("HEAD"))
     private void loadRandomiserModulesFromWorld(CallbackInfo ci) {
-        DataConfigurationExtender dataConfiguration = (DataConfigurationExtender) (Object) level.getLevelInfo()
-                .getDataConfiguration();
-        Randomiser randomiser = dataConfiguration.trulyrandom$getRandomiser();
-        RandomiserSaveLoader.setDefaultRandomiser(randomiser.getModules());
+        DataConfigurationExtender dataConfiguration = (DataConfigurationExtender) (Object) level.getLevelInfo().getDataConfiguration();
+        Modules modules = dataConfiguration.trulyrandom$getRandomiserModules();
+        RandomiserSaveLoader.setDefaultRandomiser(modules);
     }
 }

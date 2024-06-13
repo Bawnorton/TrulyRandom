@@ -1,6 +1,8 @@
 package com.bawnorton.trulyrandom.client.mixin.tracker;
 
+import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.screen.lootbook.LootBookWidget;
+import com.bawnorton.trulyrandom.random.module.Module;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.DrawContext;
@@ -61,7 +63,14 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin<
             x = lootBook.findLeftEdge(width, backgroundWidth);
             resetButtonPositions();
             mouseDown = true;
-        });
+        }) {
+            @Override
+            public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+                if(TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+                    super.renderWidget(context, mouseX, mouseY, delta);
+                }
+            }
+        };
 
         if(recipeBook.isOpen()) {
             x = recipeBook.findLeftEdge(width, backgroundWidth);
@@ -109,7 +118,11 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin<
         } else {
             original.call(instance, context, mouseX, mouseY, delta);
         }
-        lootBook.render(context, mouseX, mouseY, delta);
+        if (TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+            lootBook.render(context, mouseX, mouseY, delta);
+        } else if(lootBook.isOpen()) {
+            lootBook.toggleOpen();
+        }
     }
 
     @Override

@@ -35,6 +35,13 @@ public class RandomiserSaveLoader extends PersistentState {
         defaultModules = modules;
     }
 
+    public static Modules getDefaultRandomiser() {
+        if(!defaultSet) {
+            throw new IllegalStateException("Default randomiser was not set");
+        }
+        return defaultModules;
+    }
+
     public static RandomiserSaveLoader fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         RandomiserSaveLoader state = new RandomiserSaveLoader();
         state.serverRandomiser = ServerRandomiser.fromNbt(nbt.getCompound("randomiser"), registryLookup);
@@ -58,9 +65,13 @@ public class RandomiserSaveLoader extends PersistentState {
     public static ServerRandomiser fetchUnsafeRandomiser() {
         if (lastSetRandomiser != null) return lastSetRandomiser;
 
-        ServerRandomiser def = ServerRandomiser.DEFAULT;
-        setDefaultRandomiser(def.getModules());
-        return def;
+        if(defaultSet) {
+            return new ServerRandomiser(defaultModules);
+        } else {
+            ServerRandomiser def = ServerRandomiser.DEFAULT;
+            setDefaultRandomiser(def.getModules());
+            return def;
+        }
     }
 
     public static boolean isUnsafeRandomiserSet() {

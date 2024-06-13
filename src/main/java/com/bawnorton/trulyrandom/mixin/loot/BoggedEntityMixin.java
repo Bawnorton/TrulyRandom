@@ -18,6 +18,7 @@ public abstract class BoggedEntityMixin {
     @Inject(method = "interactMob", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/mob/BoggedEntity;sheared(Lnet/minecraft/sound/SoundCategory;)V"))
     private void trackCause(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+        if (player == null) return;
         if (player.getWorld().isClient()) return;
 
         LootTableTracker.LOOT_CAUSERS.set(List.of(player.trulyrandom$getTeam()));

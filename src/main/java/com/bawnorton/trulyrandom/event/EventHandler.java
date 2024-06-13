@@ -4,7 +4,7 @@ import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.command.CommandHandler;
 import com.bawnorton.trulyrandom.command.argument.SetStringArgumentType;
 import com.bawnorton.trulyrandom.command.argument.SetStringArgumentTypeSerializer;
-import com.bawnorton.trulyrandom.extend.TeamMember;
+import com.bawnorton.trulyrandom.network.packet.s2c.SetClientRandomiserS2CPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.SyncLootTableTrackerS2CPacket;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.loot.LootRandomiser;
@@ -16,7 +16,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.util.Identifier;
 
 public class EventHandler {
     public static void init() {
@@ -26,7 +25,7 @@ public class EventHandler {
     }
 
     private static void registerCommands() {
-        ArgumentTypeRegistry.registerArgumentType(new Identifier(TrulyRandom.MOD_ID, "set_string"), SetStringArgumentType.class, new SetStringArgumentTypeSerializer());
+        ArgumentTypeRegistry.registerArgumentType(TrulyRandom.id("set_string"), SetStringArgumentType.class, new SetStringArgumentTypeSerializer());
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> CommandHandler.register(dispatcher));
     }
@@ -40,6 +39,8 @@ public class EventHandler {
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
+            ServerPlayNetworking.send(handler.player, new SetClientRandomiserS2CPacket(randomiser.getModules()));
+
             LootRandomiser lootRandomiser = randomiser.getLootRandomiser();
             lootRandomiser.initTracker(handler.player);
             LootTableTracker tracker = lootRandomiser.getTracker(handler.player);

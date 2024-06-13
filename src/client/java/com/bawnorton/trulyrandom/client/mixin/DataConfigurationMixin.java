@@ -1,53 +1,53 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
 import com.bawnorton.trulyrandom.client.extend.DataConfigurationExtender;
-import com.bawnorton.trulyrandom.random.Randomiser;
-import com.bawnorton.trulyrandom.random.ServerRandomiser;
+import com.bawnorton.trulyrandom.random.module.Modules;
+import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import com.mojang.datafixers.kinds.App;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resource.DataConfiguration;
-import net.minecraft.resource.DataPackSettings;
-import net.minecraft.resource.featuretoggle.FeatureSet;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Mixin(DataConfiguration.class)
 public abstract class DataConfigurationMixin implements DataConfigurationExtender {
     @Unique
-    private static final ThreadLocal<ServerRandomiser> trulyrandom$randomiserThreadLocal = ThreadLocal.withInitial(() -> ServerRandomiser.DEFAULT);
-    @Unique
-    private ServerRandomiser trulyrandom$randomiser;
+    private Modules trulyrandom$randomiserModules;
 
-    @ModifyArg(method = "<clinit>", at = @At(value = "INVOKE", target = "Lcom/mojang/serialization/codecs/RecordCodecBuilder;create(Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;", remap = false))
+    @ModifyArg(method = "<clinit>",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lcom/mojang/serialization/codecs/RecordCodecBuilder;create(Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;",
+                    remap = false
+            )
+    )
     private static Function<RecordCodecBuilder.Instance<DataConfiguration>, ? extends App<RecordCodecBuilder.Mu<DataConfiguration>, DataConfiguration>> attachRandomiserModules(Function<RecordCodecBuilder.Instance<DataConfiguration>, ? extends App<RecordCodecBuilder.Mu<DataConfiguration>, DataConfiguration>> builder) {
         return instance -> instance.group(
                 RecordCodecBuilder.mapCodec(builder).forGetter(Function.identity()),
-                ServerRandomiser.CODEC
-                        .optionalFieldOf("trulyrandom$randomiser", ServerRandomiser.DEFAULT)
-                        .forGetter(dataConfig -> ((DataConfigurationExtender) (Object) dataConfig).trulyrandom$getRandomiser())
+                Modules.CODEC
+                        .optionalFieldOf("trulyrandom$randomiserModules").xmap(optional -> optional.orElse(null), Optional::ofNullable)
+                        .forGetter(dataConfig -> ((DataConfigurationExtender) (Object) dataConfig).trulyrandom$getRandomiserModules())
         ).apply(instance, (dataConfig, randomiser) -> {
-            trulyrandom$randomiserThreadLocal.set((ServerRandomiser) randomiser);
+            ((DataConfigurationExtender) (Object) dataConfig).trulyrandom$setRandomiserModules(randomiser);
             return dataConfig;
         });
     }
 
-    @Inject(method = "<init>", at = @At("TAIL"))
-    private void attachRandomiserData(DataPackSettings dataPackSettings, FeatureSet featureSet, CallbackInfo ci) {
-        //noinspection ConstantValue
-        if (trulyrandom$randomiserThreadLocal == null) {
-            this.trulyrandom$randomiser = ServerRandomiser.DEFAULT;
+    @Override
+    public Modules trulyrandom$getRandomiserModules() {
+        if(trulyrandom$randomiserModules == null) {
+            return RandomiserSaveLoader.getDefaultRandomiser();
         } else {
-            this.trulyrandom$randomiser = trulyrandom$randomiserThreadLocal.get();
+            return trulyrandom$randomiserModules;
         }
     }
 
     @Override
-    public Randomiser trulyrandom$getRandomiser() {
-        return trulyrandom$randomiser;
+    public void trulyrandom$setRandomiserModules(Modules modules) {
+        this.trulyrandom$randomiserModules = modules;
     }
 }

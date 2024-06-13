@@ -21,6 +21,8 @@ public class TrulyRandom implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static final Version VERSION;
 
+    private static MinecraftServer cachedServer;
+
     static {
         VERSION = FabricLoader.getInstance().getModContainer(MOD_ID).orElseThrow().getMetadata().getVersion();
     }
@@ -31,6 +33,7 @@ public class TrulyRandom implements ModInitializer {
             randomiser.init(server);
         }
 
+        cachedServer = server;
         return randomiser;
     }
 
@@ -51,11 +54,15 @@ public class TrulyRandom implements ModInitializer {
     }
 
     public static Identifier id(String path) {
-        return new Identifier(MOD_ID, path);
+        return Identifier.of(MOD_ID, path);
     }
 
     public static RandomiserSaveLoader getRandomiserLoader(MinecraftServer server) {
         return RandomiserSaveLoader.getServerState(server);
+    }
+
+    public static MinecraftServer getServer() {
+        return cachedServer;
     }
 
     @Override

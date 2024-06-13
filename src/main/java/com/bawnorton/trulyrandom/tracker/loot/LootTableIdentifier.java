@@ -23,7 +23,7 @@ public class LootTableIdentifier {
 
     public Identifier getSourceId() {
         if(isFromBlock()) {
-            return new Identifier(namespace, segments[1]);
+            return Identifier.of(namespace, segments[1]);
         }
         return null;
     }

@@ -1,6 +1,5 @@
 package com.bawnorton.trulyrandom.tracker;
 
-import com.bawnorton.trulyrandom.extend.TeamMember;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.Map;

@@ -8,15 +8,10 @@ import com.bawnorton.trulyrandom.network.packet.c2s.SetServerRandomiserC2SPacket
 import com.bawnorton.trulyrandom.network.packet.c2s.SetTargetClientRandomiserC2SPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.HandshakeS2CPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.OpenTargetedRandomiserScreenS2CPacket;
-import com.bawnorton.trulyrandom.network.packet.s2c.RequestOtherClientRandomiserS2CPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.SetClientRandomiserS2CPacket;
-import com.bawnorton.trulyrandom.network.packet.s2c.SyncLootTableTrackerS2CPacket;
-import com.bawnorton.trulyrandom.network.packet.s2c.SyncRecipeTrackerS2CPacket;
-import com.bawnorton.trulyrandom.random.Randomiser;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.RegistryByteBuf;
@@ -49,15 +44,7 @@ public class Networking {
     }
 
     private static void handleHandshake(HandshakeC2SPacket packet, ServerPlayNetworking.Context context) {
-        ServerPlayerEntity player = context.player();
-        MinecraftServer server = player.getServer();
-        Randomiser randomiser = TrulyRandom.getClientRandomiser(server, player.getUuid());
-        if(randomiser == null) {
-            randomiser = TrulyRandom.getRandomiser(server);
-        }
-        PacketSender sender = context.responseSender();
-        sender.sendPacket(new HandshakeS2CPacket(TrulyRandom.VERSION));
-        sender.sendPacket(new SetClientRandomiserS2CPacket(randomiser.getModules()));
+        context.responseSender().sendPacket(new HandshakeS2CPacket(TrulyRandom.VERSION));
     }
 
     private static void handleProvidedRandomiser(ProvidedRandomiserC2SPacket packet, ServerPlayNetworking.Context context) {

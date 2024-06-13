@@ -1,7 +1,8 @@
 package com.bawnorton.trulyrandom.client.extend;
 
-import com.bawnorton.trulyrandom.random.Randomiser;
+import com.bawnorton.trulyrandom.random.module.Modules;
 
 public interface DataConfigurationExtender {
-    Randomiser trulyrandom$getRandomiser();
+    Modules trulyrandom$getRandomiserModules();
+    void trulyrandom$setRandomiserModules(Modules modules);
 }

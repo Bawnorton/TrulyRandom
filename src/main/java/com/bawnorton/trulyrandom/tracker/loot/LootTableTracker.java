@@ -1,24 +1,50 @@
 package com.bawnorton.trulyrandom.tracker.loot;
 
+import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.collection.UnaryHashMap;
 import com.bawnorton.trulyrandom.collection.UnaryMap;
+import com.bawnorton.trulyrandom.extend.LookupExtender;
+import com.bawnorton.trulyrandom.mixin.accessor.CombinedEntryAccessor;
+import com.bawnorton.trulyrandom.mixin.accessor.EnchantmentsPredicateAccessor;
+import com.bawnorton.trulyrandom.mixin.accessor.LootPoolEntryAccessor;
+import com.bawnorton.trulyrandom.mixin.accessor.LootTableAccessor;
 import com.bawnorton.trulyrandom.mixin.accessor.VerticallyAttachableBlockItemAccessor;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.Tracker;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Block;
+import net.minecraft.component.ComponentType;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.loot.LootPool;
 import net.minecraft.loot.LootTable;
+import net.minecraft.loot.condition.LootCondition;
+import net.minecraft.loot.condition.MatchToolLootCondition;
+import net.minecraft.loot.entry.AlternativeEntry;
+import net.minecraft.loot.entry.CombinedEntry;
+import net.minecraft.loot.entry.ItemEntry;
+import net.minecraft.loot.entry.LootPoolEntry;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.predicate.item.EnchantmentPredicate;
+import net.minecraft.predicate.item.EnchantmentsPredicate;
+import net.minecraft.predicate.item.ItemPredicate;
+import net.minecraft.predicate.item.ItemSubPredicate;
+import net.minecraft.predicate.item.ItemSubPredicateTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.entry.RegistryEntryList;
+import net.minecraft.registry.tag.EnchantmentTags;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKey<LootTable>> {
     public static final Codec<LootTableTracker> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -93,26 +119,28 @@ public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKe
     @Override
     public void track(RegistryKey<LootTable> from, RegistryKey<LootTable> to) {
         if (!knownLootTables.containsKey(from)) {
+            knownLootTables.put(from, to);
             this.markDirty();
         }
 
-        knownLootTables.put(from, to);
-        recordSource(from);
+        boolean needsSilk = determineIfNeedsSilk(to);
+        recordSource(from, needsSilk);
     }
 
-    private void recordSource(RegistryKey<LootTable> lootTable) {
+    private void recordSource(RegistryKey<LootTable> lootTable, boolean needsSilk) {
         LootTableIdentifier lootTableId = LootTableIdentifier.from(lootTable.getValue());
         if (lootTableId.isFromBlock()) {
             Block sourceBlock = Registries.BLOCK.get(lootTableId.getSourceId());
             Item associatedItem = sourceBlock.asItem();
-            recordBlockToItem(sourceBlock, associatedItem);
+            recordBlockToItem(sourceBlock, associatedItem, needsSilk);
         }
     }
 
-    private void recordBlockToItem(Block block, Item item) {
+    private void recordBlockToItem(Block block, Item item, boolean needsSilk) {
         boolean brokeWithSilk = BROKEN_WITH_SILK.get();
         ItemLootMap.Result result = itemLootMap.computeIfAbsent(item, k -> {
             ItemLootMap.Result preResult = ItemLootMap.Result.of(brokeWithSilk, block);
+            if(!needsSilk) preResult.withSilk = true;
             if (item instanceof VerticallyAttachableBlockItemAccessor accessor) {
                 Block wallVariant = accessor.getWallBlock();
                 preResult.addBlock(wallVariant);
@@ -122,6 +150,50 @@ public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKe
         if (!result.withSilk && brokeWithSilk) {
             result.withSilk = true;
             this.markDirty();
+        }
+    }
+
+    private boolean determineIfNeedsSilk(RegistryKey<LootTable> triggerdLootTable) {
+        LootTable table = ((LookupExtender) TrulyRandom.getServer().getReloadableRegistries()).trulyrandom$getUnalteredLootTable(triggerdLootTable);
+        for(LootPool pool : ((LootTableAccessor) table).getPools()) {
+            List<LootCondition> conditions = getConditionsFromPool(pool);
+
+            for(LootCondition condition : conditions) {
+                if (!(condition instanceof MatchToolLootCondition matchToolLootCondition)) continue;
+
+                ItemPredicate predicate = matchToolLootCondition.predicate().orElse(null);
+                if (predicate == null) continue;
+
+                ItemSubPredicate subPredicate = predicate.subPredicates().get(ItemSubPredicateTypes.ENCHANTMENTS);
+                if (!(subPredicate instanceof EnchantmentsPredicate enchantmentsPredicate)) continue;
+
+                List<EnchantmentPredicate> enchantmentPredicates = ((EnchantmentsPredicateAccessor) enchantmentsPredicate).callGetEnchantments();
+                for(EnchantmentPredicate enchantmentPredicate : enchantmentPredicates) {
+                    RegistryEntryList<Enchantment> enchantments = enchantmentPredicate.enchantments().orElse(null);
+                    if (enchantments == null) continue;
+
+                    for(RegistryEntry<Enchantment> enchantment : enchantments) {
+                        return enchantment.getIdAsString().equals(Enchantments.SILK_TOUCH.getValue().toString());
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private List<LootCondition> getConditionsFromPool(LootPool pool) {
+        List<LootCondition> conditions = new ArrayList<>(pool.conditions);
+        scanEntries(pool.entries, conditions);
+        return conditions;
+    }
+
+    private void scanEntries(List<LootPoolEntry> children, List<LootCondition> conditions) {
+        for(LootPoolEntry entry : children) {
+            conditions.addAll(((LootPoolEntryAccessor) entry).getConditions());
+            if (!(entry instanceof CombinedEntry)) continue;
+
+            List<LootPoolEntry> entries = ((CombinedEntryAccessor) entry).getChildren();
+            scanEntries(entries, conditions);
         }
     }
 

@@ -60,8 +60,8 @@ dependencies {
 
     include(implementation(annotationProcessor("com.github.bawnorton.mixinsquared:mixinsquared-fabric:0.1.1")))
 
-//    modImplementation("maven.modrinth:sodium:${project.sodium_version}")
-//    modImplementation("maven.modrinth:iris:${project.iris_version}")
+    modImplementation("maven.modrinth:sodium:${project.sodium_version}")
+    modImplementation("maven.modrinth:iris:${project.iris_version}")
     modCompileOnly("maven.modrinth:modernfix:${project.modernfix_version}")
 
     // needed for iris
