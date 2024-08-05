@@ -20,8 +20,9 @@ public class ItemLootMap extends HashMap<Item, ItemLootMap.Result> {
     public static final Codec<ItemLootMap> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.unboundedMap(
                     Identifier.CODEC.xmap(Registries.ITEM::get, Registries.ITEM::getId),
-                    ItemLootMap.Result.CODEC
-            ).fieldOf("itemLootMap").forGetter(ItemLootMap::new)
+                    ItemLootMap.Result.CODEC)
+                    .fieldOf("item_loot_map")
+                    .forGetter(ItemLootMap::new)
     ).apply(instance, ItemLootMap::new));
 
     public static final PacketCodec<RegistryByteBuf, ItemLootMap> PACKET_CODEC = PacketCodecs.map(

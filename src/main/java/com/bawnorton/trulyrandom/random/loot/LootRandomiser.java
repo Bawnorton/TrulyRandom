@@ -8,8 +8,10 @@ import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.DataResult;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.block.Blocks;
 import net.minecraft.loot.LootTable;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -27,9 +29,30 @@ public class LootRandomiser extends ServerRandomiserModule {
     private final Map<Team, LootTableTracker> trackers = new HashMap<>();
     private final Map<RegistryKey<LootTable>, LootTable> originalLootTables = new HashMap<>();
     private final UnaryMap<RegistryKey<LootTable>> redirectMap = new UnaryHashMap<>();
+    private final Registry<LootTable> lootTableRegistry;
+
+    private final Set<RegistryKey<LootTable>> blacklist = Set.of(
+            Blocks.SHULKER_BOX.getLootTableKey(),
+            Blocks.WHITE_SHULKER_BOX.getLootTableKey(),
+            Blocks.ORANGE_SHULKER_BOX.getLootTableKey(),
+            Blocks.MAGENTA_SHULKER_BOX.getLootTableKey(),
+            Blocks.LIGHT_BLUE_SHULKER_BOX.getLootTableKey(),
+            Blocks.YELLOW_SHULKER_BOX.getLootTableKey(),
+            Blocks.LIME_SHULKER_BOX.getLootTableKey(),
+            Blocks.PINK_SHULKER_BOX.getLootTableKey(),
+            Blocks.GRAY_SHULKER_BOX.getLootTableKey(),
+            Blocks.LIGHT_GRAY_SHULKER_BOX.getLootTableKey(),
+            Blocks.CYAN_SHULKER_BOX.getLootTableKey(),
+            Blocks.PURPLE_SHULKER_BOX.getLootTableKey(),
+            Blocks.BLUE_SHULKER_BOX.getLootTableKey(),
+            Blocks.BROWN_SHULKER_BOX.getLootTableKey(),
+            Blocks.GREEN_SHULKER_BOX.getLootTableKey(),
+            Blocks.RED_SHULKER_BOX.getLootTableKey(),
+            Blocks.BLACK_SHULKER_BOX.getLootTableKey()
+    );
 
     public LootRandomiser(MinecraftServer server) {
-        Registry<LootTable> lootTableRegistry = server.getReloadableRegistries()
+        lootTableRegistry = server.getReloadableRegistries()
                 .getRegistryManager()
                 .get(RegistryKeys.LOOT_TABLE);
         Set<RegistryKey<LootTable>> keys = lootTableRegistry.getKeys();
@@ -42,11 +65,13 @@ public class LootRandomiser extends ServerRandomiserModule {
     public RegistryKey<LootTable> getLootTable(@NotNull List<Team> teams, RegistryKey<LootTable> key) {
         RegistryKey<LootTable> result = redirectMap.getOrDefault(key, key);
         if (!result.equals(key)) {
-            teams.forEach(team -> trackers.computeIfAbsent(team, k -> {
-                        LootTableTracker tracker = new LootTableTracker();
-                        tracker.setTeam(team);
-                        return tracker;
-                    }).track(key, result));
+            for (Team team : teams) {
+                trackers.computeIfAbsent(team, k -> {
+                    LootTableTracker tracker = new LootTableTracker();
+                    tracker.setTeam(team);
+                    return tracker;
+                }).track(key, result);
+            }
         }
         LootTableTracker.BROKEN_WITH_SILK.remove();
         return result;
@@ -78,11 +103,18 @@ public class LootRandomiser extends ServerRandomiserModule {
         keys.sort(Comparator.comparing(RegistryKey::getValue));
         Random random = new Random(seed);
         Collections.shuffle(keys, random);
+        BiMap<RegistryKey<LootTable>, RegistryKey<LootTable>> preRedirects = HashBiMap.create(keys.size());
         for (int i = 0; i < keys.size(); i++) {
             RegistryKey<LootTable> originalKey = keys.get(i);
             RegistryKey<LootTable> randomKey = keys.get((i + 1) % keys.size());
-            redirectMap.put(originalKey, randomKey);
+            preRedirects.put(originalKey, randomKey);
         }
+        blacklist.forEach(key -> {
+            RegistryKey<LootTable> blacklistedDrops = preRedirects.remove(key);
+            RegistryKey<LootTable> dropsBlacklisted = preRedirects.inverse().remove(key);
+            preRedirects.put(dropsBlacklisted, blacklistedDrops);
+        });
+        redirectMap.putAll(preRedirects);
     }
 
     @Override

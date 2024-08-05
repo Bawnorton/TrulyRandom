@@ -1,68 +1,67 @@
 package com.bawnorton.trulyrandom.tracker.loot;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.collection.UnaryHashMap;
-import com.bawnorton.trulyrandom.collection.UnaryMap;
+import com.bawnorton.trulyrandom.collection.UnaryBiMap;
+import com.bawnorton.trulyrandom.collection.UnaryHashBiMap;
 import com.bawnorton.trulyrandom.extend.LookupExtender;
-import com.bawnorton.trulyrandom.mixin.accessor.CombinedEntryAccessor;
-import com.bawnorton.trulyrandom.mixin.accessor.EnchantmentsPredicateAccessor;
-import com.bawnorton.trulyrandom.mixin.accessor.LootPoolEntryAccessor;
-import com.bawnorton.trulyrandom.mixin.accessor.LootTableAccessor;
 import com.bawnorton.trulyrandom.mixin.accessor.VerticallyAttachableBlockItemAccessor;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.Tracker;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Block;
-import net.minecraft.component.ComponentType;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.loot.LootPool;
 import net.minecraft.loot.LootTable;
-import net.minecraft.loot.condition.LootCondition;
-import net.minecraft.loot.condition.MatchToolLootCondition;
-import net.minecraft.loot.entry.AlternativeEntry;
-import net.minecraft.loot.entry.CombinedEntry;
-import net.minecraft.loot.entry.ItemEntry;
-import net.minecraft.loot.entry.LootPoolEntry;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.predicate.item.EnchantmentPredicate;
-import net.minecraft.predicate.item.EnchantmentsPredicate;
-import net.minecraft.predicate.item.ItemPredicate;
-import net.minecraft.predicate.item.ItemSubPredicate;
-import net.minecraft.predicate.item.ItemSubPredicateTypes;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.registry.tag.EnchantmentTags;
+import net.minecraft.util.Identifier;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKey<LootTable>> {
     public static final Codec<LootTableTracker> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.unboundedMap(
                     RegistryKey.createCodec(RegistryKeys.LOOT_TABLE),
-                    RegistryKey.createCodec(RegistryKeys.LOOT_TABLE)
-            ).fieldOf("knownLootTables").forGetter(tracker -> tracker.knownLootTables),
-                    ItemLootMap.CODEC.fieldOf("itemLootMap").forGetter(tracker -> tracker.itemLootMap),
-                    Team.CODEC.fieldOf("team").forGetter(tracker -> tracker.team)
-            ).apply(instance, (lootTables, itemToBlockMap, team) -> new LootTableTracker(new UnaryHashMap<>(lootTables), itemToBlockMap, team)));
+                    RegistryKey.createCodec(RegistryKeys.LOOT_TABLE))
+                    .fieldOf("known_loot_tables")
+                    .forGetter(tracker -> tracker.knownLootTables),
+            ItemLootMap.CODEC
+                    .fieldOf("item_loot_map")
+                    .forGetter(tracker -> tracker.itemLootMap),
+            Codec.unboundedMap(
+                    Identifier.CODEC.xmap(Registries.ITEM::get, Registries.ITEM::getId),
+                    Codec.list(LootTableDrops.CODEC).xmap(list -> (Set<LootTableDrops>) new HashSet<>(list), ArrayList::new))
+                    .fieldOf("source_map")
+                    .forGetter(tracker -> tracker.sourceMap),
+            Team.CODEC
+                    .fieldOf("team")
+                    .forGetter(tracker -> tracker.team)
+            ).apply(instance, (lootTables, itemLootMap, infoMap, team) -> new LootTableTracker(new UnaryHashBiMap<>(lootTables), itemLootMap, new HashMap<>(infoMap), team)));
 
     public static final PacketCodec<RegistryByteBuf, LootTableTracker> PACKET_CODEC = PacketCodec.tuple(
             PacketCodecs.map(
-                    UnaryHashMap::new,
+                    UnaryHashBiMap::new,
                     RegistryKey.createPacketCodec(RegistryKeys.LOOT_TABLE),
                     RegistryKey.createPacketCodec(RegistryKeys.LOOT_TABLE)
             ), tracker -> tracker.knownLootTables,
             ItemLootMap.PACKET_CODEC, tracker -> tracker.itemLootMap,
+            PacketCodecs.map(
+                    HashMap::new,
+                    Identifier.PACKET_CODEC.xmap(Registries.ITEM::get, Registries.ITEM::getId),
+                    PacketCodecs.collection(HashSet::new, LootTableDrops.PACKET_CODEC)
+            ), tracker -> tracker.sourceMap,
             Team.PACKET_CODEC, tracker -> tracker.team,
             LootTableTracker::new
     );
@@ -70,19 +69,22 @@ public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKe
     public static final ThreadLocal<Boolean> BROKEN_WITH_SILK = ThreadLocal.withInitial(() -> false);
     public static final ThreadLocal<List<Team>> LOOT_CAUSERS = ThreadLocal.withInitial(List::of);
 
-    private final UnaryMap<RegistryKey<LootTable>> knownLootTables;
+    private final UnaryBiMap<RegistryKey<LootTable>> knownLootTables;
     private final ItemLootMap itemLootMap;
+    private final Map<Item, Set<LootTableDrops>> sourceMap;
 
-    public LootTableTracker(UnaryMap<RegistryKey<LootTable>> map, ItemLootMap itemLootMap, Team team) {
+    public LootTableTracker(UnaryBiMap<RegistryKey<LootTable>> map, ItemLootMap itemLootMap, Map<Item, Set<LootTableDrops>> sourceMap, Team team) {
         super(team);
         this.knownLootTables = map;
         this.itemLootMap = itemLootMap;
+        this.sourceMap = sourceMap;
     }
 
     public LootTableTracker() {
         super(null);
-        this.knownLootTables = new UnaryHashMap<>();
+        this.knownLootTables = new UnaryHashBiMap<>();
         this.itemLootMap = new ItemLootMap();
+        this.sourceMap = new HashMap<>();
     }
 
     public boolean knowsItemLootTable(Item item) {
@@ -123,8 +125,17 @@ public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKe
             this.markDirty();
         }
 
-        boolean needsSilk = determineIfNeedsSilk(to);
+        LootTable table = ((LookupExtender) TrulyRandom.getServer().getReloadableRegistries()).trulyrandom$getUnalteredLootTable(to);
+        boolean needsSilk = LootTableReader.determineIfNeedsSilk(table);
         recordSource(from, needsSilk);
+        if(to != null) {
+            LootTableDrops drops = getDrops(to);
+            drops.getDrops().forEach(drop -> {
+                if(sourceMap.computeIfAbsent(drop, k -> new HashSet<>()).add(drops)) {
+                    markDirty();
+                }
+            });
+        }
     }
 
     private void recordSource(RegistryKey<LootTable> lootTable, boolean needsSilk) {
@@ -153,59 +164,36 @@ public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKe
         }
     }
 
-    private boolean determineIfNeedsSilk(RegistryKey<LootTable> triggerdLootTable) {
-        LootTable table = ((LookupExtender) TrulyRandom.getServer().getReloadableRegistries()).trulyrandom$getUnalteredLootTable(triggerdLootTable);
-        for(LootPool pool : ((LootTableAccessor) table).getPools()) {
-            List<LootCondition> conditions = getConditionsFromPool(pool);
-
-            for(LootCondition condition : conditions) {
-                if (!(condition instanceof MatchToolLootCondition matchToolLootCondition)) continue;
-
-                ItemPredicate predicate = matchToolLootCondition.predicate().orElse(null);
-                if (predicate == null) continue;
-
-                ItemSubPredicate subPredicate = predicate.subPredicates().get(ItemSubPredicateTypes.ENCHANTMENTS);
-                if (!(subPredicate instanceof EnchantmentsPredicate enchantmentsPredicate)) continue;
-
-                List<EnchantmentPredicate> enchantmentPredicates = ((EnchantmentsPredicateAccessor) enchantmentsPredicate).callGetEnchantments();
-                for(EnchantmentPredicate enchantmentPredicate : enchantmentPredicates) {
-                    RegistryEntryList<Enchantment> enchantments = enchantmentPredicate.enchantments().orElse(null);
-                    if (enchantments == null) continue;
-
-                    for(RegistryEntry<Enchantment> enchantment : enchantments) {
-                        return enchantment.getIdAsString().equals(Enchantments.SILK_TOUCH.getValue().toString());
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private List<LootCondition> getConditionsFromPool(LootPool pool) {
-        List<LootCondition> conditions = new ArrayList<>(pool.conditions);
-        scanEntries(pool.entries, conditions);
-        return conditions;
-    }
-
-    private void scanEntries(List<LootPoolEntry> children, List<LootCondition> conditions) {
-        for(LootPoolEntry entry : children) {
-            conditions.addAll(((LootPoolEntryAccessor) entry).getConditions());
-            if (!(entry instanceof CombinedEntry)) continue;
-
-            List<LootPoolEntry> entries = ((CombinedEntryAccessor) entry).getChildren();
-            scanEntries(entries, conditions);
-        }
-    }
-
     @Override
-    public UnaryMap<RegistryKey<LootTable>> known() {
+    public UnaryBiMap<RegistryKey<LootTable>> known() {
         return knownLootTables;
+    }
+
+    public Optional<RegistryKey<LootTable>> getFrom(RegistryKey<LootTable> to) {
+        return Optional.ofNullable(knownLootTables.inverse().get(to));
+    }
+
+    public Optional<RegistryKey<LootTable>> getTo(RegistryKey<LootTable> from) {
+        return Optional.ofNullable(knownLootTables.get(from));
+    }
+
+    public LootTableDrops getDrops(RegistryKey<LootTable> to) {
+        return LootTableDrops.ALL_DROPS.get(to);
+    }
+
+    public List<Item> getAllDrops() {
+        return new ArrayList<>(sourceMap.keySet());
+    }
+
+    public Set<LootTableDrops> getSources(Item item) {
+        return sourceMap.getOrDefault(item, Set.of());
     }
 
     @Override
     public void reset() {
         knownLootTables.clear();
         itemLootMap.clear();
+        sourceMap.clear();
         this.markDirty();
     }
 }

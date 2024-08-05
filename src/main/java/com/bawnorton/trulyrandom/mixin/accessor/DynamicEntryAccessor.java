@@ -1,0 +1,12 @@
+package com.bawnorton.trulyrandom.mixin.accessor;
+
+import net.minecraft.loot.entry.DynamicEntry;
+import net.minecraft.util.Identifier;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Accessor;
+
+@Mixin(DynamicEntry.class)
+public interface DynamicEntryAccessor {
+    @Accessor
+    Identifier getName();
+}

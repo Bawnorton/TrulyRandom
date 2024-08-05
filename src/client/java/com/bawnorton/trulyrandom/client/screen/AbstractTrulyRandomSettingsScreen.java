@@ -91,7 +91,6 @@ public abstract class AbstractTrulyRandomSettingsScreen extends Screen {
 
     @Override
     public void close() {
-        assert client != null;
         client.setScreen(parent);
     }
 

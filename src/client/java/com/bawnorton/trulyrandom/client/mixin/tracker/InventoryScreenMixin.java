@@ -3,6 +3,7 @@ package com.bawnorton.trulyrandom.client.mixin.tracker;
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.screen.lootbook.LootBookWidget;
 import com.bawnorton.trulyrandom.random.module.Module;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.DrawContext;
@@ -11,6 +12,7 @@ import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.text.Text;
@@ -35,6 +37,9 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin<
     @Unique
     private final LootBookWidget lootBook = new LootBookWidget();
 
+    @Unique
+    private boolean isShort;
+
     protected InventoryScreenMixin(PlayerScreenHandler screenHandler, PlayerInventory playerInventory, Text text) {
         super(screenHandler, playerInventory, text);
     }
@@ -43,6 +48,8 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin<
     private void resetButtonPositions() {
         recipeButton.setX(x + 104);
         lootBookButton.setX(recipeButton.getX() + 22);
+        recipeButton.setY(height / 2 - 22 + lootBook.topOffset);
+        lootBookButton.setY(recipeButton.getY());
     }
 
     @Inject(
@@ -54,13 +61,15 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin<
             )
     )
     private void initLootBook(CallbackInfo ci) {
-        lootBook.initialize(width, height, client, narrow, handler);
+        isShort = height < 350;
+        lootBook.initialize(width, height, client, narrow, isShort);
         lootBookButton = new TexturedButtonWidget(recipeButton.getX() + 22, height / 2 - 22, 20, 18, LootBookWidget.BUTTON_TEXTURES, button -> {
             lootBook.toggleOpen();
             if(lootBook.isOpen() && recipeBook.isOpen()) {
                 recipeBook.toggleOpen();
             }
             x = lootBook.findLeftEdge(width, backgroundWidth);
+            y = (height - backgroundHeight) / 2 + lootBook.topOffset;
             resetButtonPositions();
             mouseDown = true;
         }) {
@@ -72,6 +81,14 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin<
             }
         };
 
+        lootBook.registerGraphListener(graph -> {
+            y = (height - backgroundHeight) / 2 + lootBook.topOffset;
+            resetButtonPositions();
+        }, graph -> {
+            y = (height - backgroundHeight) / 2 + lootBook.topOffset;
+            resetButtonPositions();
+        });
+
         if(recipeBook.isOpen()) {
             x = recipeBook.findLeftEdge(width, backgroundWidth);
         } else if (lootBook.isOpen()) {
@@ -81,8 +98,22 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin<
             x = (width - backgroundWidth) / 2;
         }
 
+        y = (height - backgroundHeight) / 2 + lootBook.topOffset;
+
         addDrawableChild(lootBookButton);
         addSelectableChild(lootBook);
+    }
+
+    @ModifyArg(
+            method = "init",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/widget/TexturedButtonWidget;<init>(IIIILnet/minecraft/client/gui/screen/ButtonTextures;Lnet/minecraft/client/gui/widget/ButtonWidget$PressAction;)V"
+            ),
+            index = 1
+    )
+    private int shiftDownWhenGraphOpen(int y) {
+        return y;
     }
 
     @Inject(method = "method_19891", at = @At("TAIL"))
@@ -90,6 +121,7 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin<
         if(recipeBook.isOpen() && lootBook.isOpen()) {
             lootBook.toggleOpen();
         }
+        y = (height - backgroundHeight) / 2 + lootBook.topOffset;
         resetButtonPositions();
     }
 
@@ -113,16 +145,104 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin<
             )
     )
     private void renderLootBook(InventoryScreen instance, DrawContext context, int mouseX, int mouseY, float delta, Operation<Void> original) {
+        if (!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+            if(lootBook.isOpen()) {
+                lootBook.toggleOpen();
+            }
+            return;
+        }
+
         if(lootBook.isOpen() && narrow) {
             renderBackground(context, mouseX, mouseY, delta);
+            lootBook.render(context, mouseX, mouseY, delta);
+        } else if (lootBook.isGraphOpen() && isShort) {
+            renderBackground(context, mouseX, mouseY, delta);
+            lootBook.renderGraph(context, mouseX, mouseY, delta);
         } else {
             original.call(instance, context, mouseX, mouseY, delta);
-        }
-        if (TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
             lootBook.render(context, mouseX, mouseY, delta);
-        } else if(lootBook.isOpen()) {
-            lootBook.toggleOpen();
         }
+    }
+
+    @Inject(
+            method = "render",
+            at = @At("TAIL")
+    )
+    private void renderLootBookTooltip(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+        lootBook.drawTooltip(context, mouseX, mouseY);
+    }
+
+    @WrapOperation(
+            method = "keyPressed",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/screen/ingame/AbstractInventoryScreen;keyPressed(III)Z"
+            )
+    )
+    private boolean keyPressedInLootBook(InventoryScreen instance, int keyCode, int scanCode, int modifiers, Operation<Boolean> original) {
+        return lootBook.keyPressed(keyCode, scanCode, modifiers) || original.call(instance, keyCode, scanCode, modifiers);
+    }
+
+    @WrapOperation(
+            method = "charTyped",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/screen/ingame/AbstractInventoryScreen;charTyped(CI)Z"
+            )
+    )
+    private boolean charTypedInLootBook(InventoryScreen instance, char chr, int modifiers, Operation<Boolean> original) {
+        return lootBook.charTyped(chr, modifiers) || original.call(instance, chr, modifiers);
+    }
+
+    @WrapOperation(
+            method = "isPointWithinBounds",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/screen/ingame/AbstractInventoryScreen;isPointWithinBounds(IIIIDD)Z"
+            )
+    )
+    private boolean isPointWithinLootBookBounds(InventoryScreen instance, int x, int y, int width, int height, double pointX, double pointY, Operation<Boolean> original) {
+        boolean closed = !lootBook.isOpen();
+        boolean wide = !narrow;
+        boolean tall = !isShort;
+        if(wide || tall || closed) {
+            return original.call(instance, x, y, width, height, pointX, pointY);
+        } else {
+            return false;
+        }
+    }
+
+    @WrapOperation(
+            method = "mouseClicked",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/screen/ingame/AbstractInventoryScreen;mouseClicked(DDI)Z"
+            )
+    )
+    private boolean mouseClickedInLootBook(InventoryScreen instance, double mouseX, double mouseY, int button, Operation<Boolean> original) {
+        if(lootBook.mouseClicked(mouseX, mouseY, button)) {
+            setFocused(lootBook);
+            return true;
+        }
+
+        boolean closed = !lootBook.isOpen();
+        boolean wide = !narrow;
+        boolean tall = !isShort;
+        if(wide || tall || closed) {
+            return original.call(instance, mouseX, mouseY, button);
+        } else {
+            return false;
+        }
+    }
+
+    @ModifyReturnValue(
+            method = "isClickOutsideBounds",
+            at = @At("RETURN")
+    )
+    private boolean isClickOutsideLootBook(boolean original, double mouseX, double mouseY, int left, int top) {
+        if (!original) return false;
+
+        return lootBook.isClickOutsideBounds(mouseX, mouseY, x, y, backgroundWidth, backgroundHeight);
     }
 
     @Override

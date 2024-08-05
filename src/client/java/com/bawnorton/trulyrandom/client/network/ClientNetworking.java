@@ -8,21 +8,18 @@ import com.bawnorton.trulyrandom.client.screen.TrulyRandomSettingsScreen;
 import com.bawnorton.trulyrandom.network.packet.c2s.ProvidedRandomiserC2SPacket;
 import com.bawnorton.trulyrandom.network.packet.c2s.SetServerRandomiserC2SPacket;
 import com.bawnorton.trulyrandom.network.packet.c2s.SetTargetClientRandomiserC2SPacket;
-import com.bawnorton.trulyrandom.network.packet.s2c.HandshakeS2CPacket;
-import com.bawnorton.trulyrandom.network.packet.s2c.OpenRandomiserScreenS2CPacket;
-import com.bawnorton.trulyrandom.network.packet.s2c.OpenTargetedRandomiserScreenS2CPacket;
-import com.bawnorton.trulyrandom.network.packet.s2c.RequestOtherClientRandomiserS2CPacket;
-import com.bawnorton.trulyrandom.network.packet.s2c.SetClientRandomiserS2CPacket;
-import com.bawnorton.trulyrandom.network.packet.s2c.SyncLootTableTrackerS2CPacket;
-import com.bawnorton.trulyrandom.network.packet.s2c.SyncRecipeTrackerS2CPacket;
+import com.bawnorton.trulyrandom.network.packet.s2c.*;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
+import com.bawnorton.trulyrandom.tracker.loot.LootTableDrops;
+import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +37,7 @@ public class ClientNetworking {
         playS2C.register(SetClientRandomiserS2CPacket.PACKET_ID, SetClientRandomiserS2CPacket.PACKET_CODEC);
         playS2C.register(SyncLootTableTrackerS2CPacket.PACKET_ID, SyncLootTableTrackerS2CPacket.PACKET_CODEC);
         playS2C.register(SyncRecipeTrackerS2CPacket.PACKET_ID, SyncRecipeTrackerS2CPacket.PACKET_CODEC);
+        playS2C.register(SyncLootDropsS2CPacket.PACKET_ID, SyncLootDropsS2CPacket.PACKET_CODEC);
 
         ClientPlayNetworking.registerGlobalReceiver(HandshakeS2CPacket.PACKET_ID, ClientNetworking::handleHandshake);
         ClientPlayNetworking.registerGlobalReceiver(OpenRandomiserScreenS2CPacket.PACKET_ID, ClientNetworking::handleOpenRandomiserScreen);
@@ -48,6 +46,7 @@ public class ClientNetworking {
         ClientPlayNetworking.registerGlobalReceiver(SetClientRandomiserS2CPacket.PACKET_ID, ClientNetworking::handleSetClientRandomiser);
         ClientPlayNetworking.registerGlobalReceiver(SyncLootTableTrackerS2CPacket.PACKET_ID, ClientNetworking::handleSyncLootTableTracker);
         ClientPlayNetworking.registerGlobalReceiver(SyncRecipeTrackerS2CPacket.PACKET_ID, ClientNetworking::handleSyncRecipeTracker);
+        ClientPlayNetworking.registerGlobalReceiver(SyncLootDropsS2CPacket.PACKET_ID, ClientNetworking::handleSyncLootDrops);
     }
 
     public static void registerRecievedCallback(CustomPayload.Id<?> packetId, Runnable callback) {
@@ -120,6 +119,12 @@ public class ClientNetworking {
     private static void handleSyncRecipeTracker(SyncRecipeTrackerS2CPacket packet, ClientPlayNetworking.Context context) {
         TrulyRandomClient.getRandomiser().setRecipeTracker(packet.tracker());
         runCallback(SyncRecipeTrackerS2CPacket.PACKET_ID);
+    }
+
+    private static void handleSyncLootDrops(SyncLootDropsS2CPacket packet, ClientPlayNetworking.Context context) {
+        LootTableDrops.ALL_DROPS.clear();
+        LootTableDrops.ALL_DROPS.putAll(packet.dropsMap());
+        runCallback(SyncLootDropsS2CPacket.PACKET_ID);
     }
 
     interface RunOnce {
