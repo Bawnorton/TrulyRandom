@@ -11,8 +11,8 @@ public class ItemElement extends GraphElement {
     }
 
     @Override
-    public void render(DrawContext drawContext, int x, int y) {
-
+    public void render(DrawContext context, int x, int y) {
+        context.drawItemWithoutEntity(item.getDefaultStack(), x - 8, y - 8);
     }
 
     @Override

@@ -11,15 +11,13 @@ import com.bawnorton.trulyrandom.network.packet.c2s.SetTargetClientRandomiserC2S
 import com.bawnorton.trulyrandom.network.packet.s2c.*;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
-import com.bawnorton.trulyrandom.tracker.loot.LootTableDrops;
-import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
+import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import java.util.HashMap;
 import java.util.Map;

@@ -68,6 +68,7 @@ public class LootRandomiser extends ServerRandomiserModule {
             for (Team team : teams) {
                 trackers.computeIfAbsent(team, k -> {
                     LootTableTracker tracker = new LootTableTracker();
+                    tracker.setLootTableRegistry(lootTableRegistry);
                     tracker.setTeam(team);
                     return tracker;
                 }).track(key, result);
@@ -92,7 +93,10 @@ public class LootRandomiser extends ServerRandomiserModule {
         NbtList trackerNbt = nbt.getList("trackers", NbtElement.COMPOUND_TYPE);
         for (NbtElement element : trackerNbt) {
             DataResult<LootTableTracker> result = LootTableTracker.CODEC.parse(NbtOps.INSTANCE, element);
-            result.result().ifPresent(tracker -> trackers.put(tracker.getTeam(), tracker));
+            result.result().ifPresent(tracker -> {
+                trackers.put(tracker.getTeam(), tracker);
+                tracker.setLootTableRegistry(lootTableRegistry);
+            });
             result.error().ifPresent(e -> TrulyRandom.LOGGER.error(e.message()));
         }
     }

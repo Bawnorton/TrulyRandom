@@ -64,7 +64,7 @@ public class LootBookWidget implements Drawable, Element, Selectable {
 
     public void reset() {
         rightOffset = narrow ? 0 : 86;
-        if(isGraphOpen()) {
+        if(controller.getGraphItem() != null) {
             topOffset = isShort ? 0 : LootBookGraph.HEIGHT / 2 + 2;
         } else {
             topOffset = 0;
@@ -203,8 +203,14 @@ public class LootBookWidget implements Drawable, Element, Selectable {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (!isOpen() || client.player.isSpectator()) return false;
 
+        if(graph.mouseClicked(mouseX, mouseY, button)) {
+            return true;
+        }
+
         if(lootArea.mouseClicked(mouseX, mouseY, button)) {
-            openGraph(lootArea.getLastClickedItem());
+            if(lootArea.getLastClickedItem() != null) {
+                openGraph(lootArea.getLastClickedItem());
+            }
             return true;
         }
 
@@ -215,6 +221,11 @@ public class LootBookWidget implements Drawable, Element, Selectable {
 
         searchField.setFocused(false);
         return false;
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        return graph.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
     @Override

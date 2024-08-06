@@ -1,4 +1,4 @@
-package com.bawnorton.trulyrandom.mixin.loot;
+package com.bawnorton.trulyrandom.mixin.tracker;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.random.module.Module;

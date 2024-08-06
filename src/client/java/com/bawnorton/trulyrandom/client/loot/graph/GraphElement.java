@@ -33,7 +33,7 @@ public abstract class GraphElement {
         to.from.add(this);
     }
 
-    public abstract void render(DrawContext drawContext, int x, int y);
+    public abstract void render(DrawContext context, int x, int y);
 
     public Node<GraphElement> supplyGraph(Graph<GraphElement> graph) {
         Node<GraphElement> node = new Node<>(this);

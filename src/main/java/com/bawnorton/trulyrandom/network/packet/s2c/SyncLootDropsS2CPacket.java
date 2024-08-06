@@ -1,7 +1,7 @@
 package com.bawnorton.trulyrandom.network.packet.s2c;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.tracker.loot.LootTableDrops;
+import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
 import net.minecraft.loot.LootTable;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;

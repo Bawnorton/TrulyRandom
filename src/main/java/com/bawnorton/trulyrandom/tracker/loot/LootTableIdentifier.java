@@ -44,6 +44,30 @@ public class LootTableIdentifier {
         return isFrom("gameplay");
     }
 
+    public boolean isFishing() {
+        return isFromGameplay() && isSegment(1, "fishing");
+    }
+
+    public boolean isCatMorningGift() {
+        return isFromGameplay() && isSegment(1, "cat_morning_gift");
+    }
+
+    public boolean isPandaSneeze() {
+        return isFromGameplay() && isSegment(1, "panda_sneeze");
+    }
+
+    public boolean isPiglinBartering() {
+        return isFromGameplay() && isSegment(1, "piglin_bartering");
+    }
+
+    public boolean isSnifferDigging() {
+        return isFromGameplay() && isSegment(1, "sniffer_digging");
+    }
+
+    public boolean isHeroOfTheVillage() {
+        return isFromGameplay() && isSegment(1, "hero_of_the_village");
+    }
+
     public boolean isFromPot() {
         return isFrom("pots");
     }
@@ -66,8 +90,14 @@ public class LootTableIdentifier {
         return segments[0].equals(key);
     }
 
+    private boolean isSegment(int index, String segment) {
+        if(index >= segments.length) return false;
+
+        return segments[index].equals(segment);
+    }
+
     public Identifier getSourceId() {
-        if(isFromBlock()) {
+        if(isFromBlock() || isFromEntity()) {
             return Identifier.of(namespace, segments[1]);
         }
         return null;

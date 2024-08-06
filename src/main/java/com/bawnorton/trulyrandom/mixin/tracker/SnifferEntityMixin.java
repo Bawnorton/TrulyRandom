@@ -1,4 +1,4 @@
-package com.bawnorton.trulyrandom.mixin.loot;
+package com.bawnorton.trulyrandom.mixin.tracker;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.random.module.Module;
@@ -23,7 +23,6 @@ public abstract class SnifferEntityMixin extends AnimalEntity {
     @Inject(method = "dropSeeds", at = @At(value = "INVOKE", target = "Lnet/minecraft/registry/ReloadableRegistries$Lookup;getLootTable(Lnet/minecraft/registry/RegistryKey;)Lnet/minecraft/loot/LootTable;"))
     private void trackCause(CallbackInfo ci) {
         if(!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
-        if(getWorld().isClient()) return;
 
         LootTableTracker.LOOT_CAUSERS.remove();
         PlayerEntity nearest = getWorld().getClosestPlayer(this, 32D);

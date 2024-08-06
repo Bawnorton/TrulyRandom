@@ -4,6 +4,7 @@ import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.screen.lootbook.LootBookWidget;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.DrawContext;
@@ -12,9 +13,6 @@ import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,13 +22,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(InventoryScreen.class)
-public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin<PlayerScreenHandler> {
+public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin {
     @Shadow private boolean narrow;
     @Shadow private boolean mouseDown;
     @Shadow @Final private RecipeBookWidget recipeBook;
 
+    @Shadow private float mouseY;
     @Unique private TexturedButtonWidget recipeButton;
     @Unique private TexturedButtonWidget lootBookButton;
 
@@ -40,8 +40,8 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin<
     @Unique
     private boolean isShort;
 
-    protected InventoryScreenMixin(PlayerScreenHandler screenHandler, PlayerInventory playerInventory, Text text) {
-        super(screenHandler, playerInventory, text);
+    protected InventoryScreenMixin(Text title) {
+        super(title);
     }
 
     @Unique
@@ -164,6 +164,17 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin<
         }
     }
 
+    @WrapWithCondition(
+            method = "render",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/screen/recipebook/RecipeBookWidget;drawGhostSlots(Lnet/minecraft/client/gui/DrawContext;IIZF)V"
+            )
+    )
+    private boolean dontDropSlotsIfGraphOpen(RecipeBookWidget instance, DrawContext context, int x, int y, boolean notInventory, float delta) {
+        return !lootBook.isGraphOpen();
+    }
+
     @Inject(
             method = "render",
             at = @At("TAIL")
@@ -232,6 +243,13 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin<
             return original.call(instance, mouseX, mouseY, button);
         } else {
             return false;
+        }
+    }
+
+    @Override
+    protected void mouseDragInInvScreen(double mouseX, double mouseY, int button, double deltaX, double deltaY, CallbackInfoReturnable<Boolean> cir) {
+        if(lootBook.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
+            cir.setReturnValue(true);
         }
     }
 

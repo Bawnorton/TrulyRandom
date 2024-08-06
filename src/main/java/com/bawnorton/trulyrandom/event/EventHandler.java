@@ -9,7 +9,7 @@ import com.bawnorton.trulyrandom.network.packet.s2c.SyncLootDropsS2CPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.SyncLootTableTrackerS2CPacket;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.loot.LootRandomiser;
-import com.bawnorton.trulyrandom.tracker.loot.LootTableDrops;
+import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;

@@ -142,6 +142,7 @@ public class LootBookResults {
     }
 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        lastClickedItem = null;
         if(nextPageButton.mouseClicked(mouseX, mouseY, button)) {
             currentPage++;
             refreshResultButtons();

@@ -1,15 +1,16 @@
 package com.bawnorton.trulyrandom.client.loot;
 
+import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
+import com.bawnorton.trulyrandom.client.loot.graph.DropTypeGraphBuilders;
 import com.bawnorton.trulyrandom.client.loot.graph.GraphElement;
 import com.bawnorton.trulyrandom.client.loot.graph.ItemElement;
 import com.bawnorton.trulyrandom.graph.Graph;
-import com.bawnorton.trulyrandom.tracker.loot.LootTableDrops;
+import com.bawnorton.trulyrandom.graph.positioner.OrthogonalTreePositioner;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
+import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
 import net.minecraft.item.Item;
-import net.minecraft.loot.LootTable;
-import net.minecraft.registry.RegistryKey;
-import java.util.Set;
+import java.util.HashSet;
 
 public class LootBookController {
     private boolean lootBookOpen;
@@ -18,25 +19,29 @@ public class LootBookController {
     public Graph<GraphElement> createGraph(Item item) {
         ItemElement root = createElementTree(item);
         Graph<GraphElement> graph = new Graph<>();
-        root.supplyGraph(graph);
+        graph.setRoot(root.supplyGraph(graph));
+        graph.position(new OrthogonalTreePositioner<>());
         return graph;
     }
 
     private ItemElement createElementTree(Item item) {
         LootTableTracker tracker = TrulyRandomClient.getRandomiser().getLootTableTracker();
         ItemElement root = new ItemElement(item);
-        Set<LootTableDrops> sources = tracker.getSources(item);
-        for(LootTableDrops source : sources) {
-            RegistryKey<LootTable> sourceKey = source.getKey();
-            tracker.getFrom(sourceKey).ifPresent(from -> {
-                LootTableDrops drops = tracker.getDrops(from);
-                for (Item sourceItem : drops.getDrops()) {
-                    ItemElement sourceElement = createElementTree(sourceItem);
-                    sourceElement.addTo(root);
+        for(LootTableDrops drops : tracker.getSources(item)) {
+            tracker.getFrom(drops.getKey()).ifPresent(from -> {
+                LootTableDrops sourceDrops = tracker.getDrops(from);
+                GraphElement element = createElementTree(sourceDrops, tracker);
+                if(element != null) {
+                    root.addFrom(element);
                 }
             });
         }
         return root;
+    }
+
+    private GraphElement createElementTree(LootTableDrops drops, LootTableTracker tracker) {
+        TrulyRandom.LOGGER.info("tableId: {}, dropType: {}", drops.getLootTableId(), drops.getDropType());
+        return DropTypeGraphBuilders.getBuilder(drops.getDropType()).build(drops, tracker, new HashSet<>());
     }
 
     public boolean isLootBookOpen() {

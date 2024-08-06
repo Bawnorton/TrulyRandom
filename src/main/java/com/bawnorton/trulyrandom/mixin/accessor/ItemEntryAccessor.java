@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(ItemEntry.class)
-public interface ItemEntryAccessor {
+public interface ItemEntryAccessor extends LootPoolEntryAccessor {
     @Accessor
     RegistryEntry<Item> getItem();
 }

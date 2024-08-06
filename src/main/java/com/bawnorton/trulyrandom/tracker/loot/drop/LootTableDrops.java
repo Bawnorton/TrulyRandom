@@ -1,6 +1,8 @@
-package com.bawnorton.trulyrandom.tracker.loot;
+package com.bawnorton.trulyrandom.tracker.loot.drop;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
+import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
+import com.bawnorton.trulyrandom.tracker.loot.LootTableReader;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.item.Item;
@@ -17,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 public class LootTableDrops {
     public static final Map<RegistryKey<LootTable>, LootTableDrops> ALL_DROPS = new HashMap<>();
@@ -38,13 +39,15 @@ public class LootTableDrops {
     );
 
     private final RegistryKey<LootTable> lootTableKey;
+    private final LootTableIdentifier lootTableId;
     private final List<Item> drops;
     private final DropType dropType;
 
     private LootTableDrops(RegistryKey<LootTable> key, List<Item> drops) {
         this.lootTableKey = key;
+        this.lootTableId = LootTableIdentifier.from(key.getValue());
         this.drops = drops;
-        this.dropType = determineDropType(key);
+        this.dropType = DropTypes.getDropType(LootTableIdentifier.from(key.getValue()));
     }
 
     public static void populate(Registry<LootTable> lootTableRegistry) {
@@ -54,21 +57,15 @@ public class LootTableDrops {
         TrulyRandom.LOGGER.info("Populated {} loot table drops in {}ms", ALL_DROPS.size(), end - start);
     }
 
-    private DropType determineDropType(RegistryKey<LootTable> key) {
-        LootTableIdentifier tableIdentifier = LootTableIdentifier.from(key.getValue());
-        for (DropType type : DropType.values()) {
-            if (type.test(tableIdentifier)) {
-                return type;
-            }
-        }
-        throw new IllegalArgumentException("Unknown loot table type: " + key.getValue());
-    }
-
     public RegistryKey<LootTable> getKey() {
         return lootTableKey;
     }
 
-    public List<Item> getDrops() {
+    public LootTableIdentifier getLootTableId() {
+        return lootTableId;
+    }
+
+    public List<Item> getItems() {
         return drops;
     }
 
@@ -76,27 +73,16 @@ public class LootTableDrops {
         return dropType;
     }
 
-    public enum DropType implements Predicate<LootTableIdentifier> {
-        ARCHAELOGOY(LootTableIdentifier::isFromArchaelogy),
-        BLOCK(LootTableIdentifier::isFromBlock),
-        CHEST(LootTableIdentifier::isFromChest),
-        DISPENSER(LootTableIdentifier::isFromDispenser),
-        ENTITY(LootTableIdentifier::isFromEntity),
-        EQUIPMENT(LootTableIdentifier::isFromEquipment),
-        GAMEPLAY(LootTableIdentifier::isFromGameplay),
-        POT(LootTableIdentifier::isFromPot),
-        SHEARING(LootTableIdentifier::isFromShearing),
-        SPAWNER(LootTableIdentifier::isFromSpawner),
-        EMPTY(LootTableIdentifier::isEmpty);
+    @Override
+    public int hashCode() {
+        return lootTableKey.hashCode();
+    }
 
-        private final Predicate<LootTableIdentifier> dropPredicate;
-
-        DropType(Predicate<LootTableIdentifier> dropPredicate) {
-            this.dropPredicate = dropPredicate;
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof LootTableDrops lootTableDrops) {
+            return lootTableKey.equals(lootTableDrops.lootTableKey);
         }
-
-        public boolean test(LootTableIdentifier tableIdentifier) {
-            return dropPredicate.test(tableIdentifier);
-        }
+        return false;
     }
 }

@@ -1,6 +1,7 @@
 package com.bawnorton.trulyrandom.tracker.loot;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -15,15 +16,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 public class ItemLootMap extends HashMap<Item, ItemLootMap.Result> {
-    public static final Codec<ItemLootMap> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.unboundedMap(
-                    Identifier.CODEC.xmap(Registries.ITEM::get, Registries.ITEM::getId),
-                    ItemLootMap.Result.CODEC)
-                    .fieldOf("item_loot_map")
-                    .forGetter(ItemLootMap::new)
-    ).apply(instance, ItemLootMap::new));
+    public static final MapCodec<ItemLootMap> CODEC = Codec.unboundedMap(
+            Identifier.CODEC.xmap(Registries.ITEM::get, Registries.ITEM::getId),
+            ItemLootMap.Result.CODEC)
+            .xmap(ItemLootMap::new, Function.identity())
+            .fieldOf("item_loot_map");
 
     public static final PacketCodec<RegistryByteBuf, ItemLootMap> PACKET_CODEC = PacketCodecs.map(
             ItemLootMap::new,
@@ -35,12 +35,12 @@ public class ItemLootMap extends HashMap<Item, ItemLootMap.Result> {
         super();
     }
 
-    public ItemLootMap(int initialCapacity) {
-        super(initialCapacity);
+    public ItemLootMap(Map<Item, ItemLootMap.Result> map) {
+        super(map);
     }
 
-    public ItemLootMap(Map<Item, Result> map) {
-        super(map);
+    public ItemLootMap(int initialCapacity) {
+        super(initialCapacity);
     }
 
     public boolean seenBlock(Block block) {

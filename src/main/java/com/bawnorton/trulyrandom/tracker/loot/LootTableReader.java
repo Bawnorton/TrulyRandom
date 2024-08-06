@@ -1,8 +1,8 @@
 package com.bawnorton.trulyrandom.tracker.loot;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.extend.LookupExtender;
 import com.bawnorton.trulyrandom.mixin.accessor.*;
+import com.bawnorton.trulyrandom.tracker.loot.drop.SilkQuery;
 import com.mojang.datafixers.util.Either;
 import net.minecraft.block.DecoratedPotBlock;
 import net.minecraft.block.ShulkerBoxBlock;
@@ -16,7 +16,6 @@ import net.minecraft.loot.condition.LootCondition;
 import net.minecraft.loot.condition.MatchToolLootCondition;
 import net.minecraft.loot.entry.*;
 import net.minecraft.predicate.item.EnchantmentPredicate;
-import net.minecraft.predicate.item.EnchantmentsPredicate;
 import net.minecraft.predicate.item.ItemPredicate;
 import net.minecraft.predicate.item.ItemSubPredicate;
 import net.minecraft.predicate.item.ItemSubPredicateTypes;
@@ -56,9 +55,8 @@ public class LootTableReader {
                 yield items;
             }
             case LeafEntry leafEntry -> switch (leafEntry) {
-                case DynamicEntry dynamicEntry -> {
-                    DynamicEntryAccessor accessor = (DynamicEntryAccessor) dynamicEntry;
-                    Identifier name = accessor.getName();
+                case DynamicEntryAccessor dynamicEntry -> {
+                    Identifier name = dynamicEntry.getName();
                     if(name.equals(DecoratedPotBlock.SHERDS_DYNAMIC_DROP_ID)) {
                         yield List.of(Items.DECORATED_POT);
                     } else if (name.equals(ShulkerBoxBlock.CONTENTS_DYNAMIC_DROP_ID)) {
@@ -67,69 +65,111 @@ public class LootTableReader {
                     yield List.of();
                 }
                 case EmptyEntry ignored -> List.of();
-                case ItemEntry itemEntry -> {
-                    ItemEntryAccessor accessor = (ItemEntryAccessor) itemEntry;
-                    yield List.of(accessor.getItem().value());
-                }
-                case LootTableEntry lootTableEntry -> {
-                    LootTableEntryAccessor accessor = (LootTableEntryAccessor) lootTableEntry;
-                    Either<RegistryKey<LootTable>, LootTable> value = accessor.getValue();
+                case ItemEntryAccessor itemEntry -> List.of(itemEntry.getItem().value());
+                case LootTableEntryAccessor lootTableEntry -> {
+                    Either<RegistryKey<LootTable>, LootTable> value = lootTableEntry.getValue();
                     LootTable table = value.map(lootTableRegistry::get, Function.identity());
                     yield read(lootTableRegistry, table);
                 }
-                case TagEntry tagEntry -> {
-                    TagEntryAccessor accessor = (TagEntryAccessor) tagEntry;
-                    TagKey<Item> name = accessor.getName();
+                case TagEntryAccessor tagEntry -> {
+                    TagKey<Item> name = tagEntry.getName();
                     List<Item> items = new ArrayList<>();
                     Registries.ITEM.iterateEntries(name).forEach(regEntry -> items.add(regEntry.value()));
                     yield items;
                 }
-                default -> throw new IllegalStateException("Unexpected value: " + entry);
+                default -> throw new IllegalStateException("Unexpected value: " + leafEntry);
             };
             default -> throw new IllegalStateException("Unexpected value: " + entry);
         };
     }
 
-    public static boolean determineIfNeedsSilk(LootTable table) {
+    public static SilkQuery queryForSilk(Registry<LootTable> lootTableRegistry, LootTable table) {
+        SilkQuery query = new SilkQuery();
         for(LootPool pool : ((LootTableAccessor) table).getPools()) {
-            List<LootCondition> conditions = getConditionsFromPool(pool);
-
-            for(LootCondition condition : conditions) {
-                if (!(condition instanceof MatchToolLootCondition matchToolLootCondition)) continue;
-
-                ItemPredicate predicate = matchToolLootCondition.predicate().orElse(null);
-                if (predicate == null) continue;
-
-                ItemSubPredicate subPredicate = predicate.subPredicates().get(ItemSubPredicateTypes.ENCHANTMENTS);
-                if (!(subPredicate instanceof EnchantmentsPredicate enchantmentsPredicate)) continue;
-
-                List<EnchantmentPredicate> enchantmentPredicates = ((EnchantmentsPredicateAccessor) enchantmentsPredicate).callGetEnchantments();
-                for(EnchantmentPredicate enchantmentPredicate : enchantmentPredicates) {
-                    RegistryEntryList<Enchantment> enchantments = enchantmentPredicate.enchantments().orElse(null);
-                    if (enchantments == null) continue;
-
-                    for(RegistryEntry<Enchantment> enchantment : enchantments) {
-                        return enchantment.getIdAsString().equals(Enchantments.SILK_TOUCH.getValue().toString());
+            List<LootCondition> poolConditions = pool.conditions;
+            boolean poolNeedsSilk = doesAnyConditionNeedSilk(poolConditions);
+            for(LootPoolEntry entry : pool.entries) {
+                if(poolNeedsSilk) {
+                    if(!(entry instanceof ItemEntryAccessor itemEntry)) {
+                        TrulyRandom.LOGGER.warn("Non item entry: {}", entry.getClass().getSimpleName());
+                        continue;
                     }
+
+                    query.addNeedsSilk(itemEntry.getItem());
+                } else {
+                    query.add(queryForSilk(lootTableRegistry, entry));
                 }
             }
         }
-        return false;
+        return query;
     }
 
-    private static List<LootCondition> getConditionsFromPool(LootPool pool) {
-        List<LootCondition> conditions = new ArrayList<>(pool.conditions);
-        scanEntries(pool.entries, conditions);
-        return conditions;
-    }
-
-    private static void scanEntries(List<LootPoolEntry> children, List<LootCondition> conditions) {
-        for(LootPoolEntry entry : children) {
-            conditions.addAll(((LootPoolEntryAccessor) entry).getConditions());
-            if (!(entry instanceof CombinedEntry)) continue;
-
-            List<LootPoolEntry> entries = ((CombinedEntryAccessor) entry).getChildren();
-            scanEntries(entries, conditions);
+    public static SilkQuery queryForSilk(Registry<LootTable> lootTableRegistry, LootPoolEntry poolEntry) {
+        SilkQuery query = new SilkQuery();
+        switch (poolEntry) {
+            case CombinedEntryAccessor combinedEntry -> {
+                List<LootPoolEntry> childEntries = combinedEntry.getChildren();
+                for(LootPoolEntry childEntry : childEntries) {
+                    query.add(queryForSilk(lootTableRegistry, childEntry));
+                }
+            }
+            case LeafEntry leafEntry -> {
+                switch (leafEntry) {
+                    case DynamicEntry ignored -> {}
+                    case EmptyEntry ignored -> {}
+                    case TagEntry ignored -> {}
+                    case ItemEntryAccessor itemEntry -> {
+                        List<LootCondition> conditions = itemEntry.getConditions();
+                        boolean anyConditionRequiresSilk = doesAnyConditionNeedSilk(conditions);
+                        if(anyConditionRequiresSilk) {
+                            query.addNeedsSilk(itemEntry.getItem());
+                        } else {
+                            query.addDoesNotNeedSilk(itemEntry.getItem());
+                        }
+                    }
+                    case LootTableEntryAccessor lootTableEntry -> {
+                        Either<RegistryKey<LootTable>, LootTable> value = lootTableEntry.getValue();
+                        LootTable table = value.map(lootTableRegistry::get, Function.identity());
+                        query.add(queryForSilk(lootTableRegistry, table));
+                    }
+                    default -> throw new IllegalStateException("Unexpected value: " + leafEntry);
+                }
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + poolEntry);
         }
+        return query;
+    }
+
+    private static boolean doesAnyConditionNeedSilk(List<LootCondition> conditions) {
+        boolean anyConditionRequiresSilk = false;
+        for(LootCondition condition : conditions) {
+            if (!(condition instanceof MatchToolLootCondition matchToolLootCondition)) continue;
+
+            if(doesConditionNeedSilk(matchToolLootCondition)) {
+                anyConditionRequiresSilk = true;
+            }
+        }
+        return anyConditionRequiresSilk;
+    }
+
+    public static boolean doesConditionNeedSilk(MatchToolLootCondition condition) {
+        ItemPredicate predicate = condition.predicate().orElse(null);
+        if (predicate == null) return false;
+
+        ItemSubPredicate subPredicate = predicate.subPredicates().get(ItemSubPredicateTypes.ENCHANTMENTS);
+        if (!(subPredicate instanceof EnchantmentsPredicateAccessor enchantmentsPredicate)) return false;
+
+        List<EnchantmentPredicate> enchantmentPredicates = enchantmentsPredicate.callGetEnchantments();
+        for (EnchantmentPredicate enchantmentPredicate : enchantmentPredicates) {
+            RegistryEntryList<Enchantment> enchantments = enchantmentPredicate.enchantments().orElse(null);
+            if (enchantments == null) continue;
+
+            for (RegistryEntry<Enchantment> enchantment : enchantments) {
+                if (!enchantment.getIdAsString().equals(Enchantments.SILK_TOUCH.getValue().toString())) continue;
+
+                return true;
+            }
+        }
+        return false;
     }
 }
