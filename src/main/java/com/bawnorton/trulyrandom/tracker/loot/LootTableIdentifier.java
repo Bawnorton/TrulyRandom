@@ -32,6 +32,14 @@ public class LootTableIdentifier {
         return isFrom("chests");
     }
 
+    public boolean isReward() {
+        return isFromChest() && segments[2].startsWith("reward");
+    }
+
+    public boolean isOminous() {
+        return isReward() && segments[2].contains("ominous");
+    }
+
     public boolean isFromDispenser() {
         return isFrom("dispensers");
     }

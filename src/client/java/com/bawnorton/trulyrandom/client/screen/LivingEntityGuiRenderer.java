@@ -97,6 +97,10 @@ public interface LivingEntityGuiRenderer {
                     zombieVillager.setVillagerData(new VillagerData(VillagerType.PLAINS, VillagerProfession.CLERIC, 0));
                 }
             }
+            case AbstractPiglinEntity ignored -> {
+                matrices.scale(2, 2, 2);
+                matrices.translate(0, 6, 0);
+            }
             case EndermanEntity ignored -> {
                 matrices.scale(2, 2, 2);
                 matrices.translate(0, 8, 0);
@@ -106,6 +110,8 @@ public interface LivingEntityGuiRenderer {
                 matrices.scale(2, 2, 2);
                 matrices.translate(0, 6, 0);
             }
+            case CatEntity ignored -> matrices.translate(4, -3, 0);
+            case SnifferEntity ignored -> matrices.translate(-1, 2, 0);
             default -> {}
         }
 

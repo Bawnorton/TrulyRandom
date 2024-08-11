@@ -244,21 +244,16 @@ public class LootBookGraph implements Drawable, Element {
         controller.setGraphItem(item);
         if(item == null) return;
 
+        try {
+            graph = controller.createGraph(item);
+        } catch (Exception e) {
+            TrulyRandom.LOGGER.error("Couldn't create graph", e);
+        }
         if (controller.isNewGraphItem()) {
-            scale = 1;
-            try {
-                graph = controller.createGraph(item);
-                moveToRoot();
-            } catch (Exception e) {
-                TrulyRandom.LOGGER.error("Couldn't create graph", e);
-            }
+            setScale(1);
+            moveToRoot();
         } else {
-            try {
-                graph = controller.createGraph(item);
-            } catch (Exception e) {
-                TrulyRandom.LOGGER.error("Couldn't create graph", e);
-            }
-            scale = controller.scale;
+            setScale(controller.scale);
             moveTo(controller.offsetX, controller.offsetY);
         }
     }
@@ -277,23 +272,26 @@ public class LootBookGraph implements Drawable, Element {
 
         graph.addListener(g -> {
             Vector2f newPos = g.getRootPos();
-            scale = 1;
+            setScale(1);
             moveTo((int) -newPos.x, (int) -newPos.y);
         });
         Vector2f rootPos = graph.getRootPos();
-        scale = 1;
+        setScale(1);
         moveTo((int) -rootPos.x, (int) -rootPos.y);
     }
 
     public boolean scale(float amount) {
-        this.scale *= amount;
+        setScale(scale * amount);
         if (this.scale < 0.2 || this.scale > 2) {
-            this.scale = Math.min(Math.max(this.scale, 0.2f), 2f);
-            controller.scale = this.scale;
+            setScale(Math.min(Math.max(this.scale, 0.2f), 2f));
             return false;
         }
-        controller.scale = this.scale;
         return true;
+    }
+
+    private void setScale(float scale) {
+        this.scale = scale;
+        controller.scale = this.scale;
     }
 
     public void hide() {
