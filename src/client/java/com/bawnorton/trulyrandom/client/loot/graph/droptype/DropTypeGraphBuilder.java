@@ -1,5 +1,6 @@
-package com.bawnorton.trulyrandom.client.loot.graph;
+package com.bawnorton.trulyrandom.client.loot.graph.droptype;
 
+import com.bawnorton.trulyrandom.client.loot.graph.element.GraphElement;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
 import net.minecraft.loot.LootTable;

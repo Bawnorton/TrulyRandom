@@ -24,9 +24,12 @@
     "tracker.AbstractInventoryScreenMixin",
     "tracker.HandledScreenMixin",
     "tracker.InGameHudMixin",
-    "tracker.InventoryScreenMixin"
+    "tracker.InventoryScreenMixin",
+    "tracker.ParentElementMixin"
   ],
   "mixins": [
+    "EiglspergerStepsMixin",
+    "accessor.GuardianEntityAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

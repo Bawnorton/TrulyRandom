@@ -4,6 +4,7 @@ import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.command.CommandHandler;
 import com.bawnorton.trulyrandom.command.argument.SetStringArgumentType;
 import com.bawnorton.trulyrandom.command.argument.SetStringArgumentTypeSerializer;
+import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.network.packet.s2c.SetClientRandomiserS2CPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.SyncLootDropsS2CPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.SyncLootTableTrackerS2CPacket;
@@ -48,7 +49,10 @@ public class EventHandler {
             LootRandomiser lootRandomiser = randomiser.getLootRandomiser();
             lootRandomiser.initTracker(handler.player);
             LootTableTracker tracker = lootRandomiser.getTracker(handler.player);
-            if (tracker == null) return;
+            if(tracker == null) {
+                tracker = new LootTableTracker();
+                tracker.setTeam(((TeamMember) handler.player).trulyrandom$getTeam());
+            }
 
             ServerPlayNetworking.send(handler.player, new SyncLootDropsS2CPacket(LootTableDrops.ALL_DROPS));
             ServerPlayNetworking.send(handler.player, new SyncLootTableTrackerS2CPacket(tracker));

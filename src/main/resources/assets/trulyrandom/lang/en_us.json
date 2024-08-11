@@ -21,5 +21,22 @@
   "selectWorld.trulyrandom.seed.tooltip": "Seed that will be used to determine the randomisation.",
   "itemGroup.trulyrandom.search": "Search Drops",
   "trulyrandom.version_mismatch": "§c§lTruly Random Version Mismatch§r§c\nServer is running on version \"%s§c\" but this client is running on version \"%s§c\". Some features may not work as expected.",
-  "trulyrandom.no_player_found": "Player for uuid \"%s\" not found"
+  "trulyrandom.no_player_found": "Player for uuid \"%s\" not found",
+  "trulyrandom.loot_book.no_graph": "Could not create graph :(",
+  "trulyrandom.loot_book.center": "Re-Center",
+  "trulyrandom.loot_book.close": "Close",
+  "trulyrandom.loot_book.hotv.none": "Hero of the Village None Gift",
+  "trulyrandom.loot_book.hotv.armorer": "Hero of the Village Armorer Gift",
+  "trulyrandom.loot_book.hotv.butcher": "Hero of the Village Butcher Gift",
+  "trulyrandom.loot_book.hotv.cartographer": "Hero of the Village Cartographer Gift",
+  "trulyrandom.loot_book.hotv.cleric": "Hero of the Village Cleric Gift",
+  "trulyrandom.loot_book.hotv.farmer": "Hero of the Village Farmer Gift",
+  "trulyrandom.loot_book.hotv.fisherman": "Hero of the Village Fisherman Gift",
+  "trulyrandom.loot_book.hotv.fletcher": "Hero of the Village Fletcher Gift",
+  "trulyrandom.loot_book.hotv.leatherworker": "Hero of the Village Leatherworker Gift",
+  "trulyrandom.loot_book.hotv.librarian": "Hero of the Village Librarian Gift",
+  "trulyrandom.loot_book.hotv.mason": "Hero of the Village Mason Gift",
+  "trulyrandom.loot_book.hotv.shepherd": "Hero of the Village Shepherd Gift",
+  "trulyrandom.loot_book.hotv.toolsmith": "Hero of the Village Toolsmith Gift",
+  "trulyrandom.loot_book.hotv.weaponsmith": "Hero of the Village Weaponsmith Gift"
 }

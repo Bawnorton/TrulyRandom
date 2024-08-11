@@ -66,7 +66,9 @@ public final class Team {
 
     public void removePlayer(UUID player) {
         if (isOwner(player)) {
-            transferOwnership(players.getFirst());
+            if(!players.isEmpty()) {
+                transferOwnership(players.getFirst());
+            }
         } else {
             players.remove(player);
         }

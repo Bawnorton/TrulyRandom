@@ -12,6 +12,10 @@ public class LootTableIdentifier {
         this.segments = lootTableId.getPath().split("/");
     }
 
+    public String[] getSegments() {
+        return segments;
+    }
+
     public static LootTableIdentifier from(Identifier lootTableId) {
         return new LootTableIdentifier(lootTableId);
     }
@@ -105,6 +109,6 @@ public class LootTableIdentifier {
 
     @Override
     public String toString() {
-        return "LootTableIdentifier[%s:%s]".formatted(namespace, Strings.join(segments, "/"));
+        return "%s:%s".formatted(namespace, Strings.join(segments, "/"));
     }
 }

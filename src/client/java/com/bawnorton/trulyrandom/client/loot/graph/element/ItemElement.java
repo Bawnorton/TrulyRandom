@@ -1,7 +1,9 @@
-package com.bawnorton.trulyrandom.client.loot.graph;
+package com.bawnorton.trulyrandom.client.loot.graph.element;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.item.Item;
+import net.minecraft.text.Text;
 
 public class ItemElement extends GraphElement {
     private final Item item;
@@ -11,8 +13,13 @@ public class ItemElement extends GraphElement {
     }
 
     @Override
-    public void render(DrawContext context, int x, int y) {
+    public void render(DrawContext context, MinecraftClient client, int x, int y, float scale) {
         context.drawItemWithoutEntity(item.getDefaultStack(), x - 8, y - 8);
+    }
+
+    @Override
+    protected Text getTooltip() {
+        return item.getName();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.bawnorton.trulyrandom.client.mixin.tracker;
 
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
+import com.bawnorton.trulyrandom.client.extend.InventoryScreenExtender;
 import com.bawnorton.trulyrandom.client.screen.lootbook.LootBookWidget;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
@@ -25,12 +26,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(InventoryScreen.class)
-public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin {
+public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin implements InventoryScreenExtender {
     @Shadow private boolean narrow;
     @Shadow private boolean mouseDown;
     @Shadow @Final private RecipeBookWidget recipeBook;
 
-    @Shadow private float mouseY;
     @Unique private TexturedButtonWidget recipeButton;
     @Unique private TexturedButtonWidget lootBookButton;
 
@@ -42,6 +42,16 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
 
     protected InventoryScreenMixin(Text title) {
         super(title);
+    }
+
+    @Override
+    public LootBookWidget trulyrandom$getLootBook() {
+        return lootBook;
+    }
+
+    @Override
+    public void trulyrandom$resetY() {
+        y = (height - backgroundHeight) / 2 + lootBook.topOffset;
     }
 
     @Unique
@@ -69,7 +79,7 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
                 recipeBook.toggleOpen();
             }
             x = lootBook.findLeftEdge(width, backgroundWidth);
-            y = (height - backgroundHeight) / 2 + lootBook.topOffset;
+            trulyrandom$resetY();
             resetButtonPositions();
             mouseDown = true;
         }) {
@@ -82,10 +92,10 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
         };
 
         lootBook.registerGraphListener(graph -> {
-            y = (height - backgroundHeight) / 2 + lootBook.topOffset;
+            trulyrandom$resetY();
             resetButtonPositions();
         }, graph -> {
-            y = (height - backgroundHeight) / 2 + lootBook.topOffset;
+            trulyrandom$resetY();
             resetButtonPositions();
         });
 
@@ -98,7 +108,7 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             x = (width - backgroundWidth) / 2;
         }
 
-        y = (height - backgroundHeight) / 2 + lootBook.topOffset;
+        trulyrandom$resetY();
 
         addDrawableChild(lootBookButton);
         addSelectableChild(lootBook);
@@ -121,7 +131,7 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
         if(recipeBook.isOpen() && lootBook.isOpen()) {
             lootBook.toggleOpen();
         }
-        y = (height - backgroundHeight) / 2 + lootBook.topOffset;
+        trulyrandom$resetY();
         resetButtonPositions();
     }
 

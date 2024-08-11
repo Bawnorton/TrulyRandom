@@ -2,6 +2,8 @@ package com.bawnorton.trulyrandom.client.screen.lootbook;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
+import com.bawnorton.trulyrandom.client.extend.InventoryScreenExtender;
+import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
 import com.bawnorton.trulyrandom.client.loot.LootBookController;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -9,6 +11,7 @@ import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.ButtonTextures;
+import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.item.Item;
@@ -79,8 +82,11 @@ public class LootBookWidget implements Drawable, Element, Selectable {
         searchField.setText(search);
         searchField.setPlaceholder(Text.translatable("gui.recipebook.search_hint").formatted(Formatting.ITALIC).formatted(Formatting.GRAY));
         lootArea.initalize(client, x, y + topOffset);
-        graph.initalize(client, controller, x - LootBookGraph.WIDTH / 2 - 16, y - topOffset);
+        graph.initalize(client, controller, this, x - LootBookGraph.WIDTH / 2 - 16, y - topOffset);
         graph.show(controller.getGraphItem());
+        if(((MinecraftClientExtender) client).trulyrandom$isResizing()) {
+            graph.moveToRoot();
+        }
         refreshResults();
     }
 
@@ -151,7 +157,6 @@ public class LootBookWidget implements Drawable, Element, Selectable {
         }
 
         graph.show(lastClickedItem);
-        controller.setGraphItem(lastClickedItem);
     }
 
     public void closeGraph() {
@@ -159,12 +164,11 @@ public class LootBookWidget implements Drawable, Element, Selectable {
             graph.setY(graph.getY() + topOffset);
             lootArea.setY(lootArea.getY() - topOffset);
             searchField.setY(searchField.getY() - topOffset);
-            graphCloseListeners.forEach(c -> c.accept(graph));
             topOffset = 0;
+            graphCloseListeners.forEach(c -> c.accept(graph));
         }
 
         graph.hide();
-        controller.setGraphItem(null);
     }
 
     public boolean isGraphOpen() {
@@ -226,6 +230,16 @@ public class LootBookWidget implements Drawable, Element, Selectable {
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         return graph.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        return graph.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
+    }
+
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return graph.isMouseOver(mouseX, mouseY);
     }
 
     @Override

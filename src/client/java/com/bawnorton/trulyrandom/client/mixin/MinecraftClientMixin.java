@@ -5,7 +5,10 @@ import com.bawnorton.trulyrandom.client.event.ClientRandomiseEvents;
 import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.random.module.Module;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModelManager;
@@ -28,6 +31,9 @@ public abstract class MinecraftClientMixin implements MinecraftClientExtender {
 
     @Unique
     private boolean trulyrandom$finishedLoading = false;
+
+    @Unique
+    private boolean trulyrandom$isResizing = false;
 
     @Shadow
     public abstract BakedModelManager getBakedModelManager();
@@ -56,8 +62,26 @@ public abstract class MinecraftClientMixin implements MinecraftClientExtender {
         itemRenderer.getModels().reloadModels();
     }
 
+    @WrapOperation(
+            method = "onResolutionChanged",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/screen/Screen;resize(Lnet/minecraft/client/MinecraftClient;II)V"
+            )
+    )
+    private void trackResize(Screen instance, MinecraftClient client, int width, int height, Operation<Void> original) {
+        trulyrandom$isResizing = true;
+        original.call(instance, client, width, height);
+        trulyrandom$isResizing = false;
+    }
+
     @Override
     public boolean trulyrandom$isFinishedLoading() {
         return trulyrandom$finishedLoading;
+    }
+
+    @Override
+    public boolean trulyrandom$isResizing() {
+        return trulyrandom$isResizing;
     }
 }
