@@ -78,6 +78,10 @@ public class RandomiserSaveLoader extends PersistentState {
         return lastSetRandomiser != null;
     }
 
+    public static boolean isDefaultSet() {
+        return defaultSet;
+    }
+
     public ServerRandomiser getServerRandomiser() {
         if (serverRandomiser == null) {
             if (!defaultSet) throw new IllegalStateException("Default randomiser not set");

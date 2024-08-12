@@ -29,7 +29,7 @@ public abstract class DataConfigurationMixin implements DataConfigurationExtende
         return instance -> instance.group(
                 RecordCodecBuilder.mapCodec(builder).forGetter(Function.identity()),
                 Modules.CODEC
-                        .optionalFieldOf("trulyrandom$randomiserModules").xmap(optional -> optional.orElse(null), Optional::ofNullable)
+                        .optionalFieldOf("trulyrandom$randomiserModules").xmap(optional -> optional.orElse(new Modules()), Optional::ofNullable)
                         .forGetter(dataConfig -> ((DataConfigurationExtender) (Object) dataConfig).trulyrandom$getRandomiserModules())
         ).apply(instance, (dataConfig, randomiser) -> {
             ((DataConfigurationExtender) (Object) dataConfig).trulyrandom$setRandomiserModules(randomiser);
@@ -40,7 +40,11 @@ public abstract class DataConfigurationMixin implements DataConfigurationExtende
     @Override
     public Modules trulyrandom$getRandomiserModules() {
         if(trulyrandom$randomiserModules == null) {
-            return RandomiserSaveLoader.getDefaultRandomiser();
+            if(RandomiserSaveLoader.isDefaultSet()) {
+                return RandomiserSaveLoader.getDefaultRandomiser();
+            } else {
+                return new Modules();
+            }
         } else {
             return trulyrandom$randomiserModules;
         }

@@ -71,6 +71,8 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             )
     )
     private void initLootBook(CallbackInfo ci) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+
         isShort = height < 350;
         lootBook.initialize(width, height, client, narrow, isShort);
         lootBookButton = new TexturedButtonWidget(recipeButton.getX() + 22, height / 2 - 22, 20, 18, LootBookWidget.BUTTON_TEXTURES, button -> {
@@ -128,6 +130,8 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
 
     @Inject(method = "method_19891", at = @At("TAIL"))
     private void considerLootBook(ButtonWidget button, CallbackInfo ci) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+
         if(recipeBook.isOpen() && lootBook.isOpen()) {
             lootBook.toggleOpen();
         }
@@ -159,6 +163,7 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             if(lootBook.isOpen()) {
                 lootBook.toggleOpen();
             }
+            original.call(instance, context, mouseX, mouseY, delta);
             return;
         }
 
@@ -182,6 +187,8 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             )
     )
     private boolean dontDropSlotsIfGraphOpen(RecipeBookWidget instance, DrawContext context, int x, int y, boolean notInventory, float delta) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return true;
+
         return !lootBook.isGraphOpen();
     }
 
@@ -190,6 +197,8 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             at = @At("TAIL")
     )
     private void renderLootBookTooltip(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+
         lootBook.drawTooltip(context, mouseX, mouseY);
     }
 
@@ -201,6 +210,10 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             )
     )
     private boolean keyPressedInLootBook(InventoryScreen instance, int keyCode, int scanCode, int modifiers, Operation<Boolean> original) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+            return original.call(instance, keyCode, scanCode, modifiers);
+        }
+
         return lootBook.keyPressed(keyCode, scanCode, modifiers) || original.call(instance, keyCode, scanCode, modifiers);
     }
 
@@ -212,6 +225,10 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             )
     )
     private boolean charTypedInLootBook(InventoryScreen instance, char chr, int modifiers, Operation<Boolean> original) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+            return original.call(instance, chr, modifiers);
+        }
+
         return lootBook.charTyped(chr, modifiers) || original.call(instance, chr, modifiers);
     }
 
@@ -223,6 +240,10 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             )
     )
     private boolean isPointWithinLootBookBounds(InventoryScreen instance, int x, int y, int width, int height, double pointX, double pointY, Operation<Boolean> original) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+            return original.call(instance, x, y, width, height, pointX, pointY);
+        }
+
         boolean closed = !lootBook.isOpen();
         boolean wide = !narrow;
         boolean tall = !isShort;
@@ -241,6 +262,10 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             )
     )
     private boolean mouseClickedInLootBook(InventoryScreen instance, double mouseX, double mouseY, int button, Operation<Boolean> original) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+            return original.call(instance, mouseX, mouseY, button);
+        }
+
         if(lootBook.mouseClicked(mouseX, mouseY, button)) {
             setFocused(lootBook);
             return true;
@@ -258,6 +283,8 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
 
     @Override
     protected void mouseDragInInvScreen(double mouseX, double mouseY, int button, double deltaX, double deltaY, CallbackInfoReturnable<Boolean> cir) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+
         if(lootBook.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
             cir.setReturnValue(true);
         }
@@ -268,6 +295,7 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             at = @At("RETURN")
     )
     private boolean isClickOutsideLootBook(boolean original, double mouseX, double mouseY, int left, int top) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return original;
         if (!original) return false;
 
         return lootBook.isClickOutsideBounds(mouseX, mouseY, x, y, backgroundWidth, backgroundHeight);
@@ -275,6 +303,7 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
 
     @Override
     protected int changeEffectX(int x) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return x;
         if (lootBook.isOpen()) {
             return x + 149;
         }

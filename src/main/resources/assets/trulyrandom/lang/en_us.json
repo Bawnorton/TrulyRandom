@@ -38,5 +38,9 @@
   "trulyrandom.loot_book.hotv.mason": "Hero of the Village Mason Gift",
   "trulyrandom.loot_book.hotv.shepherd": "Hero of the Village Shepherd Gift",
   "trulyrandom.loot_book.hotv.toolsmith": "Hero of the Village Toolsmith Gift",
-  "trulyrandom.loot_book.hotv.weaponsmith": "Hero of the Village Weaponsmith Gift"
+  "trulyrandom.loot_book.hotv.weaponsmith": "Hero of the Village Weaponsmith Gift",
+  "key.categories.trulyrandom": "Truly Random",
+  "key.trulyrandom.open_randomiser_gui": "Open Randomiser GUI",
+  "key.trulyrandom.query_hand": "Query Hand",
+  "key.trulyrandom.reload_chunks": "Reload Chunks"
 }
