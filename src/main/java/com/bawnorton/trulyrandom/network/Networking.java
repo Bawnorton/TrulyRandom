@@ -50,6 +50,8 @@ public class Networking {
     private static void handleProvidedRandomiser(ProvidedRandomiserC2SPacket packet, ServerPlayNetworking.Context context) {
         ServerPlayerEntity player = context.player();
         MinecraftServer server = player.getServer();
+        if(server == null) return;
+
         // other client requesting the randomiser data
         UUID requestee = packet.requestee();
         ServerPlayerEntity requesteePlayer = server.getPlayerManager().getPlayer(requestee);
@@ -63,20 +65,26 @@ public class Networking {
     private static void handleSetServerRandomiser(SetServerRandomiserC2SPacket packet, ServerPlayNetworking.Context context) {
         ServerPlayerEntity player = context.player();
         MinecraftServer server = player.getServer();
+        if(server == null) return;
+
         ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
 
         boolean lootSeedChanged = randomiser.getModules().getSeed(Module.LOOT_TABLES) != packet.modules().getSeed(Module.LOOT_TABLES);
         boolean recipeSeedChanged = randomiser.getModules().getSeed(Module.RECIPES) != packet.modules().getSeed(Module.RECIPES);
+        boolean tradeSeedChanged = randomiser.getModules().getSeed(Module.TRADES) != packet.modules().getSeed(Module.TRADES);
 
         randomiser.setModules(packet.modules());
         randomiser.updateLoot(server, lootSeedChanged);
         randomiser.updateRecipes(server, recipeSeedChanged);
+        randomiser.updateTrades(server, tradeSeedChanged);
         randomiser.updateClients(server);
     }
 
     private static void handleSetTargetClientRandomiser(SetTargetClientRandomiserC2SPacket packet, ServerPlayNetworking.Context context) {
         ServerPlayerEntity player = context.player();
         MinecraftServer server = player.getServer();
+        if(server == null) return;
+
         UUID target = packet.target();
         ServerPlayerEntity targetPlayer = server.getPlayerManager().getPlayer(target);
         if (targetPlayer == null) {

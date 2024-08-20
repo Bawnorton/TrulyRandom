@@ -6,6 +6,7 @@ import com.bawnorton.trulyrandom.random.loot.LootRandomiser;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
 import com.bawnorton.trulyrandom.random.recipe.RecipeRandomiser;
+import com.bawnorton.trulyrandom.random.trade.TradeRandomiser;
 import com.bawnorton.trulyrandom.tracker.Tracker;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -25,6 +26,7 @@ public class ServerRandomiser extends Randomiser {
 
     private LootRandomiser lootRandomiser;
     private RecipeRandomiser recipeRandomiser;
+    private TradeRandomiser tradeRandomiser;
 
     private boolean initialised = false;
     private NbtCompound lootRandomiserData;
@@ -60,6 +62,7 @@ public class ServerRandomiser extends Randomiser {
         initialised = true;
         this.lootRandomiser = new LootRandomiser(server);
         this.recipeRandomiser = new RecipeRandomiser(server);
+        this.tradeRandomiser = new TradeRandomiser();
 
         if (lootRandomiserData != null) {
             lootRandomiser.readNbt(lootRandomiserData);
@@ -78,12 +81,20 @@ public class ServerRandomiser extends Randomiser {
         return recipeRandomiser;
     }
 
+    public TradeRandomiser getTradeRandomiser() {
+        return tradeRandomiser;
+    }
+
     public void updateLoot(MinecraftServer server, boolean seedChanged) {
         update(lootRandomiser, server, seedChanged);
     }
 
     public void updateRecipes(MinecraftServer server, boolean seedChanged) {
         update(recipeRandomiser, server, seedChanged);
+    }
+
+    public void updateTrades(MinecraftServer server, boolean seedChanged) {
+        update(tradeRandomiser, server, seedChanged);
     }
 
     public void updateClients(MinecraftServer server) {

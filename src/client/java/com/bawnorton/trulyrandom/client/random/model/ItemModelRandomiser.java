@@ -3,12 +3,11 @@ package com.bawnorton.trulyrandom.client.random.model;
 import com.bawnorton.trulyrandom.client.event.ClientRandomiseEvents;
 import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
-import com.bawnorton.trulyrandom.collection.UnaryMap;
+import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import com.bawnorton.trulyrandom.random.module.Module;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.item.ItemModels;
 import net.minecraft.item.Item;
-import java.util.Map;
 
 public class ItemModelRandomiser extends ModelRandomiser {
     @Override

@@ -7,12 +7,9 @@ import net.minecraft.text.Text;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.graph.builder.GraphBuilder;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public abstract class GraphElement {
     private final Set<GraphElement> from;

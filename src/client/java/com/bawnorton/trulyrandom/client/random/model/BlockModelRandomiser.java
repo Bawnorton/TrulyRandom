@@ -4,14 +4,13 @@ import com.bawnorton.trulyrandom.client.event.ClientRandomiseEvents;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.ClientChunkManagerAccessor;
 import com.bawnorton.trulyrandom.client.mixin.accessor.WorldRendererInvoker;
-import com.bawnorton.trulyrandom.collection.UnaryMap;
+import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import com.bawnorton.trulyrandom.random.module.Module;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.WorldChunk;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 public class BlockModelRandomiser extends ModelRandomiser {

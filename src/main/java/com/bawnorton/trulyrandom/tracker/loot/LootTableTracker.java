@@ -1,8 +1,8 @@
 package com.bawnorton.trulyrandom.tracker.loot;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.collection.UnaryBiMap;
-import com.bawnorton.trulyrandom.collection.UnaryHashBiMap;
+import com.bawnorton.trulyrandom.util.collection.UnaryBiMap;
+import com.bawnorton.trulyrandom.util.collection.UnaryHashBiMap;
 import com.bawnorton.trulyrandom.extend.LookupExtender;
 import com.bawnorton.trulyrandom.mixin.accessor.VerticallyAttachableBlockItemAccessor;
 import com.bawnorton.trulyrandom.tracker.Team;

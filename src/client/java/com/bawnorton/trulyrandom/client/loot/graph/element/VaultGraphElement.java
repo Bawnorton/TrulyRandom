@@ -7,20 +7,14 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.VaultBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.Item;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.RotationAxis;
 import org.apache.commons.lang3.StringUtils;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 public class VaultGraphElement extends IdBasedGraphElement implements BlockStateGuiRenderer {
-    private final List<Item> vaultContent;
-
-    public VaultGraphElement(LootTableIdentifier tableId, List<Item> items) {
+    public VaultGraphElement(LootTableIdentifier tableId) {
         super(tableId);
-        vaultContent = items;
     }
 
     @Override

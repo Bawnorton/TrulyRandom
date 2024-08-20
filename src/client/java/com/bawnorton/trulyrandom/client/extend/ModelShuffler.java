@@ -1,7 +1,7 @@
 package com.bawnorton.trulyrandom.client.extend;
 
 import com.bawnorton.trulyrandom.client.mixin.accessor.StateAccessor;
-import com.bawnorton.trulyrandom.collection.UnaryMap;
+import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;

@@ -1,5 +1,6 @@
 package com.bawnorton.trulyrandom.client.loot.graph.element;
 
+import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.screen.BlockStateGuiRenderer;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;

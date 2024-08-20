@@ -33,11 +33,11 @@ public class LootTableIdentifier {
     }
 
     public boolean isReward() {
-        return isFromChest() && segments[2].startsWith("reward");
+        return isFromChest() && segmentStartsWith(2, "reward");
     }
 
     public boolean isOminous() {
-        return isReward() && segments[2].contains("ominous");
+        return isReward() && segmentContains(2, "ominous");
     }
 
     public boolean isFromDispenser() {
@@ -102,10 +102,22 @@ public class LootTableIdentifier {
         return segments[0].equals(key);
     }
 
-    private boolean isSegment(int index, String segment) {
+    private boolean isSegment(int index, String value) {
         if(index >= segments.length) return false;
 
-        return segments[index].equals(segment);
+        return segments[index].equals(value);
+    }
+
+    private boolean segmentStartsWith(int index, String start) {
+        if (segments.length <= index) return false;
+
+        return segments[index].equals(start);
+    }
+
+    private boolean segmentContains(int index, String content) {
+        if (segments.length <= index) return false;
+
+        return segments[index].contains(content);
     }
 
     public Identifier getSourceId() {

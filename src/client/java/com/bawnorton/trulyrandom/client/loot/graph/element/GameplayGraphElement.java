@@ -13,8 +13,6 @@ import net.minecraft.entity.passive.PandaEntity;
 import net.minecraft.entity.passive.SnifferEntity;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
-import net.minecraft.village.VillagerProfession;
-import net.minecraft.village.VillagerType;
 
 public class GameplayGraphElement extends IdBasedGraphElement implements LivingEntityGuiRenderer {
     public GameplayGraphElement(LootTableIdentifier lootTableId) {

@@ -28,30 +28,23 @@ import java.util.List;
 public class KeybindManager {
     private static final List<ActionedKeybind> KEYBINDS = new ArrayList<>();
     public static final ActionedKeybind OPEN_RANDOMISER_GUI = registerKeybind("key.trulyrandom.open_randomiser_gui", GLFW.GLFW_KEY_G, client -> {
-        ClientNetworking.registerRecievedCallback(SetClientRandomiserS2CPacket.PACKET_ID, () -> {
-            client.setScreen(new TrulyRandomSettingsScreen(
-                    client.currentScreen,
-                    TrulyRandomClient.getRandomiser().getModules(),
-                    (modules) -> ClientPlayNetworking.send(new SetServerRandomiserC2SPacket(modules))
-            ));
-        });
+        ClientNetworking.registerRecievedCallback(SetClientRandomiserS2CPacket.PACKET_ID, () -> client.setScreen(new TrulyRandomSettingsScreen(
+                client.currentScreen,
+                TrulyRandomClient.getRandomiser().getModules().copy(),
+                (modules) -> ClientPlayNetworking.send(new SetServerRandomiserC2SPacket(modules))
+        )));
         ClientPlayNetworking.send(RequestServerRandomiserC2SPacket.INSTANCE);
     });
-    public static final ActionedKeybind RELOAD_CHUNKS = registerDevOnlyKeybind("key.trulyrandom.reload_chunks", GLFW.GLFW_KEY_KP_0, client -> {
-        client.worldRenderer.reload();
-    });
+    public static final ActionedKeybind RELOAD_CHUNKS = registerDevOnlyKeybind("key.trulyrandom.reload_chunks", GLFW.GLFW_KEY_KP_0, client -> client.worldRenderer.reload());
     public static final ActionedKeybind QUERY_HAND = registerDevOnlyKeybind("key.trulyrandom.query_hand", GLFW.GLFW_KEY_KP_1, client -> {
         Item handItem = client.player.getMainHandStack().getItem();
         ModelShuffler.Items items = (ModelShuffler.Items) client.getItemRenderer().getModels();
-        TrulyRandom.LOGGER.info("Hand item: " + handItem + " (" + items.trulyrandom$getRedirectMap()
-                .get(handItem) + ")");
+        TrulyRandom.LOGGER.info("Hand item: {} ({})", handItem, items.trulyrandom$getRedirectMap().get(handItem));
         HitResult hitResult = client.crosshairTarget;
         if (hitResult instanceof BlockHitResult blockHitResult) {
             BlockState block = client.world.getBlockState(blockHitResult.getBlockPos());
-            ModelShuffler.BlockStates blockStates = (ModelShuffler.BlockStates) client.getBlockRenderManager()
-                    .getModels();
-            TrulyRandom.LOGGER.info("Block: " + block + " (" + blockStates.trulyrandom$getRedirectMap()
-                    .get(block) + ")");
+            ModelShuffler.BlockStates blockStates = (ModelShuffler.BlockStates) client.getBlockRenderManager().getModels();
+            TrulyRandom.LOGGER.info("Block: {} ({})", block, blockStates.trulyrandom$getRedirectMap().get(block));
         }
     });
 

@@ -5,8 +5,8 @@ import com.bawnorton.trulyrandom.client.extend.modernfix.DynamicBlockModelShuffl
 import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.VersionPredicate;
-import com.bawnorton.trulyrandom.collection.UnaryHashMap;
-import com.bawnorton.trulyrandom.collection.UnaryMap;
+import com.bawnorton.trulyrandom.util.collection.UnaryHashMap;
+import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.block.BlockState;

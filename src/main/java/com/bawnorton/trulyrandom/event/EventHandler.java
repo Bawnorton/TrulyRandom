@@ -39,6 +39,7 @@ public class EventHandler {
             ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
             randomiser.updateLoot(server, false);
             randomiser.updateRecipes(server, false);
+            randomiser.updateTrades(server, false);
             LootTableDrops.populate(server.getReloadableRegistries().getRegistryManager().get(RegistryKeys.LOOT_TABLE));
         });
 

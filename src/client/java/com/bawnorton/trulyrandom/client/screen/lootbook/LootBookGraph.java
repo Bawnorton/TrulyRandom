@@ -19,6 +19,8 @@ import net.minecraft.item.Items;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Vector2f;
 
 public class LootBookGraph implements Drawable, Element {
@@ -97,10 +99,10 @@ public class LootBookGraph implements Drawable, Element {
         context.getMatrices().scale(scale, scale, 1);
         context.enableScissor(x + BORDER_WIDTH, y + BORDER_WIDTH, x + WIDTH - BORDER_WIDTH, y + HEIGHT - BORDER_WIDTH);
         graph.forEachVertex(vertex -> {
-            Vector2f pos = graph.getPos(vertex);
-            int xPos = (int) ((centreX + offsetX + Math.round(pos.x) - 16) * scale);
-            int yPos = (int) ((centreY + offsetY + Math.round(pos.y) - 16) * scale);
-            if (mouseX >= xPos && mouseX <= xPos + (32 * scale) && mouseY >= yPos && mouseY <= yPos + (32 * scale)) {
+            ScreenPos screenPos = mapToScreen(vertex, centreX, centreY, mouseX, mouseY);
+            if (screenPos == null) return;
+
+            if (mouseX >= screenPos.x() && mouseX <= screenPos.x() + (32 * scale) && mouseY >= screenPos.y() && mouseY <= screenPos.y() + (32 * scale)) {
                 vertex.onHovered();
             }
         });
@@ -170,14 +172,24 @@ public class LootBookGraph implements Drawable, Element {
         context.getMatrices().push();
         context.getMatrices().translate(0, 0, 1000);
         graph.forEachVertex(vertex -> {
-            Vector2f pos = graph.getPos(vertex);
-            int xPos = (int) ((centreX + offsetX + Math.round(pos.x) - 16) * scale);
-            int yPos = (int) ((centreY + offsetY + Math.round(pos.y) - 16) * scale);
-            if (mouseX >= xPos && mouseX <= xPos + (32 * scale) && mouseY >= yPos && mouseY <= yPos + (32 * scale)) {
+            ScreenPos screenPos = mapToScreen(vertex, centreX, centreY, mouseX, mouseY);
+            if (screenPos == null) return;
+
+            if (mouseX >= screenPos.x() && mouseX <= screenPos.x() + (32 * scale) && mouseY >= screenPos.y() && mouseY <= screenPos.y() + (32 * scale)) {
                 vertex.drawTooltip(context, mouseX, mouseY);
             }
         });
         context.getMatrices().pop();
+    }
+
+
+    private @Nullable LootBookGraph.ScreenPos mapToScreen(GraphElement vertex, int centreX, int centreY, int mouseX, int mouseY) {
+        Vector2f pos = graph.getPos(vertex);
+        int x = (int) ((centreX + offsetX + Math.round(pos.x) - 16) * scale);
+        int y = (int) ((centreY + offsetY + Math.round(pos.y) - 16) * scale);
+        if (!inBounds(mouseX, mouseY)) return null;
+
+        return new ScreenPos(x, y);
     }
 
     private boolean inBounds(double mouseX, double mouseY) {
@@ -282,8 +294,10 @@ public class LootBookGraph implements Drawable, Element {
 
     public boolean scale(float amount) {
         setScale(scale * amount);
-        if (this.scale < 0.2 || this.scale > 2) {
-            setScale(Math.min(Math.max(this.scale, 0.2f), 2f));
+        float minScale = 0.2f;
+        float maxScale = 4;
+        if (this.scale < minScale || this.scale > maxScale) {
+            setScale(MathHelper.clamp(this.scale, minScale, maxScale));
             return false;
         }
         return true;
@@ -309,5 +323,8 @@ public class LootBookGraph implements Drawable, Element {
 
     public boolean isOpen() {
         return item != null;
+    }
+
+    private record ScreenPos(int x, int y) {
     }
 }

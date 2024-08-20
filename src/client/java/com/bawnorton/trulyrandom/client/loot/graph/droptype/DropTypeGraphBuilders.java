@@ -105,7 +105,7 @@ public class DropTypeGraphBuilders {
     private static GraphElement chestGraphBuilder(LootTableDrops tableDrops, LootTableTracker tracker, Set<RegistryKey<LootTable>> registryKeys) {
         LootTableIdentifier tableId = tableDrops.getLootTableId();
         if(tableId.isReward()) {
-            return new VaultGraphElement(tableId, tableDrops.getItems());
+            return new VaultGraphElement(tableId);
         }
         return new ChestGraphElement(tableId, tableDrops.getItems());
     }

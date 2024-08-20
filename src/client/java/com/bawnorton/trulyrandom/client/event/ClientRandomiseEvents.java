@@ -1,14 +1,12 @@
 package com.bawnorton.trulyrandom.client.event;
 
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
-import com.bawnorton.trulyrandom.collection.UnaryHashMap;
-import com.bawnorton.trulyrandom.collection.UnaryMap;
+import com.bawnorton.trulyrandom.util.collection.UnaryHashMap;
+import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.Item;
-import java.util.HashMap;
-import java.util.Map;
 
 public class ClientRandomiseEvents {
     private ClientRandomiseEvents() {

@@ -25,20 +25,5 @@ public class CommandHandler {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         trulyRandomSettingsCommand.register(dispatcher);
-        dispatcher.register(CommandManager.literal("mine_all_blocks").executes(context -> {
-            PlayerEntity player = context.getSource().getPlayer();
-            if(player == null) return 1;
-
-            BlockPos pos = player.getBlockPos().up(3);
-            World world = player.getWorld();
-            Registries.BLOCK.forEach(block -> {
-               world.setBlockState(pos, block.getDefaultState(), 0);
-               world.breakBlock(pos, true, player, 0);
-            });
-            LootTableTracker tracker = TrulyRandom.getRandomiser(world.getServer()).getLootRandomiser().getTracker(player);
-            DataResult<JsonElement> jsonResult = LootTableTracker.CODEC.encodeStart(JsonOps.INSTANCE, tracker);
-            jsonResult.ifSuccess(json -> TrulyRandom.LOGGER.info(json.toString()));
-            return 0;
-        }));
     }
 }

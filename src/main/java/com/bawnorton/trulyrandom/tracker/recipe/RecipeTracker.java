@@ -25,7 +25,7 @@ public class RecipeTracker extends Tracker<RecipeEntry<?>, ItemStack> {
 
     public RecipeTracker(Map<RecipeEntry<?>, ItemStack> map, Team team) {
         super(team);
-        this.knownRecipes = new HashMap<>();
+        this.knownRecipes = new HashMap<>(map);
     }
 
     public RecipeTracker() {

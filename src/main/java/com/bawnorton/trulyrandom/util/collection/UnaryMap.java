@@ -1,4 +1,4 @@
-package com.bawnorton.trulyrandom.collection;
+package com.bawnorton.trulyrandom.util.collection;
 
 import java.util.Map;
 

@@ -3,7 +3,7 @@ package com.bawnorton.trulyrandom.client.random;
 import com.bawnorton.trulyrandom.client.random.model.BlockModelRandomiser;
 import com.bawnorton.trulyrandom.client.random.model.ItemModelRandomiser;
 import com.bawnorton.trulyrandom.client.random.model.ModelRandomiser;
-import com.bawnorton.trulyrandom.collection.UnaryMap;
+import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import com.bawnorton.trulyrandom.random.Randomiser;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;

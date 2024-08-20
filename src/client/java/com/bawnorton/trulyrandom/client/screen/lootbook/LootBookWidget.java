@@ -199,8 +199,10 @@ public class LootBookWidget implements Drawable, Element, Selectable {
     public void drawTooltip(DrawContext context, int mouseX, int mouseY) {
         if(!isOpen()) return;
 
-        graph.drawTooltip(context, mouseX, mouseY);
-        lootArea.drawTooltip(context, mouseX, mouseY);
+        try {
+            graph.drawTooltip(context, mouseX, mouseY);
+            lootArea.drawTooltip(context, mouseX, mouseY);
+        } catch(RuntimeException ignored) {}
     }
 
     @Override

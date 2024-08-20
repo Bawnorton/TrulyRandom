@@ -3,7 +3,7 @@ package com.bawnorton.trulyrandom.client.loot.graph.element;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
 import net.minecraft.text.Text;
 
-public abstract class IdBasedGraphElement extends GraphElement{
+public abstract class IdBasedGraphElement extends GraphElement {
     protected final LootTableIdentifier lootTableId;
 
     protected IdBasedGraphElement(LootTableIdentifier lootTableId) {

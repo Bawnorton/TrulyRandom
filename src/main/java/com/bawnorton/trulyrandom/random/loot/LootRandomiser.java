@@ -1,8 +1,8 @@
 package com.bawnorton.trulyrandom.random.loot;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.collection.UnaryHashMap;
-import com.bawnorton.trulyrandom.collection.UnaryMap;
+import com.bawnorton.trulyrandom.util.collection.UnaryHashMap;
+import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
@@ -21,7 +21,6 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.*;

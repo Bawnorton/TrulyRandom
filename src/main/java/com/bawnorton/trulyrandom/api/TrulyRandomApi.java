@@ -132,6 +132,19 @@ public final class TrulyRandomApi {
         randomiser.updateLoot(server, false);
     }
 
+    public static void randomiseServerTrades(MinecraftServer server, boolean randomSeed) {
+        ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
+        if(randomSeed) randomiser.getModules().randomSeed(Module.TRADES);
+        randomiser.getModules().setEnabled(Module.TRADES);
+        randomiser.updateTrades(server, randomSeed);
+    }
+
+    public static void reserServerTrades(MinecraftServer server) {
+        ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
+        randomiser.getModules().setDisabled(Module.TRADES);
+        randomiser.updateTrades(server, false);
+    }
+
     public static void randomiseAllServer(MinecraftServer server, boolean randomSeed) {
         ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
         if(randomSeed) randomiser.getModules().randomSeedAll();
@@ -139,6 +152,7 @@ public final class TrulyRandomApi {
         randomiser.updateClients(server);
         randomiser.updateRecipes(server, randomSeed);
         randomiser.updateLoot(server, randomSeed);
+        randomiser.updateTrades(server, randomSeed);
     }
 
     public static void resetAllServer(MinecraftServer server) {
@@ -147,6 +161,7 @@ public final class TrulyRandomApi {
         randomiser.updateClients(server);
         randomiser.updateRecipes(server, false);
         randomiser.updateLoot(server, false);
+        randomiser.updateTrades(server, false);
     }
 
     private static void updateClient(ServerPlayerEntity player, Modules modules) {

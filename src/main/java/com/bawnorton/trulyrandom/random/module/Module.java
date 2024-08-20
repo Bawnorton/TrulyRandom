@@ -10,7 +10,9 @@ public enum Module {
     ITEM_MODELS(true, false, true),
     LOOT_TABLES(true, true, true),
     RECIPES(true, true, true),
-    STRUCTURES(true, true, false);
+    TRADES(true, true, true),
+    STRUCTURES(true, true, false),
+    FEATURES(false, true, false);
 
     public static final Codec<Module> CODEC = Codec.STRING.xmap(Module::valueOf, Module::name);
     public static final PacketCodec<ByteBuf, Module> PACKET_CODEC = PacketCodecs.STRING.xmap(Module::valueOf, Module::name);
