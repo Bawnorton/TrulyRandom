@@ -1,5 +1,8 @@
 # TrulyRandom - Randomise the World
 
+[![Modrinth](https://img.shields.io/modrinth/dt/trulyrandom?colour=00AF5C&label=downloads&logo=modrinth)](https://modrinth.com/mod/trulyrandom)
+[![CurseForge](https://cf.way2muchnoise.eu/full_1087424_downloads.svg)](https://curseforge.com/minecraft/mc-mods/trulyrandom)
+
 ### Modules:
 Enable TrulyRandom modules from the Other tab in world creation, or in-game with the `g` key or the `/trulyrandom server` command.
 
