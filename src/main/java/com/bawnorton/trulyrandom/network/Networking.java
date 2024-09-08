@@ -6,9 +6,7 @@ import com.bawnorton.trulyrandom.network.packet.c2s.ProvidedRandomiserC2SPacket;
 import com.bawnorton.trulyrandom.network.packet.c2s.RequestServerRandomiserC2SPacket;
 import com.bawnorton.trulyrandom.network.packet.c2s.SetServerRandomiserC2SPacket;
 import com.bawnorton.trulyrandom.network.packet.c2s.SetTargetClientRandomiserC2SPacket;
-import com.bawnorton.trulyrandom.network.packet.s2c.HandshakeS2CPacket;
-import com.bawnorton.trulyrandom.network.packet.s2c.OpenTargetedRandomiserScreenS2CPacket;
-import com.bawnorton.trulyrandom.network.packet.s2c.SetClientRandomiserS2CPacket;
+import com.bawnorton.trulyrandom.network.packet.s2c.*;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
@@ -28,6 +26,16 @@ public class Networking {
         playC2S.register(SetServerRandomiserC2SPacket.PACKET_ID, SetServerRandomiserC2SPacket.PACKET_CODEC);
         playC2S.register(SetTargetClientRandomiserC2SPacket.PACKET_ID, SetTargetClientRandomiserC2SPacket.PACKET_CODEC);
         playC2S.register(RequestServerRandomiserC2SPacket.PACKET_ID, RequestServerRandomiserC2SPacket.PACKET_CODEC);
+
+        PayloadTypeRegistry<RegistryByteBuf> playS2C = PayloadTypeRegistry.playS2C();
+        playS2C.register(HandshakeS2CPacket.PACKET_ID, HandshakeS2CPacket.PACKET_CODEC);
+        playS2C.register(OpenRandomiserScreenS2CPacket.PACKET_ID, OpenRandomiserScreenS2CPacket.PACKET_CODEC);
+        playS2C.register(OpenTargetedRandomiserScreenS2CPacket.PACKET_ID, OpenTargetedRandomiserScreenS2CPacket.PACKET_CODEC);
+        playS2C.register(RequestOtherClientRandomiserS2CPacket.PACKET_ID, RequestOtherClientRandomiserS2CPacket.PACKET_CODEC);
+        playS2C.register(SetClientRandomiserS2CPacket.PACKET_ID, SetClientRandomiserS2CPacket.PACKET_CODEC);
+        playS2C.register(SyncLootTableTrackerS2CPacket.PACKET_ID, SyncLootTableTrackerS2CPacket.PACKET_CODEC);
+        playS2C.register(SyncRecipeTrackerS2CPacket.PACKET_ID, SyncRecipeTrackerS2CPacket.PACKET_CODEC);
+        playS2C.register(SyncLootDropsS2CPacket.PACKET_ID, SyncLootDropsS2CPacket.PACKET_CODEC);
 
         ServerPlayNetworking.registerGlobalReceiver(HandshakeC2SPacket.PACKET_ID, Networking::handleHandshake);
         ServerPlayNetworking.registerGlobalReceiver(ProvidedRandomiserC2SPacket.PACKET_ID, Networking::handleProvidedRandomiser);

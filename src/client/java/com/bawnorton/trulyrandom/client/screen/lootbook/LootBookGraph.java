@@ -154,7 +154,6 @@ public class LootBookGraph implements Drawable, Element {
         graph.forEachVertex(GraphElement::clearHovered);
         context.disableScissor();
 
-
         context.getMatrices().pop();
 
         context.getMatrices().push();

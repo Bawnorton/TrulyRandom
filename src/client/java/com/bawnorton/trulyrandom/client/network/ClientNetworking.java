@@ -13,10 +13,8 @@ import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.text.Text;
 import java.util.HashMap;
@@ -27,16 +25,6 @@ public class ClientNetworking {
     private static final Map<CustomPayload.Id<?>, RunOnce> recievedCallback = new HashMap<>();
 
     public static void init() {
-        PayloadTypeRegistry<RegistryByteBuf> playS2C = PayloadTypeRegistry.playS2C();
-        playS2C.register(HandshakeS2CPacket.PACKET_ID, HandshakeS2CPacket.PACKET_CODEC);
-        playS2C.register(OpenRandomiserScreenS2CPacket.PACKET_ID, OpenRandomiserScreenS2CPacket.PACKET_CODEC);
-        playS2C.register(OpenTargetedRandomiserScreenS2CPacket.PACKET_ID, OpenTargetedRandomiserScreenS2CPacket.PACKET_CODEC);
-        playS2C.register(RequestOtherClientRandomiserS2CPacket.PACKET_ID, RequestOtherClientRandomiserS2CPacket.PACKET_CODEC);
-        playS2C.register(SetClientRandomiserS2CPacket.PACKET_ID, SetClientRandomiserS2CPacket.PACKET_CODEC);
-        playS2C.register(SyncLootTableTrackerS2CPacket.PACKET_ID, SyncLootTableTrackerS2CPacket.PACKET_CODEC);
-        playS2C.register(SyncRecipeTrackerS2CPacket.PACKET_ID, SyncRecipeTrackerS2CPacket.PACKET_CODEC);
-        playS2C.register(SyncLootDropsS2CPacket.PACKET_ID, SyncLootDropsS2CPacket.PACKET_CODEC);
-
         ClientPlayNetworking.registerGlobalReceiver(HandshakeS2CPacket.PACKET_ID, ClientNetworking::handleHandshake);
         ClientPlayNetworking.registerGlobalReceiver(OpenRandomiserScreenS2CPacket.PACKET_ID, ClientNetworking::handleOpenRandomiserScreen);
         ClientPlayNetworking.registerGlobalReceiver(OpenTargetedRandomiserScreenS2CPacket.PACKET_ID, ClientNetworking::handleOpenTargetedRandomiserScreen);
