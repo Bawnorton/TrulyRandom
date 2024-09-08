@@ -11,6 +11,6 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class RandomChanceWithEnchantedBonusLootConditionMixin {
     @ModifyReturnValue(method = "test(Lnet/minecraft/loot/context/LootContext;)Z", at = @At("RETURN"))
     private boolean alwaysPass(boolean original) {
-        return TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES);
+        return original || TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES);
     }
 }
