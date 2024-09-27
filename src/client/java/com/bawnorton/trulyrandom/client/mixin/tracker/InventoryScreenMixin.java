@@ -103,6 +103,9 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
 
         if(recipeBook.isOpen()) {
             x = recipeBook.findLeftEdge(width, backgroundWidth);
+            if(lootBook.isOpen()) {
+                lootBook.toggleOpen();
+            }
         } else if (lootBook.isOpen()) {
             x = lootBook.findLeftEdge(width, backgroundWidth);
             resetButtonPositions();

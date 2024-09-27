@@ -1,13 +1,13 @@
 package com.bawnorton.trulyrandom.random.loot;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.util.collection.UnaryHashMap;
-import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
+import com.bawnorton.trulyrandom.util.collection.UnaryBiMap;
+import com.bawnorton.trulyrandom.util.collection.UnaryHashBiMap;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.DataResult;
@@ -28,7 +28,7 @@ import java.util.*;
 public class LootRandomiser extends ServerRandomiserModule {
     private final Map<Team, LootTableTracker> trackers = new HashMap<>();
     private final Map<RegistryKey<LootTable>, LootTable> originalLootTables = new HashMap<>();
-    private final UnaryMap<RegistryKey<LootTable>> redirectMap = new UnaryHashMap<>();
+    private final UnaryBiMap<RegistryKey<LootTable>> redirectMap = new UnaryHashBiMap<>();
     private final Registry<LootTable> lootTableRegistry;
 
     private final Set<RegistryKey<LootTable>> blacklist = Set.of(
@@ -76,6 +76,10 @@ public class LootRandomiser extends ServerRandomiserModule {
         }
         LootTableTracker.BROKEN_WITH_SILK.remove();
         return result;
+    }
+
+    public RegistryKey<LootTable> getSourceTable(RegistryKey<LootTable> key) {
+        return redirectMap.inverse().getOrDefault(key, key);
     }
 
     public NbtCompound writeNbt(NbtCompound nbt) {

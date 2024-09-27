@@ -40,6 +40,7 @@ public class DropTypeGraphBuilders {
         GRAPH_BUILDERS.put(DropTypes.SHEARING, DropTypeGraphBuilders::shearingGraphBuilder);
         GRAPH_BUILDERS.put(DropTypes.SPAWNER, DropTypeGraphBuilders::spawnerGraphBuilder);
         GRAPH_BUILDERS.put(DropTypes.EMPTY, (tableDrops, tracker, inspectedTables) -> null);
+        GRAPH_BUILDERS.put(DropTypes.UNKNOWN, (tableDrops, tracker, inspectedTables) -> null);
     }
 
     private static @NotNull ForwardingDropTypeGraphBuilder forward(DropTypeGraphBuilder builder) {

@@ -2,6 +2,7 @@ package com.bawnorton.trulyrandom.tracker.loot.drop;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
+import com.google.common.base.Predicates;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -21,6 +22,8 @@ public class DropTypes {
     public static final DropType SPAWNER = of("spawner", LootTableIdentifier::isFromSpawner);
     public static final DropType EMPTY = of("empty", LootTableIdentifier::isEmpty);
 
+    public static final DropType UNKNOWN = new DropType(TrulyRandom.id("unknown"), Predicates.alwaysTrue());
+
     private static DropType of(String id, Predicate<LootTableIdentifier> predicate) {
         DropType type = new DropType(TrulyRandom.id(id), predicate);
         DROP_TYPES.add(type);
@@ -33,6 +36,6 @@ public class DropTypes {
                 return dropType;
             }
         }
-        throw new IllegalStateException("Could not find drop type for %s".formatted(identifier));
+        return UNKNOWN;
     }
 }
