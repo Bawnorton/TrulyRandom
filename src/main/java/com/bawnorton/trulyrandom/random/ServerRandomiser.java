@@ -9,19 +9,13 @@ import com.bawnorton.trulyrandom.random.recipe.RecipeRandomiser;
 import com.bawnorton.trulyrandom.random.trade.TradeRandomiser;
 import com.bawnorton.trulyrandom.tracker.Tracker;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
 
 public class ServerRandomiser extends Randomiser {
-    public static final Codec<Randomiser> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Modules.CODEC.fieldOf("modules").forGetter(Randomiser::getModules)
-    ).apply(instance, ServerRandomiser::new));
-
     public static final ServerRandomiser DEFAULT = new ServerRandomiser();
 
     private LootRandomiser lootRandomiser;
@@ -90,7 +84,11 @@ public class ServerRandomiser extends Randomiser {
     }
 
     public void updateRecipes(MinecraftServer server, boolean seedChanged) {
-        update(recipeRandomiser, server, seedChanged);
+        updateRecipes(server, seedChanged, false);
+    }
+
+    public void updateRecipes(MinecraftServer server, boolean seedChanged, boolean force) {
+        update(recipeRandomiser, server, seedChanged, force);
     }
 
     public void updateTrades(MinecraftServer server, boolean seedChanged) {
@@ -107,6 +105,10 @@ public class ServerRandomiser extends Randomiser {
     }
 
     private void update(ServerRandomiserModule randomiser, MinecraftServer server, boolean seedChanged) {
+        update(randomiser, server, seedChanged, false);
+    }
+
+    private void update(ServerRandomiserModule randomiser, MinecraftServer server, boolean seedChanged, boolean force) {
         if (!initialised) throw new IllegalStateException("Randomiser not initialised");
 
         boolean moduleEnabled = modules.isEnabled(randomiser.getModule());
@@ -118,7 +120,7 @@ public class ServerRandomiser extends Randomiser {
                 randomiser.setRandomised(false);
                 randomiser.getTrackers().forEach(Tracker::reset);
             }
-        } else if (!isRandomised || seedChanged) {
+        } else if (!isRandomised || seedChanged || force) {
             randomiser.randomise(server, modules.getSeed(randomiser.getModule()));
             randomiser.setRandomised(true);
             if(seedChanged) {

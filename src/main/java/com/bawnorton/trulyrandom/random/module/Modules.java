@@ -1,22 +1,28 @@
 package com.bawnorton.trulyrandom.random.module;
 
+import com.bawnorton.trulyrandom.TrulyRandom;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Modules implements Iterable<Module> {
     public static final Codec<Modules> CODEC = Codec.unboundedMap(Module.CODEC, ModuleState.CODEC)
             .xmap(Modules::new, modules -> modules.moduleStates);
-    public static final PacketCodec<ByteBuf, Modules> PACKET_CODEC = PacketCodecs.map(HashMap::new, Module.PACKET_CODEC, ModuleState.PACKET_CODEC)
+    public static final PacketCodec<RegistryByteBuf, Modules> PACKET_CODEC = PacketCodecs.map(HashMap::new, Module.PACKET_CODEC, ModuleState.PACKET_CODEC)
             .xmap(Modules::new, modules -> new HashMap<>(modules.moduleStates));
 
     private final Map<Module, ModuleState> moduleStates;
@@ -26,11 +32,17 @@ public class Modules implements Iterable<Module> {
     public Modules() {
         moduleStates = new HashMap<>();
         for (Module module : Module.values()) {
-            moduleStates.put(module, new ModuleState());
+            moduleStates.put(module, module.newModuleState());
         }
     }
 
     private Modules(Map<Module, ModuleState> moduleStates) {
+        if (moduleStates.isEmpty()) {
+            moduleStates = new HashMap<>();
+            for (Module module : Module.values()) {
+                moduleStates.put(module, module.newModuleState());
+            }
+        }
         this.moduleStates = moduleStates;
     }
 
@@ -132,26 +144,32 @@ public class Modules implements Iterable<Module> {
         seedMemento.clear();
     }
 
+    public <T extends ModuleState> T getState(Module module, Class<T> stateClass) {
+        return stateClass.cast(moduleStates.get(module));
+    }
+
     public NbtCompound writeNbt(NbtCompound nbt) {
-        moduleStates.forEach((module, state) -> {
-            NbtCompound moduleNbt = new NbtCompound();
-            state.writeNbt(moduleNbt);
-            nbt.put(module.name(), moduleNbt);
-        });
+        DataResult<NbtElement> result = CODEC.encodeStart(NbtOps.INSTANCE, this);
+        result.ifSuccess(nbtElement -> nbt.put("modules", nbtElement));
+        result.ifError(nbtElementError -> TrulyRandom.LOGGER.error("Could not encode modules \"{}\"", nbtElementError));
         return nbt;
     }
 
     public void readNbt(NbtCompound nbt) {
-        moduleStates.forEach((module, state) -> {
-            NbtCompound moduleNbt = nbt.getCompound(module.name());
-            state.readNbt(moduleNbt);
-        });
+        DataResult<Modules> result = CODEC.parse(NbtOps.INSTANCE, nbt.getCompound("modules"));
+        result.ifSuccess(this::copy);
+        result.ifError(modulesError -> TrulyRandom.LOGGER.error("Could not parse modules \"{}\"", modulesError));
     }
 
     public Modules copy() {
         Map<Module, ModuleState> copy = new HashMap<>();
         moduleStates.forEach((module, state) -> copy.put(module, state.copy()));
         return new Modules(copy);
+    }
+
+    private void copy(@NotNull Modules modules) {
+        this.moduleStates.clear();
+        this.moduleStates.putAll(modules.moduleStates);
     }
 
     public List<Module> asList() {
@@ -164,5 +182,12 @@ public class Modules implements Iterable<Module> {
     @Override
     public Iterator<Module> iterator() {
         return moduleStates.keySet().iterator();
+    }
+
+    private record StateHolder(Module module, ModuleState state) {
+        public static final Codec<StateHolder> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+                Module.CODEC.fieldOf("module").forGetter(StateHolder::module),
+                ModuleState.CODEC.fieldOf("state").forGetter(StateHolder::state)
+        ).apply(instance, StateHolder::new));
     }
 }

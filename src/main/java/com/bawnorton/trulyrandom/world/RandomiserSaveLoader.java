@@ -37,7 +37,7 @@ public class RandomiserSaveLoader extends PersistentState {
 
     public static Modules getDefaultRandomiser() {
         if(!defaultSet) {
-            throw new IllegalStateException("Default randomiser was not set");
+            setDefaultRandomiser(new Modules());
         }
         return defaultModules;
     }

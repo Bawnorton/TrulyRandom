@@ -4,6 +4,7 @@ import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.mixin.accessor.RecipeManagerAccessor;
 import com.bawnorton.trulyrandom.random.module.Module;
+import com.bawnorton.trulyrandom.random.module.RecipeModuleState;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
@@ -11,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeManager;
+import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -43,7 +45,17 @@ public class RecipeRandomiser extends ServerRandomiserModule {
         playerKnownRecipes = getPlayerKnownRecipes(server);
         resetRecipeManager(server);
         List<Map.Entry<Identifier, RecipeEntry<?>>> recipeEntries = new ArrayList<>(((RecipeManagerAccessor) server.getRecipeManager()).getRecipesById().entrySet());
+        RecipeModuleState moduleState = TrulyRandom.getRandomiser(server).getModules().getState(Module.RECIPES, RecipeModuleState.class);
         List<RecipeEntry<?>> newRecipeEntries = new ArrayList<>();
+        recipeEntries = recipeEntries.stream()
+                .filter(entry -> {
+                    if(!moduleState.isRecipeTypeEnabled(entry.getValue().value().getType())) {
+                        newRecipeEntries.add(entry.getValue());
+                        return false;
+                    }
+                    return true;
+                })
+                .toList();
         Map<Identifier, RecipeEntry<?>> recipes = new HashMap<>();
         List<ItemStack> outputs = new ArrayList<>();
         for (Map.Entry<Identifier, RecipeEntry<?>> recipeEntry : recipeEntries) {

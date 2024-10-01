@@ -3,6 +3,7 @@ package com.bawnorton.trulyrandom.random.loot;
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.random.module.Module;
+import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;

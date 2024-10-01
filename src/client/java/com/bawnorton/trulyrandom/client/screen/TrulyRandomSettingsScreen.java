@@ -1,6 +1,7 @@
 package com.bawnorton.trulyrandom.client.screen;
 
 import com.bawnorton.trulyrandom.random.module.Modules;
+import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import net.minecraft.client.gui.screen.Screen;
 
 import java.util.function.Consumer;
@@ -14,7 +15,7 @@ public class TrulyRandomSettingsScreen extends AbstractTrulyRandomSettingsScreen
     }
 
     public TrulyRandomSettingsScreen(Screen parent, Consumer<Modules> applier) {
-        this(parent, new Modules(), applier);
+        this(parent, RandomiserSaveLoader.getDefaultRandomiser(), applier);
     }
 
     @Override

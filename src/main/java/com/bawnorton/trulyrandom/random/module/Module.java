@@ -27,6 +27,13 @@ public enum Module {
         this.serverSide = serverSide;
     }
 
+    public ModuleState newModuleState() {
+        return switch (this) {
+            case RECIPES -> new RecipeModuleState();
+            default -> new StandardModuleState();
+        };
+    }
+
     public boolean isImplemented() {
         return implemented;
     }

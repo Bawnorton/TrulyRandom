@@ -39,7 +39,7 @@ public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
         protected final Module module;
         private final int columns;
 
-        private ModuleElement(ModuleWidgetSettings settings, Module module, int columns) {
+        protected ModuleElement(ModuleWidgetSettings settings, Module module, int columns) {
             this.client = settings.client;
             this.modules = settings.modules;
             this.module = module;
@@ -54,14 +54,22 @@ public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
     }
 
     public static class Title extends ModuleElement {
-        private final TextWidget title;
-        private final CyclingButtonWidget<Boolean> toggleButton;
+        protected TextWidget title;
+        protected CyclingButtonWidget<Boolean> toggleButton;
 
-        public Title(ModuleWidgetSettings settings, Module module, int x, int y, int width, int height) {
-            super(settings, module, 2);
+        public Title(ModuleWidgetSettings settings, Module module, int x, int y, int width, int height, int columns) {
+            super(settings, module, columns);
+            addTitle(x, y, width, height);
+            addToggle(x, y, width, height);
+        }
+
+        protected void addTitle(int x, int y, int width, int height) {
             title = new TextWidget(x, y, width, height, Text.translatable("selectWorld.trulyrandom.%s".formatted(module.name().toLowerCase())), client.textRenderer);
             title.setTooltip(Tooltip.of(getTooltipText()));
             title.alignLeft();
+        }
+
+        protected void addToggle(int x, int y, int width, int height) {
             toggleButton = CyclingButtonWidget.onOffBuilder()
                     .initially(modules.getEnabledMemento(module))
                     .omitKeyText()
@@ -87,20 +95,28 @@ public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
     }
 
     public static class SeedBox extends ModuleElement {
-        private final LongEditBoxWidget seedEditBox;
-        private final ButtonWidget newSeedButton;
+        protected LongEditBoxWidget seedEditBox;
+        protected ButtonWidget newSeedButton;
 
-        public SeedBox(ModuleWidgetSettings settings, Module module, int x, int y, int width, int height) {
-            super(settings, module, 2);
+        public SeedBox(ModuleWidgetSettings settings, Module module, int x, int y, int width, int height, int columns) {
+            super(settings, module, columns);
+            addSeedBox(module, x, y, width, height);
+            addNewSeedButton(module, height);
+        }
+
+        protected void addSeedBox(Module module, int x, int y, int width, int height) {
             seedEditBox = new LongEditBoxWidget(x, y, width, height, Text.translatable("selectWorld.trulyrandom.seed.title"), modules.getSeedMemento(module), client.textRenderer);
             seedEditBox.setLong(modules.getSeedMemento(module));
             seedEditBox.setChangeListener(value -> modules.setSeedMemento(module, seedEditBox.getLong()));
             seedEditBox.setTooltip(Tooltip.of(getSeedTooltipText()));
+            seedEditBox.active = module.isImplemented();
+        }
+
+        protected void addNewSeedButton(Module module, int height) {
             newSeedButton = ButtonWidget.builder(Text.translatable("selectWorld.trulyrandom.new_seed"), button -> seedEditBox.setLong(new Random().nextLong()))
                     .dimensions(0, 0, 44, height)
                     .build();
             newSeedButton.setTooltip(Tooltip.of(getNewSeedTooltipText()));
-            seedEditBox.active = module.isImplemented();
             newSeedButton.active = module.isImplemented();
         }
 
@@ -157,7 +173,7 @@ public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
         }
 
         public T build() {
-            T moduleElement = factory.create(settings, module, x, y, width, height);
+            T moduleElement = factory.create(settings, module, x, y, width, height, 2);
             moduleElement.init();
             moduleElement.setColumnSpacing(2);
             return moduleElement;
@@ -165,6 +181,6 @@ public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
     }
 
     public interface ModuleElementFactory<T extends ModuleElement> {
-        T create(ModuleWidgetSettings settings, Module module, int x, int y, int width, int height);
+        T create(ModuleWidgetSettings settings, Module module, int x, int y, int width, int height, int columns);
     }
 }

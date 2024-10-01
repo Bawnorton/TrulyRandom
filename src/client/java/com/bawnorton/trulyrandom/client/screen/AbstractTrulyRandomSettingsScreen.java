@@ -2,6 +2,7 @@ package com.bawnorton.trulyrandom.client.screen;
 
 import com.bawnorton.trulyrandom.client.screen.module.ModuleWidgetSettings;
 import com.bawnorton.trulyrandom.client.screen.module.adapter.DefaultModuleWidgetAdapter;
+import com.bawnorton.trulyrandom.client.screen.module.adapter.RecipeModuleWidgetAdapter;
 import com.bawnorton.trulyrandom.client.screen.module.adapter.StructureModuleWidgetAdapter;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
@@ -50,6 +51,7 @@ public abstract class AbstractTrulyRandomSettingsScreen extends Screen {
         modules.sort(Comparator.comparingInt(Module::ordinal));
         ModuleWidgetSettings moduleSettings = new ModuleWidgetSettings(client, getModules());
         moduleSettings.registerAdapters(Set.of(Module.STRUCTURES, Module.FEATURES), new StructureModuleWidgetAdapter());
+        moduleSettings.registerAdapters(Set.of(Module.RECIPES), new RecipeModuleWidgetAdapter());
         moduleSettings.setDefaultAdapter(new DefaultModuleWidgetAdapter());
         GridWidget.Adder rowAdder = null;
         for (int i = 0; i < modules.size(); i++) {

@@ -1,93 +1,50 @@
 package com.bawnorton.trulyrandom.random.module;
 
+import com.bawnorton.trulyrandom.TrulyRandom;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.Lifecycle;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
-
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.SimpleRegistry;
 import java.util.Random;
 
-public final class ModuleState {
-    public static final Codec<ModuleState> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Codec.BOOL.optionalFieldOf("enabled", false).forGetter(ModuleState::isEnabled),
-            Codec.BOOL.optionalFieldOf("visible", true).forGetter(ModuleState::isVisible),
-            Codec.LONG.optionalFieldOf("seed", new Random().nextLong()).forGetter(ModuleState::getSeed)
-    ).apply(instance, ModuleState::new));
+public interface ModuleState {
+    Codec<ModuleState> CODEC = Type.REGISTRY.getCodec()
+            .dispatch("type", ModuleState::getType, Type::codec);
 
-    public static final PacketCodec<ByteBuf, ModuleState> PACKET_CODEC = PacketCodec.tuple(
-            PacketCodecs.BOOL, ModuleState::isEnabled,
-            PacketCodecs.VAR_LONG, ModuleState::getSeed,
-            ModuleState::new
-    );
+    PacketCodec<RegistryByteBuf, ModuleState> PACKET_CODEC = PacketCodecs.registryCodec(Type.REGISTRY.getCodec())
+            .dispatch(ModuleState::getType, Type::packetCodec);
 
-    private boolean enabled;
-    private boolean visible;
-    private long seed;
+    Type<?> getType();
 
-    public ModuleState(boolean enabled, boolean visible, long seed) {
-        this.enabled = enabled;
-        this.visible = visible;
-        this.seed = seed;
-    }
+    boolean isEnabled();
 
-    private ModuleState(boolean enabled, long seed) {
-        this(enabled, true, seed);
-    }
+    void enable();
 
-    public ModuleState() {
-        this(false, true, new Random().nextLong());
-    }
+    void disable();
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+    boolean isVisible();
 
-    public void enable() {
-        enabled = true;
-    }
+    void show();
 
-    public void disable() {
-        enabled = false;
-    }
+    void hide();
 
-    public boolean isVisible() {
-        return visible;
-    }
+    long getSeed();
 
-    public void show() {
-        visible = true;
-    }
+    void setSeed(long seed);
 
-    public void hide() {
-        visible = false;
-    }
+    void randomSeed();
 
-    public long getSeed() {
-        return seed;
-    }
+    ModuleState copy();
 
-    public void setSeed(long seed) {
-        this.seed = seed;
-    }
-
-    public void randomSeed() {
-        seed = new Random().nextLong();
-    }
-
-    public ModuleState copy() {
-        return new ModuleState(enabled, visible, seed);
-    }
-
-    public void writeNbt(NbtCompound nbt) {
-        nbt.putBoolean("enabled", enabled);
-        nbt.putLong("seed", seed);
-    }
-
-    public void readNbt(NbtCompound nbt) {
-        enabled = nbt.getBoolean("enabled");
-        seed = nbt.getLong("seed");
+    record Type<T extends ModuleState>(MapCodec<T> codec, PacketCodec<RegistryByteBuf, T> packetCodec) {
+        public static final Registry<Type<?>> REGISTRY = new SimpleRegistry<>(
+                RegistryKey.ofRegistry(TrulyRandom.id("module_types")), Lifecycle.stable());
     }
 }

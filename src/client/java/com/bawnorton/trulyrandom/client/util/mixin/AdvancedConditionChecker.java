@@ -1,6 +1,5 @@
 package com.bawnorton.trulyrandom.client.util.mixin;
 
-import com.bawnorton.trulyrandom.client.util.mixin.annotation.VersionPredicate;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.spongepowered.asm.util.Annotations;

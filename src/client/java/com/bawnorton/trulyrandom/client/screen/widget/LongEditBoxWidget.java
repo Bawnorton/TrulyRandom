@@ -34,7 +34,7 @@ public class LongEditBoxWidget extends EditBoxWidget {
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        if (chr >= '0' && chr <= '9') {
+        if (chr >= '0' && chr <= '9' || chr == '-') {
             String original = getText();
             boolean success = super.charTyped(chr, modifiers);
             if (success) {

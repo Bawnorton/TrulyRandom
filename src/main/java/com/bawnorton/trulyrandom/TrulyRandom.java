@@ -4,6 +4,7 @@ import com.bawnorton.trulyrandom.event.EventHandler;
 import com.bawnorton.trulyrandom.network.Networking;
 import com.bawnorton.trulyrandom.random.Randomiser;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
+import com.bawnorton.trulyrandom.random.module.ModuleStateTypes;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import net.fabricmc.api.ModInitializer;
@@ -13,7 +14,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.UUID;
 
 public class TrulyRandom implements ModInitializer {
@@ -69,6 +69,7 @@ public class TrulyRandom implements ModInitializer {
     public void onInitialize() {
         Networking.init();
         EventHandler.init();
+        ModuleStateTypes.init();
         LOGGER.debug("TrulyRandom Initialised");
     }
 }

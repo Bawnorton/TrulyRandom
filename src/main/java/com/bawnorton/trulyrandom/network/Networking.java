@@ -10,6 +10,7 @@ import com.bawnorton.trulyrandom.network.packet.s2c.*;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
+import com.bawnorton.trulyrandom.random.module.RecipeModuleState;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.RegistryByteBuf;
@@ -80,10 +81,11 @@ public class Networking {
         boolean lootSeedChanged = randomiser.getModules().getSeed(Module.LOOT_TABLES) != packet.modules().getSeed(Module.LOOT_TABLES);
         boolean recipeSeedChanged = randomiser.getModules().getSeed(Module.RECIPES) != packet.modules().getSeed(Module.RECIPES);
         boolean tradeSeedChanged = randomiser.getModules().getSeed(Module.TRADES) != packet.modules().getSeed(Module.TRADES);
+        boolean enabledRecipeTypesChanged = !randomiser.getModules().getState(Module.RECIPES, RecipeModuleState.class).getEnabledRecipeTypes().equals(packet.modules().getState(Module.RECIPES, RecipeModuleState.class).getEnabledRecipeTypes());
 
         randomiser.setModules(packet.modules());
         randomiser.updateLoot(server, lootSeedChanged);
-        randomiser.updateRecipes(server, recipeSeedChanged);
+        randomiser.updateRecipes(server, recipeSeedChanged, enabledRecipeTypesChanged);
         randomiser.updateTrades(server, tradeSeedChanged);
         randomiser.updateClients(server);
     }
