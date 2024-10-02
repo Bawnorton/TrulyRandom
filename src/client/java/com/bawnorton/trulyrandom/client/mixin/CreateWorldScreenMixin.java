@@ -1,6 +1,8 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
+import com.bawnorton.trulyrandom.client.extend.DataConfigurationExtender;
 import com.bawnorton.trulyrandom.client.screen.TrulyRandomSettingsScreen;
+import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.MinecraftClient;
@@ -9,8 +11,11 @@ import net.minecraft.client.gui.screen.world.CreateWorldScreen;
 import net.minecraft.client.gui.tab.GridScreenTab;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.GridWidget;
+import net.minecraft.resource.DataConfiguration;
 import net.minecraft.text.Text;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -24,6 +29,9 @@ public abstract class CreateWorldScreenMixin extends Screen {
 
     @Mixin(targets = "net.minecraft.client.gui.screen.world.CreateWorldScreen$MoreTab")
     public abstract static class MoreTabMixin extends GridScreenTab {
+        @Shadow @Final
+        CreateWorldScreen field_42178;
+
         protected MoreTabMixin(Text title) {
             super(title);
         }
@@ -41,7 +49,10 @@ public abstract class CreateWorldScreenMixin extends Screen {
         @Unique
         private void openTrulyRandomSettings() {
             MinecraftClient client = MinecraftClient.getInstance();
-            client.setScreen(new TrulyRandomSettingsScreen(client.currentScreen, RandomiserSaveLoader::setDefaultRandomiser));
+            DataConfiguration dataConfiguration = field_42178.getWorldCreator().getGeneratorOptionsHolder().dataConfiguration();
+            DataConfigurationExtender extender = (DataConfigurationExtender) (Object) dataConfiguration;
+            Modules modules = extender.trulyrandom$getRandomiserModules();
+            client.setScreen(new TrulyRandomSettingsScreen(client.currentScreen, modules, extender::trulyrandom$setRandomiserModules));
         }
     }
 }
