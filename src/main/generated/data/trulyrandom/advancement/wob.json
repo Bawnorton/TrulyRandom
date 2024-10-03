@@ -1,0 +1,45 @@
+{
+  "parent": "trulyrandom:root",
+  "criteria": {
+    "wob": {
+      "conditions": {
+        "key": {
+          "A": {
+            "item": "minecraft:stick"
+          },
+          "B": {
+            "item": "minecraft:string"
+          }
+        },
+        "pattern": [
+          "AB ",
+          "A B",
+          "AB "
+        ]
+      },
+      "trigger": "trulyrandom:crafting"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.trulyrandom.wob.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:bow"
+    },
+    "title": {
+      "translate": "advancements.trulyrandom.wob.title"
+    }
+  },
+  "requirements": [
+    [
+      "wob"
+    ]
+  ],
+  "rewards": {
+    "experience": 100
+  },
+  "sends_telemetry_event": true
+}

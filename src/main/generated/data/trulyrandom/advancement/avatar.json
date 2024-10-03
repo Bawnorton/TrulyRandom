@@ -1,0 +1,76 @@
+{
+  "parent": "trulyrandom:root",
+  "criteria": {
+    "bamboo": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:bamboo"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "blaze": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:blaze_rod"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "breeze": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:breeze_rod"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "wood": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:stick"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.trulyrandom.avatar.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:stick"
+    },
+    "title": {
+      "translate": "advancements.trulyrandom.avatar.title"
+    }
+  },
+  "requirements": [
+    [
+      "wood"
+    ],
+    [
+      "blaze"
+    ],
+    [
+      "breeze"
+    ],
+    [
+      "bamboo"
+    ]
+  ],
+  "rewards": {
+    "experience": 100
+  },
+  "sends_telemetry_event": true
+}

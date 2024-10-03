@@ -57,5 +57,19 @@
   "key.categories.trulyrandom": "Truly Random",
   "key.trulyrandom.open_randomiser_gui": "Open Randomiser GUI",
   "key.trulyrandom.query_hand": "Query Hand",
-  "key.trulyrandom.reload_chunks": "Reload Chunks"
+  "key.trulyrandom.reload_chunks": "Reload Chunks",
+  "advancements.trulyrandom.root.title": "TrulyRandom",
+  "advancements.trulyrandom.root.description": "Randomise the World",
+  "advancements.trulyrandom.this_is_not_the_rod_you_are_looking_for.title": "This is not the Rod you are Looking for",
+  "advancements.trulyrandom.this_is_not_the_rod_you_are_looking_for.description": "Pick up a breeze rod when random loot tables are enabled",
+  "advancements.trulyrandom.wob.title": "That is not a Bow",
+  "advancements.trulyrandom.wob.description": "The sticks go on the right",
+  "advancements.trulyrandom.deb.title": "That is not a Bed",
+  "advancements.trulyrandom.deb.description": "Looks mighty uncomfortable",
+  "advancements.trulyrandom.avatar.title": "Avatar: The Last Stick Collector",
+  "advancements.trulyrandom.avatar.description": "Collect all 4 stick-shaped items",
+  "advancements.trulyrandom.woold_you_look_at_that.title": "Complete What Monument?",
+  "advancements.trulyrandom.woold_you_look_at_that.description": "Collect all the colours of wool",
+  "advancements.trulyrandom.i_didnt_wax_for_this.title": "I Didn't Wax for This",
+  "advancements.trulyrandom.i_didnt_wax_for_this.description": "Collect all the colour variants of candles"
 }

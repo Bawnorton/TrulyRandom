@@ -17,6 +17,8 @@
     "accessor.TradeOfferAccessor",
     "accessor.TrialSpawnerDataAccessor",
     "accessor.VerticallyAttachableBlockItemAccessor",
+    "advancement.CraftingScreenHandlerMixin",
+    "advancement.ServerPlayerEntityMixin",
     "loot.ReloadableRegistries$LookupMixin",
     "loot.condition.EnchantedCountIncreaseLootFunctionMixin",
     "loot.condition.KilledByPlayerLootConditionMixin",

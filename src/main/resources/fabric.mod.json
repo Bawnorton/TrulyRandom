@@ -22,7 +22,7 @@
       "com.bawnorton.trulyrandom.client.TrulyRandomClient"
     ],
     "fabric-datagen": [
-      "com.bawnorton.trulyrandom.datagen.TrulyRandomDataGenerator"
+      "com.bawnorton.trulyrandom.data.TrulyRandomDataGenerator"
     ]
   },
   "mixins": [

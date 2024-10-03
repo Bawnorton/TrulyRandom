@@ -1,0 +1,245 @@
+{
+  "parent": "trulyrandom:root",
+  "criteria": {
+    "black_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:black_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "blue_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:blue_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "brown_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:brown_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "cyan_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:cyan_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "gray_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:gray_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "green_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:green_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "light_blue_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:light_blue_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "light_gray_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:light_gray_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "lime_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:lime_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "magenta_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:magenta_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "orange_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:orange_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "pink_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:pink_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "purple_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:purple_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "red_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:red_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "white_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:white_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "yellow_candle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:yellow_candle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.trulyrandom.i_didnt_wax_for_this.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:candle"
+    },
+    "title": {
+      "translate": "advancements.trulyrandom.i_didnt_wax_for_this.title"
+    }
+  },
+  "requirements": [
+    [
+      "black_candle"
+    ],
+    [
+      "yellow_candle"
+    ],
+    [
+      "cyan_candle"
+    ],
+    [
+      "red_candle"
+    ],
+    [
+      "lime_candle"
+    ],
+    [
+      "light_gray_candle"
+    ],
+    [
+      "pink_candle"
+    ],
+    [
+      "purple_candle"
+    ],
+    [
+      "light_blue_candle"
+    ],
+    [
+      "orange_candle"
+    ],
+    [
+      "magenta_candle"
+    ],
+    [
+      "candle"
+    ],
+    [
+      "gray_candle"
+    ],
+    [
+      "brown_candle"
+    ],
+    [
+      "white_candle"
+    ],
+    [
+      "blue_candle"
+    ],
+    [
+      "green_candle"
+    ]
+  ],
+  "rewards": {
+    "experience": 100
+  },
+  "sends_telemetry_event": true
+}

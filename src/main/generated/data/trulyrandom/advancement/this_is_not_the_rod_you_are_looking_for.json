@@ -1,0 +1,42 @@
+{
+  "parent": "trulyrandom:root",
+  "criteria": {
+    "is_loot_tables": {
+      "conditions": {
+        "module": "LOOT_TABLES"
+      },
+      "trigger": "trulyrandom:module_enabled"
+    },
+    "rod": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:breeze_rod"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.trulyrandom.this_is_not_the_rod_you_are_looking_for.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "minecraft:breeze_rod"
+    },
+    "title": {
+      "translate": "advancements.trulyrandom.this_is_not_the_rod_you_are_looking_for.title"
+    }
+  },
+  "requirements": [
+    [
+      "rod"
+    ],
+    [
+      "is_loot_tables"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

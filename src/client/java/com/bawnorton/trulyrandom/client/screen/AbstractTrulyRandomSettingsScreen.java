@@ -1,11 +1,16 @@
 package com.bawnorton.trulyrandom.client.screen;
 
+import com.bawnorton.trulyrandom.TrulyRandom;
+import com.bawnorton.trulyrandom.client.TrulyRandomClient;
+import com.bawnorton.trulyrandom.client.network.ClientNetworking;
 import com.bawnorton.trulyrandom.client.screen.module.ModuleWidgetSettings;
 import com.bawnorton.trulyrandom.client.screen.module.adapter.DefaultModuleWidgetAdapter;
 import com.bawnorton.trulyrandom.client.screen.module.adapter.RecipeModuleWidgetAdapter;
 import com.bawnorton.trulyrandom.client.screen.module.adapter.StructureModuleWidgetAdapter;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
+import com.bawnorton.trulyrandom.registry.TrulyRandomCriteria;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.GridWidget;
@@ -13,6 +18,7 @@ import net.minecraft.client.gui.widget.MultilineTextWidget;
 import net.minecraft.client.gui.widget.ThreePartsLayoutWidget;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
+import net.minecraft.util.Colors;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -96,5 +102,18 @@ public abstract class AbstractTrulyRandomSettingsScreen extends Screen {
     @Override
     protected void initTabNavigation() {
         layout.refreshPositions();
+    }
+
+    @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        super.render(context, mouseX, mouseY, delta);
+        context.drawText(
+                client.textRenderer,
+                Text.literal(TrulyRandom.VERSION.getFriendlyString()),
+                5,
+                5,
+                Colors.LIGHT_GRAY,
+                false
+        );
     }
 }

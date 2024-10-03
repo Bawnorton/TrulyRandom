@@ -1,0 +1,232 @@
+{
+  "parent": "trulyrandom:root",
+  "criteria": {
+    "black_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:black_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "blue_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:blue_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "brown_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:brown_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "cyan_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:cyan_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "gray_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:gray_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "green_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:green_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "light_blue_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:light_blue_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "light_gray_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:light_gray_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "lime_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:lime_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "magenta_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:magenta_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "orange_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:orange_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "pink_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:pink_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "purple_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:purple_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "red_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:red_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "white_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:white_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "yellow_wool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:yellow_wool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.trulyrandom.woold_you_look_at_that.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:white_wool"
+    },
+    "title": {
+      "translate": "advancements.trulyrandom.woold_you_look_at_that.title"
+    }
+  },
+  "requirements": [
+    [
+      "white_wool"
+    ],
+    [
+      "yellow_wool"
+    ],
+    [
+      "gray_wool"
+    ],
+    [
+      "green_wool"
+    ],
+    [
+      "blue_wool"
+    ],
+    [
+      "light_gray_wool"
+    ],
+    [
+      "magenta_wool"
+    ],
+    [
+      "purple_wool"
+    ],
+    [
+      "red_wool"
+    ],
+    [
+      "light_blue_wool"
+    ],
+    [
+      "lime_wool"
+    ],
+    [
+      "black_wool"
+    ],
+    [
+      "cyan_wool"
+    ],
+    [
+      "brown_wool"
+    ],
+    [
+      "pink_wool"
+    ],
+    [
+      "orange_wool"
+    ]
+  ],
+  "rewards": {
+    "experience": 100
+  },
+  "sends_telemetry_event": true
+}
