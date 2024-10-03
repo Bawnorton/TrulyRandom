@@ -6,6 +6,8 @@ import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.trade.TradeTracker;
+import com.bawnorton.trulyrandom.util.collection.UnaryBiMap;
+import com.bawnorton.trulyrandom.util.collection.UnaryHashBiMap;
 import com.bawnorton.trulyrandom.util.collection.UnaryHashMap;
 import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import net.minecraft.entity.passive.MerchantEntity;
@@ -19,9 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class TradeRandomiser extends ServerRandomiserModule {
+public class TradeRandomiser extends ServerRandomiserModule<Item, Item> {
     private final Map<Team, TradeTracker> trackers = new HashMap<>();
-    private final UnaryMap<Item> redirectMap = new UnaryHashMap<>();
+    private final UnaryBiMap<Item> redirectMap = new UnaryHashBiMap<>();
     private final Map<Item, Integer> countMap = new HashMap<>();
 
     public Item getItem(MerchantEntity merchantEntity, Item key) {
@@ -74,6 +76,14 @@ public class TradeRandomiser extends ServerRandomiserModule {
     public void reset(MinecraftServer server) {
         redirectMap.clear();
         countMap.clear();
+    }
+
+    @Override
+    public List<Item> getSources(Item result) {
+        if (!redirectMap.containsValue(result)) {
+            return List.of();
+        }
+        return List.of(redirectMap.inverse().get(result));
     }
 
     @Override

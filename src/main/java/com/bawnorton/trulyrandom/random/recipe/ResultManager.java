@@ -141,7 +141,6 @@ public class ResultManager {
         return item.getDefaultStack();
     }
 
-
     private class SmithingTrimResultGetter implements ResultGetter {
         private List<ItemStack> bases;
         private List<ItemStack> additions;

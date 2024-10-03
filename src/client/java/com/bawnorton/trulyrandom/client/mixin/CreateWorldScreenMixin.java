@@ -24,7 +24,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(CreateWorldScreen.class)
 public abstract class CreateWorldScreenMixin extends Screen implements ModulesHolder {
-    @Shadow @Final private WorldCreator worldCreator;
+    @Shadow @Final
+    WorldCreator worldCreator;
     @Unique
     private Modules trulyrandom$modules = new Modules();
 

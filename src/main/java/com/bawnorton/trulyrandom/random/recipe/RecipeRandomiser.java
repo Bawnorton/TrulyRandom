@@ -8,11 +8,11 @@ import com.bawnorton.trulyrandom.random.module.RecipeModuleState;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeManager;
-import net.minecraft.recipe.SpecialCraftingRecipe;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -25,10 +25,11 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class RecipeRandomiser extends ServerRandomiserModule {
+public class RecipeRandomiser extends ServerRandomiserModule<RecipeEntry<?>, ItemStack> {
     private final Map<Team, RecipeTracker> trackers = new HashMap<>();
     private final ResultManager resultManager = new ResultManager();
     private final Map<Identifier, ItemStack> originalOutputs = new HashMap<>();
+    private final Map<Item, List<RecipeEntry<?>>> sources = new HashMap<>();
     private Map<ServerPlayerEntity, Collection<RecipeEntry<?>>> playerKnownRecipes;
 
     public RecipeRandomiser(MinecraftServer server) {
@@ -36,6 +37,7 @@ public class RecipeRandomiser extends ServerRandomiserModule {
         long seed = TrulyRandom.getRandomiser(server).getModules().getSeed(Module.RECIPES);
         ((RecipeManagerAccessor) server.getRecipeManager()).getRecipesById().forEach((id, recipe) -> {
             ItemStack result = resultManager.getResult(recipe, server, seed);
+            sources.computeIfAbsent(result.getItem(), k -> new ArrayList<>()).add(recipe);
             originalOutputs.put(id, result);
         });
     }
@@ -72,6 +74,7 @@ public class RecipeRandomiser extends ServerRandomiserModule {
             RecipeEntry<?> recipe = recipes.get(id);
             RecipeEntry<?> newRecipe = resultManager.setResult(recipe, output);
             newRecipeEntries.add(newRecipe);
+            sources.computeIfAbsent(output.getItem(), k -> new ArrayList<>()).add(newRecipe);
         }
 
         server.getRecipeManager().setRecipes(newRecipeEntries);
@@ -95,6 +98,12 @@ public class RecipeRandomiser extends ServerRandomiserModule {
             newRecipeEntries.add(newRecipe);
         }
         server.getRecipeManager().setRecipes(newRecipeEntries);
+        sources.clear();
+    }
+
+    @Override
+    public List<RecipeEntry<?>> getSources(ItemStack result) {
+        return sources.getOrDefault(result.getItem(), List.of());
     }
 
     @Override

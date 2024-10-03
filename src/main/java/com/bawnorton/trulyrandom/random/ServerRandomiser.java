@@ -8,7 +8,8 @@ import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
 import com.bawnorton.trulyrandom.random.recipe.RecipeRandomiser;
 import com.bawnorton.trulyrandom.random.trade.TradeRandomiser;
 import com.bawnorton.trulyrandom.tracker.Tracker;
-import com.mojang.serialization.Codec;
+import com.bawnorton.trulyrandom.tracker.difficulty.DifficultyCalculator;
+import com.bawnorton.trulyrandom.tracker.difficulty.DifficultyRating;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
@@ -16,11 +17,10 @@ import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
 
 public class ServerRandomiser extends Randomiser {
-    public static final ServerRandomiser DEFAULT = new ServerRandomiser();
-
     private LootRandomiser lootRandomiser;
     private RecipeRandomiser recipeRandomiser;
     private TradeRandomiser tradeRandomiser;
+    private DifficultyCalculator difficultyCalculator;
 
     private boolean initialised = false;
     private NbtCompound lootRandomiserData;
@@ -57,6 +57,7 @@ public class ServerRandomiser extends Randomiser {
         this.lootRandomiser = new LootRandomiser(server);
         this.recipeRandomiser = new RecipeRandomiser(server);
         this.tradeRandomiser = new TradeRandomiser();
+        this.difficultyCalculator = new DifficultyCalculator();
 
         if (lootRandomiserData != null) {
             lootRandomiser.readNbt(lootRandomiserData);
@@ -77,6 +78,10 @@ public class ServerRandomiser extends Randomiser {
 
     public TradeRandomiser getTradeRandomiser() {
         return tradeRandomiser;
+    }
+
+    public DifficultyRating calculateDifficulty() {
+        return difficultyCalculator.calculateDifficulty(lootRandomiser, recipeRandomiser);
     }
 
     public void updateLoot(MinecraftServer server, boolean seedChanged) {
@@ -104,11 +109,11 @@ public class ServerRandomiser extends Randomiser {
                 });
     }
 
-    private void update(ServerRandomiserModule randomiser, MinecraftServer server, boolean seedChanged) {
+    private void update(ServerRandomiserModule<?, ?> randomiser, MinecraftServer server, boolean seedChanged) {
         update(randomiser, server, seedChanged, false);
     }
 
-    private void update(ServerRandomiserModule randomiser, MinecraftServer server, boolean seedChanged, boolean force) {
+    private void update(ServerRandomiserModule<?, ?> randomiser, MinecraftServer server, boolean seedChanged, boolean force) {
         if (!initialised) throw new IllegalStateException("Randomiser not initialised");
 
         boolean moduleEnabled = modules.isEnabled(randomiser.getModule());

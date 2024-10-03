@@ -5,13 +5,13 @@ import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.ServerCommandSource;
 
 public class CommandHandler {
-    private static final TrulyRandomSettingsCommand trulyRandomSettingsCommand;
+    private static final TrulyRandomCommand TRULY_RANDOM_COMMAND;
 
     static {
-        trulyRandomSettingsCommand = new TrulyRandomSettingsCommand();
+        TRULY_RANDOM_COMMAND = new TrulyRandomCommand();
     }
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
-        trulyRandomSettingsCommand.register(dispatcher, registryAccess);
+        TRULY_RANDOM_COMMAND.register(dispatcher, registryAccess);
     }
 }

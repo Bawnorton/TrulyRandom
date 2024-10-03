@@ -3,9 +3,9 @@ package com.bawnorton.trulyrandom.random.loot;
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.random.module.Module;
-import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
 import com.bawnorton.trulyrandom.tracker.Team;
+import com.bawnorton.trulyrandom.tracker.loot.LootTableReader;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import com.bawnorton.trulyrandom.util.collection.UnaryBiMap;
 import com.bawnorton.trulyrandom.util.collection.UnaryHashBiMap;
@@ -13,6 +13,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.DataResult;
 import net.minecraft.block.Blocks;
+import net.minecraft.item.Item;
 import net.minecraft.loot.LootTable;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -26,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
-public class LootRandomiser extends ServerRandomiserModule {
+public class LootRandomiser extends ServerRandomiserModule<RegistryKey<LootTable>, RegistryKey<LootTable>> {
     private final Map<Team, LootTableTracker> trackers = new HashMap<>();
     private final Map<RegistryKey<LootTable>, LootTable> originalLootTables = new HashMap<>();
     private final UnaryBiMap<RegistryKey<LootTable>> redirectMap = new UnaryHashBiMap<>();
@@ -79,8 +80,25 @@ public class LootRandomiser extends ServerRandomiserModule {
         return result;
     }
 
-    public RegistryKey<LootTable> getSourceTable(RegistryKey<LootTable> key) {
-        return redirectMap.inverse().getOrDefault(key, key);
+    @Override
+    public List<RegistryKey<LootTable>> getSources(RegistryKey<LootTable> key) {
+        if(!redirectMap.containsValue(key)) {
+            return List.of(key);
+        }
+        return List.of(redirectMap.inverse().get(key));
+    }
+
+    public List<RegistryKey<LootTable>> getSourcesOfItem(Item item) {
+        Map<Item, List<RegistryKey<LootTable>>> sources = new HashMap<>();
+        originalLootTables.forEach((key, value) -> {
+            List<Item> items = LootTableReader.read(lootTableRegistry, value);
+            items.forEach(i -> sources.computeIfAbsent(i, k -> new ArrayList<>()).addAll(getSources(key)));
+        });
+        return sources.getOrDefault(item, List.of());
+    }
+
+    public Registry<LootTable> getLootTableRegistry() {
+        return lootTableRegistry;
     }
 
     public NbtCompound writeNbt(NbtCompound nbt) {
@@ -108,6 +126,7 @@ public class LootRandomiser extends ServerRandomiserModule {
 
     @Override
     public void randomise(MinecraftServer server, long seed) {
+        LootTableReader.clearCache();
         List<RegistryKey<LootTable>> keys = new ArrayList<>(originalLootTables.keySet());
         keys.sort(Comparator.comparing(RegistryKey::getValue));
         Random random = new Random(seed);

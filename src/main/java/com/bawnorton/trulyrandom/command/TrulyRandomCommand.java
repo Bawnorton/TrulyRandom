@@ -6,6 +6,7 @@ import com.bawnorton.trulyrandom.event.PostExecuteCallback;
 import com.bawnorton.trulyrandom.network.packet.s2c.OpenRandomiserScreenS2CPacket;
 import com.bawnorton.trulyrandom.network.packet.s2c.RequestOtherClientRandomiserS2CPacket;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
+import com.bawnorton.trulyrandom.tracker.difficulty.DifficultyRating;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -28,11 +29,12 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
-public class TrulyRandomSettingsCommand {
+public class TrulyRandomCommand {
     private final PostExecuteRunner runner;
 
-    public TrulyRandomSettingsCommand() {
+    public TrulyRandomCommand() {
         runner = new PostExecuteRunner();
         runner.register();
     }
@@ -71,6 +73,15 @@ public class TrulyRandomSettingsCommand {
                                 .executes(context -> execute(context, Selection.PLAYER))
                         )
                 )
+                .then(CommandManager.literal("difficulty")
+                        .executes(context -> {
+//                            ServerRandomiser randomiser = TrulyRandom.getRandomiser(context.getSource().getServer());
+//                            DifficultyRating difficulty = randomiser.calculateDifficulty();
+//                            context.getSource().sendFeedback(() -> Text.literal("Difficulty: " + difficulty), true);
+                            context.getSource().sendFeedback(() -> Text.literal("Coming Soon"), true);
+                            return 1;
+                        })
+                )
                 .then(CommandManager.literal("drop")
                         .then(CommandManager.argument("loot_table", RegistryEntryArgumentType.LootTableArgumentType.lootTable(commandRegistryAccess))
                                 .suggests(LootCommand.SUGGESTION_PROVIDER)
@@ -84,7 +95,11 @@ public class TrulyRandomSettingsCommand {
                                         return 0;
                                     }
                                     String to = lootTable.getIdAsString();
-                                    String from = randomiser.getLootRandomiser().getSourceTable(keyOptional.orElseThrow()).getValue().toString();
+                                    String from = randomiser.getLootRandomiser()
+                                            .getSources(keyOptional.orElseThrow())
+                                            .stream()
+                                            .map(key -> key.getValue().toString())
+                                            .collect(Collectors.joining(", "));
                                     context.getSource().sendFeedback(
                                             () -> Text.literal("%s".formatted(to))
                                                     .append(ScreenTexts.LINE_BREAK)

@@ -27,11 +27,22 @@ import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class LootTableReader {
+    private static final Map<LootTable, List<Item>> CACHE = new HashMap<>();
+
+    public static void clearCache() {
+        CACHE.clear();
+    }
+
     public static List<Item> read(Registry<LootTable> lootTableRegistry, LootTable lootTable) {
+        if(CACHE.containsKey(lootTable)) {
+            return CACHE.get(lootTable);
+        }
         LootTableAccessor accessor = (LootTableAccessor) lootTable;
         List<LootPool> pools = accessor.getPools();
         List<Item> items = new ArrayList<>();
@@ -41,6 +52,7 @@ public class LootTableReader {
                 items.addAll(readEntry(lootTableRegistry, entry));
             }
         }
+        CACHE.put(lootTable, items);
         return items;
     }
 
