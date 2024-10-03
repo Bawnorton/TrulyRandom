@@ -17,8 +17,6 @@ import java.util.Map;
 import java.util.UUID;
 
 public class RandomiserSaveLoader extends PersistentState {
-    private static boolean defaultSet = false;
-    private static Modules defaultModules;
     private static ServerRandomiser lastSetRandomiser;
 
     public static final PersistentState.Type<RandomiserSaveLoader> TYPE = new Type<>(
@@ -29,18 +27,6 @@ public class RandomiserSaveLoader extends PersistentState {
 
     private ServerRandomiser serverRandomiser;
     private Map<UUID, Modules> clientRandomisers;
-
-    public static void setDefaultRandomiser(Modules modules) {
-        defaultSet = true;
-        defaultModules = modules;
-    }
-
-    public static Modules getDefaultRandomiser() {
-        if(!defaultSet) {
-            setDefaultRandomiser(new Modules());
-        }
-        return defaultModules;
-    }
 
     public static RandomiserSaveLoader fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         RandomiserSaveLoader state = new RandomiserSaveLoader();
@@ -58,36 +44,29 @@ public class RandomiserSaveLoader extends PersistentState {
         PersistentStateManager manager = world.getPersistentStateManager();
         RandomiserSaveLoader state = manager.getOrCreate(TYPE, TrulyRandom.MOD_ID);
         state.markDirty();
-        lastSetRandomiser = state.getServerRandomiser();
+        if(lastSetRandomiser == null) {
+            lastSetRandomiser = state.getServerRandomiser();
+        } else {
+            state.serverRandomiser = lastSetRandomiser;
+        }
         return state;
     }
 
     public static ServerRandomiser fetchUnsafeRandomiser() {
         if (lastSetRandomiser != null) return lastSetRandomiser;
 
-        if(defaultSet) {
-            return new ServerRandomiser(defaultModules);
-        } else {
-            ServerRandomiser def = ServerRandomiser.DEFAULT;
-            setDefaultRandomiser(def.getModules());
-            return def;
-        }
+        throw new IllegalStateException("Tried to get randomiser state before world was loaded");
     }
 
     public static boolean isUnsafeRandomiserSet() {
         return lastSetRandomiser != null;
     }
 
-    public static boolean isDefaultSet() {
-        return defaultSet;
+    public static void setRandomiser(Modules modules) {
+        lastSetRandomiser = new ServerRandomiser(modules);
     }
 
     public ServerRandomiser getServerRandomiser() {
-        if (serverRandomiser == null) {
-            if (!defaultSet) throw new IllegalStateException("Default randomiser not set");
-
-            serverRandomiser = new ServerRandomiser(defaultModules);
-        }
         return serverRandomiser;
     }
 

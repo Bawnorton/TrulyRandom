@@ -1,6 +1,6 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
-import com.bawnorton.trulyrandom.client.extend.DataConfigurationExtender;
+import com.bawnorton.trulyrandom.client.extend.ModulesHolder;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import com.mojang.datafixers.kinds.App;
@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @Mixin(DataConfiguration.class)
-public abstract class DataConfigurationMixin implements DataConfigurationExtender {
+public abstract class DataConfigurationMixin implements ModulesHolder {
     @Unique
     private Modules trulyrandom$randomiserModules;
 
@@ -30,24 +30,16 @@ public abstract class DataConfigurationMixin implements DataConfigurationExtende
                 RecordCodecBuilder.mapCodec(builder).forGetter(Function.identity()),
                 Modules.CODEC
                         .optionalFieldOf("trulyrandom$randomiserModules").xmap(optional -> optional.orElse(new Modules()), Optional::ofNullable)
-                        .forGetter(dataConfig -> ((DataConfigurationExtender) (Object) dataConfig).trulyrandom$getRandomiserModules())
+                        .forGetter(dataConfig -> ((ModulesHolder) (Object) dataConfig).trulyrandom$getRandomiserModules())
         ).apply(instance, (dataConfig, randomiser) -> {
-            ((DataConfigurationExtender) (Object) dataConfig).trulyrandom$setRandomiserModules(randomiser);
+            ((ModulesHolder) (Object) dataConfig).trulyrandom$setRandomiserModules(randomiser);
             return dataConfig;
         });
     }
 
     @Override
     public Modules trulyrandom$getRandomiserModules() {
-        if(trulyrandom$randomiserModules == null) {
-            if(RandomiserSaveLoader.isDefaultSet()) {
-                return RandomiserSaveLoader.getDefaultRandomiser();
-            } else {
-                return new Modules();
-            }
-        } else {
-            return trulyrandom$randomiserModules;
-        }
+        return trulyrandom$randomiserModules == null ? new Modules() : trulyrandom$randomiserModules;
     }
 
     @Override

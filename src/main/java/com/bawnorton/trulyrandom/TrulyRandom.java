@@ -65,6 +65,10 @@ public class TrulyRandom implements ModInitializer {
         return cachedServer;
     }
 
+    public static void setServerRandomiser(Modules modules) {
+        RandomiserSaveLoader.setRandomiser(modules);
+    }
+
     @Override
     public void onInitialize() {
         Networking.init();

@@ -1,10 +1,14 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
+import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.event.ClientRandomiseEvents;
 import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
+import com.bawnorton.trulyrandom.client.extend.ModulesHolder;
 import com.bawnorton.trulyrandom.random.module.Module;
+import com.bawnorton.trulyrandom.random.module.Modules;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.MinecraftClient;
@@ -12,6 +16,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModelManager;
+import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,7 +26,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftClient.class)
-public abstract class MinecraftClientMixin implements MinecraftClientExtender {
+public abstract class MinecraftClientMixin implements MinecraftClientExtender, ModulesHolder {
     @Shadow
     @Final
     public WorldRenderer worldRenderer;
@@ -34,6 +39,9 @@ public abstract class MinecraftClientMixin implements MinecraftClientExtender {
 
     @Unique
     private boolean trulyrandom$isResizing = false;
+
+    @Unique
+    private Modules trulyrandom$modules;
 
     @Shadow
     public abstract BakedModelManager getBakedModelManager();
@@ -83,5 +91,27 @@ public abstract class MinecraftClientMixin implements MinecraftClientExtender {
     @Override
     public boolean trulyrandom$isResizing() {
         return trulyrandom$isResizing;
+    }
+
+    @Override
+    public void trulyrandom$setRandomiserModules(Modules modules) {
+        trulyrandom$modules = modules;
+    }
+
+    @Override
+    public Modules trulyrandom$getRandomiserModules() {
+        return trulyrandom$modules;
+    }
+
+    @ModifyExpressionValue(
+            method = "startIntegratedServer",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/MinecraftServer;startServer(Ljava/util/function/Function;)Lnet/minecraft/server/MinecraftServer;"
+            )
+    )
+    private <S extends MinecraftServer> S attachModules(S original) {
+        TrulyRandom.setServerRandomiser(trulyrandom$modules);
+        return original;
     }
 }
