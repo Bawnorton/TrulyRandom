@@ -111,7 +111,7 @@ public abstract class MinecraftClientMixin implements MinecraftClientExtender, M
             )
     )
     private <S extends MinecraftServer> S attachModules(S original) {
-        TrulyRandom.setServerRandomiser(trulyrandom$modules);
+        TrulyRandom.setLoadedRandomiser(trulyrandom$modules);
         return original;
     }
 }

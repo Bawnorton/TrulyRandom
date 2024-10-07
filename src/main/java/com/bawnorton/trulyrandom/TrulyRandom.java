@@ -70,8 +70,8 @@ public class TrulyRandom implements ModInitializer {
         return cachedServer;
     }
 
-    public static void setServerRandomiser(Modules modules) {
-        RandomiserSaveLoader.setRandomiser(modules);
+    public static void setLoadedRandomiser(Modules modules) {
+        RandomiserSaveLoader.setLoadedRandomiser(modules);
     }
 
     @Override

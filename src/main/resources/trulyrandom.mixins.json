@@ -1,6 +1,7 @@
 {
   "required": true,
   "package": "com.bawnorton.trulyrandom.mixin",
+  "minMixinExtrasVersion": "0.5.0-beta.1",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "CommandManagerMixin",
@@ -55,6 +56,9 @@
     "tracker.VehicleInventoryMixin",
     "trades.MerchantEntityMixin",
     "trades.VillagerEntityMixin"
+  ],
+  "server": [
+    "dedicated.MainMixin"
   ],
   "injectors": {
     "defaultRequire": 1
