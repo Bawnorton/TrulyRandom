@@ -30,6 +30,7 @@ public class RandomiserSaveLoader extends PersistentState {
 
     public static RandomiserSaveLoader fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         RandomiserSaveLoader state = new RandomiserSaveLoader();
+        lastSetRandomiser = null;
         state.serverRandomiser = ServerRandomiser.fromNbt(nbt.getCompound("randomiser"), registryLookup);
         state.clientRandomisers = new HashMap<>();
         NbtCompound clientRandomisers = nbt.getCompound("client_randomisers");

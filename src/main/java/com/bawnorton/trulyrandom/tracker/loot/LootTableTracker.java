@@ -78,7 +78,7 @@ public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKe
 
     private Registry<LootTable> lootTableRegistry;
 
-    public LootTableTracker(UnaryBiMap<RegistryKey<LootTable>> map, ItemLootMap itemLootMap, Map<Identifier, Set<LootTableDrops>> sourceMap, Team team) {
+    private LootTableTracker(UnaryBiMap<RegistryKey<LootTable>> map, ItemLootMap itemLootMap, Map<Identifier, Set<LootTableDrops>> sourceMap, Team team) {
         super(team);
         this.knownLootTables = map;
         this.itemLootMap = itemLootMap;
