@@ -14,6 +14,7 @@ import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.advancement.AdvancementObtainedStatus;
 import net.minecraft.client.gui.tooltip.Tooltip;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
@@ -84,7 +85,7 @@ public class LootBookGraph implements Drawable, Element {
 
         context.getMatrices().push();
         context.getMatrices().translate(0, 0, 100);
-        context.drawGuiTexture(BACKGROUND_TEXTURE, x, y, WIDTH, HEIGHT);
+        context.drawGuiTexture(RenderLayer::getGuiTextured, BACKGROUND_TEXTURE, x, y, WIDTH, HEIGHT);
 
         int centreX = x + WIDTH / 2;
         int centreY = y + HEIGHT / 2;
@@ -96,8 +97,8 @@ public class LootBookGraph implements Drawable, Element {
             return;
         }
 
-        context.getMatrices().scale(scale, scale, 1);
         context.enableScissor(x + BORDER_WIDTH, y + BORDER_WIDTH, x + WIDTH - BORDER_WIDTH, y + HEIGHT - BORDER_WIDTH);
+        context.getMatrices().scale(scale, scale, 1);
         graph.forEachVertex(vertex -> {
             ScreenPos screenPos = mapToScreen(vertex, centreX, centreY, mouseX, mouseY);
             if (screenPos == null) return;
@@ -145,9 +146,9 @@ public class LootBookGraph implements Drawable, Element {
                 }
                 texture = AdvancementObtainedStatus.UNOBTAINED.getFrameTexture(AdvancementFrame.TASK);
             }
-            context.drawGuiTexture(texture, xPos, yPos, 32, 32);
+            context.drawGuiTexture(RenderLayer::getGuiTextured, texture, xPos, yPos, 32, 32);
             RenderSystem.setShaderColor(1, 1, 1, 1);
-            vertex.render(context, client, xPos + 16, yPos + 16, scale);
+            vertex.render(context, client, mouseX, mouseY, xPos + 16, yPos + 16, scale);
         });
         context.getMatrices().pop();
 
@@ -247,7 +248,7 @@ public class LootBookGraph implements Drawable, Element {
 
     @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
-        return inBounds(mouseX, mouseY);
+        return isOpen() && inBounds(mouseX, mouseY);
     }
 
     public void show(Item item) {

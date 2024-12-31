@@ -3,6 +3,7 @@ package com.bawnorton.trulyrandom.client.screen.widget;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.Item;
 
 public class ItemButton extends ButtonWidget {
@@ -18,7 +19,7 @@ public class ItemButton extends ButtonWidget {
     @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         context.drawItemWithoutEntity(item.getDefaultStack(), getX() + (getWidth() - 16) / 2, getY() + (getHeight() - 16) / 2);
-        context.drawGuiTexture(background.get(true, isHovered()), getX(), getY(), getWidth(), getHeight());
+        context.drawGuiTexture(RenderLayer::getGuiTextured, background.get(true, isHovered()), getX(), getY(), getWidth(), getHeight());
     }
 
     public static ItemButton.Builder builder(Item item, PressAction onPress) {

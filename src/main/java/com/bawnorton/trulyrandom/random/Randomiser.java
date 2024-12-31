@@ -2,9 +2,7 @@ package com.bawnorton.trulyrandom.random;
 
 import com.bawnorton.trulyrandom.random.module.Modules;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class Randomiser {

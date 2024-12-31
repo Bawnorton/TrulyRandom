@@ -3,7 +3,6 @@ package com.bawnorton.trulyrandom.random.loot;
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.random.module.Module;
-import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
@@ -14,17 +13,22 @@ import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.DataResult;
 import net.minecraft.block.Blocks;
 import net.minecraft.loot.LootTable;
+import net.minecraft.loot.LootTables;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class LootRandomiser extends ServerRandomiserModule {
     private final Map<Team, LootTableTracker> trackers = new HashMap<>();
@@ -32,7 +36,7 @@ public class LootRandomiser extends ServerRandomiserModule {
     private final UnaryBiMap<RegistryKey<LootTable>> redirectMap = new UnaryHashBiMap<>();
     private final Registry<LootTable> lootTableRegistry;
 
-    private final Set<RegistryKey<LootTable>> blacklist = Set.of(
+    private final Set<RegistryKey<LootTable>> blacklist = Stream.of(
             Blocks.SHULKER_BOX.getLootTableKey(),
             Blocks.WHITE_SHULKER_BOX.getLootTableKey(),
             Blocks.ORANGE_SHULKER_BOX.getLootTableKey(),
@@ -50,12 +54,12 @@ public class LootRandomiser extends ServerRandomiserModule {
             Blocks.GREEN_SHULKER_BOX.getLootTableKey(),
             Blocks.RED_SHULKER_BOX.getLootTableKey(),
             Blocks.BLACK_SHULKER_BOX.getLootTableKey()
-    );
+    ).map(Optional::orElseThrow).collect(Collectors.toSet());
 
     public LootRandomiser(MinecraftServer server) {
-        lootTableRegistry = server.getReloadableRegistries()
-                .getRegistryManager()
-                .get(RegistryKeys.LOOT_TABLE);
+        lootTableRegistry = (Registry<LootTable>) server.getReloadableRegistries()
+                .createRegistryLookup()
+                .getOrThrow(RegistryKeys.LOOT_TABLE);
         Set<RegistryKey<LootTable>> keys = lootTableRegistry.getKeys();
         keys.forEach(key -> {
             LootTable lootTable = lootTableRegistry.get(key);
@@ -108,11 +112,12 @@ public class LootRandomiser extends ServerRandomiserModule {
 
     @Override
     public void randomise(MinecraftServer server, long seed) {
+        redirectMap.clear();
         List<RegistryKey<LootTable>> keys = new ArrayList<>(originalLootTables.keySet());
         keys.sort(Comparator.comparing(RegistryKey::getValue));
         Random random = new Random(seed);
         Collections.shuffle(keys, random);
-        BiMap<RegistryKey<LootTable>, RegistryKey<LootTable>> preRedirects = HashBiMap.create(keys.size());
+        UnaryBiMap<RegistryKey<LootTable>> preRedirects = new UnaryHashBiMap<>(keys.size());
         for (int i = 0; i < keys.size(); i++) {
             RegistryKey<LootTable> originalKey = keys.get(i);
             RegistryKey<LootTable> randomKey = keys.get((i + 1) % keys.size());

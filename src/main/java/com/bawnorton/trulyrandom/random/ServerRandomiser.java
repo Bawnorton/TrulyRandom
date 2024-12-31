@@ -3,12 +3,12 @@ package com.bawnorton.trulyrandom.random;
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.network.packet.s2c.SetClientRandomiserS2CPacket;
 import com.bawnorton.trulyrandom.random.loot.LootRandomiser;
+import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
 import com.bawnorton.trulyrandom.random.recipe.RecipeRandomiser;
 import com.bawnorton.trulyrandom.random.trade.TradeRandomiser;
 import com.bawnorton.trulyrandom.tracker.Tracker;
-import com.mojang.serialization.Codec;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
@@ -16,8 +16,6 @@ import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
 
 public class ServerRandomiser extends Randomiser {
-    public static final ServerRandomiser DEFAULT = new ServerRandomiser();
-
     private LootRandomiser lootRandomiser;
     private RecipeRandomiser recipeRandomiser;
     private TradeRandomiser tradeRandomiser;
@@ -55,7 +53,7 @@ public class ServerRandomiser extends Randomiser {
     public void init(MinecraftServer server) {
         initialised = true;
         this.lootRandomiser = new LootRandomiser(server);
-        this.recipeRandomiser = new RecipeRandomiser(server);
+        this.recipeRandomiser = new RecipeRandomiser(server, modules.getSeed(Module.RECIPES));
         this.tradeRandomiser = new TradeRandomiser();
 
         if (lootRandomiserData != null) {

@@ -4,6 +4,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenTexts;
@@ -29,7 +30,7 @@ public class LootResultButton extends ClickableWidget {
 
     @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawGuiTexture(SLOT_TEXTURE, getX(), getY(), width, height);
+        context.drawGuiTexture(RenderLayer::getGuiTextured, SLOT_TEXTURE, getX(), getY(), width, height);
         ItemStack stack = drop.getDefaultStack();
         context.drawItemWithoutEntity(stack, getX() + 4, getY() + 4);
     }

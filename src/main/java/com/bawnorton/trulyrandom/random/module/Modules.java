@@ -4,7 +4,6 @@ import com.bawnorton.trulyrandom.TrulyRandom;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtOps;
@@ -17,7 +16,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class Modules implements Iterable<Module> {
     public static final Codec<Modules> CODEC = Codec.unboundedMap(Module.CODEC, ModuleState.CODEC)
@@ -100,14 +98,6 @@ public class Modules implements Iterable<Module> {
 
     public void setDisabled(Module module) {
         moduleStates.get(module).disable();
-    }
-
-    public void setSeed(Module module, long seed) {
-        moduleStates.get(module).setSeed(seed);
-    }
-
-    public void setSeedAll(long seed) {
-        moduleStates.forEach((module, state) -> state.setSeed(seed));
     }
 
     public void randomSeed(Module module) {

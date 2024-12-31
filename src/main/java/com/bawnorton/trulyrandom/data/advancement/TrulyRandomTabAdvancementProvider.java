@@ -18,6 +18,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.text.Text;
@@ -36,6 +38,7 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
 
     @Override
     public void generateAdvancement(RegistryWrapper.WrapperLookup lookup, Consumer<AdvancementEntry> exporter) {
+        RegistryWrapper<Item> itemRegistry = lookup.getOrThrow(RegistryKeys.ITEM);
         AdvancementEntry root = Advancement.Builder.create()
                 .display(
                         Items.DIAMOND,
@@ -81,8 +84,8 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                                 "BBB"
                         ),
                         Map.of(
-                                'A', Ingredient.fromTag(ItemTags.PLANKS),
-                                'B', Ingredient.fromTag(ItemTags.WOOL)
+                                'A', Ingredient.fromTag(itemRegistry.getOrThrow(ItemTags.PLANKS)),
+                                'B', Ingredient.fromTag(itemRegistry.getOrThrow(ItemTags.WOOL))
                         )
                     )
                 ),

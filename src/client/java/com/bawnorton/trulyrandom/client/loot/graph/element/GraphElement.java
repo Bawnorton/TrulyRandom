@@ -39,7 +39,7 @@ public abstract class GraphElement {
         to.from.add(this);
     }
 
-    public abstract void render(DrawContext context, MinecraftClient client, int x, int y, float scale);
+    public abstract void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale);
 
     protected abstract Text getTooltip();
 

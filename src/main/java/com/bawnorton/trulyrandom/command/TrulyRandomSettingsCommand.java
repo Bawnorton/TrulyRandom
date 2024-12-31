@@ -15,6 +15,7 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.RegistryEntryArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.loot.LootTable;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
@@ -113,14 +114,13 @@ public class TrulyRandomSettingsCommand {
                                         world.breakBlock(up, true, player);
                                     }));
                                     Registries.ENTITY_TYPE.forEach((entityType -> {
-                                        Entity entity = entityType.create(world);
+                                        Entity entity = entityType.create(world, SpawnReason.COMMAND);
                                         if (!(entity instanceof LivingEntity)) {
                                             return;
                                         }
                                         entity.updatePosition(player.getX(), player.getY() + 1, player.getZ());
                                         world.spawnEntity(entity);
-                                        entity.damage(world.getDamageSources()
-                                                .playerAttack(player), Float.MAX_VALUE);
+                                        entity.damage(world, world.getDamageSources().playerAttack(player), Float.MAX_VALUE);
                                     }));
                                     return 1;
                                 })
@@ -151,7 +151,6 @@ public class TrulyRandomSettingsCommand {
 
     private static class PostExecuteRunner implements PostExecuteCallback {
         private CommandRunnable runnable = () -> {};
-        private boolean run = false;
 
         public void register() {
             PostExecuteCallback.EVENT.register(this);
@@ -159,15 +158,14 @@ public class TrulyRandomSettingsCommand {
 
         @Override
         public void postExecute(ServerCommandSource source) throws CommandSyntaxException {
-            if (run) {
+            if (runnable != null) {
                 runnable.run();
-                run = false;
+                runnable = null;
             }
         }
 
         public void setRunnable(CommandRunnable runnable) {
             this.runnable = runnable;
-            this.run = true;
         }
 
         @FunctionalInterface

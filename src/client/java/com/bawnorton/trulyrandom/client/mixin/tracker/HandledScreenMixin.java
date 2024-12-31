@@ -1,6 +1,7 @@
 package com.bawnorton.trulyrandom.client.mixin.tracker;
 
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
+import com.bawnorton.trulyrandom.client.extend.RecipeBookScreenExtender;
 import com.bawnorton.trulyrandom.client.extend.TrackerHintDrawer;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -33,7 +34,7 @@ public abstract class HandledScreenMixin extends Screen implements TrackerHintDr
             method = "drawSlot",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/DrawContext;drawItemInSlot(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;IILjava/lang/String;)V"
+                    target = "Lnet/minecraft/client/gui/DrawContext;drawStackOverlay(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;IILjava/lang/String;)V"
             )
     )
     private void drawHints(DrawContext instance, TextRenderer textRenderer, ItemStack stack, int x, int y, String countOverride, Operation<Void> original) {
@@ -50,5 +51,14 @@ public abstract class HandledScreenMixin extends Screen implements TrackerHintDr
             cancellable = true
     )
     protected void mouseDragInInvScreen(double mouseX, double mouseY, int button, double deltaX, double deltaY, CallbackInfoReturnable<Boolean> cir) {
+    }
+
+    @SuppressWarnings("CancellableInjectionUsage")
+    @Inject(
+            method = "mouseScrolled",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    protected void mouseScrolledInInvScreen(double mouseX, double mouseY, double horizontalAmount, double verticalAmount, CallbackInfoReturnable<Boolean> cir) {
     }
 }

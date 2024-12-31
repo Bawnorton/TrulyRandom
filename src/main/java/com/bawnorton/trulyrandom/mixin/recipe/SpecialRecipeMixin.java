@@ -20,10 +20,9 @@ import org.spongepowered.asm.mixin.injection.At;
         MapExtendingRecipe.class,
         RepairItemRecipe.class,
         ShieldDecorationRecipe.class,
-        ShulkerBoxColoringRecipe.class,
-        SuspiciousStewRecipe.class,
         TippedArrowRecipe.class,
-        SmithingTrimRecipe.class
+        SmithingTrimRecipe.class,
+        TransmuteRecipe.class
 })
 public abstract class SpecialRecipeMixin implements ResultClearer {
     @Unique
@@ -38,5 +37,10 @@ public abstract class SpecialRecipeMixin implements ResultClearer {
     @Override
     public void trulyrandom$setResult(ItemStack result) {
         this.result = result;
+    }
+
+    @Override
+    public ItemStack trulyrandom$getResult() {
+        return result;
     }
 }

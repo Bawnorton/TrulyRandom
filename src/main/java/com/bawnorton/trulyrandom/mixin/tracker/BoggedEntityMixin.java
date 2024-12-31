@@ -15,7 +15,7 @@ import java.util.List;
 
 @Mixin(BoggedEntity.class)
 public abstract class BoggedEntityMixin {
-    @Inject(method = "interactMob", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/mob/BoggedEntity;sheared(Lnet/minecraft/sound/SoundCategory;)V"))
+    @Inject(method = "interactMob", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/mob/BoggedEntity;sheared(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/sound/SoundCategory;Lnet/minecraft/item/ItemStack;)V"))
     private void trackCause(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if (player == null) return;

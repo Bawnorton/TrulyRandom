@@ -5,59 +5,51 @@ import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
 import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
 import com.bawnorton.trulyrandom.util.collection.UnaryHashMap;
 import com.bawnorton.trulyrandom.util.collection.UnaryMap;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import net.minecraft.client.render.item.ItemModels;
-import net.minecraft.client.render.model.BakedModel;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import org.spongepowered.asm.mixin.Final;
+import net.minecraft.client.render.item.model.ItemModel;
+import net.minecraft.client.render.model.BakedModelManager;
+import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
-@Mixin(ItemModels.class)
+@Mixin(BakedModelManager.class)
 @AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, invert = true)
 public abstract class VanillaItemsModelsMixin implements ModelShuffler.Items {
     @Unique
-    private final UnaryMap<Item> trulyrandom$redirectMap = new UnaryHashMap<>();
-    @Shadow @Final
-    private Int2ObjectMap<BakedModel> models;
+    private final UnaryMap<Identifier> trulyrandom$redirectMap = new UnaryHashMap<>();
+    @Shadow
+    private Map<Identifier, ItemModel> bakedItemModels;
 
-
-    @WrapOperation(method = "getModel(Lnet/minecraft/item/Item;)Lnet/minecraft/client/render/model/BakedModel;", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/item/ItemModels;getModelId(Lnet/minecraft/item/Item;)I"))
-    private int getShuffledModel(Item item, Operation<Integer> original) {
-        Item redirected = trulyrandom$redirectMap.getOrDefault(item, item);
-        return original.call(redirected);
+    @ModifyVariable(method = "getItemModel", at = @At("HEAD"), argsOnly = true)
+    private Identifier getShuffledModel(Identifier id) {
+        return trulyrandom$redirectMap.getOrDefault(id, id);
     }
 
     @Override
     public void trulyrandom$shuffleModels(long seed) {
-        if (models == null) return;
+        if (bakedItemModels == null) return;
 
-        List<Item> items = Registries.ITEM.stream()
-                                          .sorted(Comparator.comparingInt(Registries.ITEM::getRawId))
-                                          .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        List<Identifier> ids = new ArrayList<>(bakedItemModels.keySet());
+
         trulyrandom$resetModels();
-        Collections.shuffle(items, new Random(seed));
-        for (int i = 0; i < items.size(); i++) {
-            Item originalItem = items.get(i);
-            Item randomItem = items.get((i + 1) % items.size());
-            if(randomItem == net.minecraft.item.Items.AIR) continue;
+        Collections.shuffle(ids, new Random(seed));
+        for (int i = 0; i < ids.size(); i++) {
+            Identifier original = ids.get(i);
+            Identifier random = ids.get((i + 1) % ids.size());
 
-            trulyrandom$redirectMap.put(originalItem, randomItem);
+            trulyrandom$redirectMap.put(original, random);
         }
     }
 
     @Override
-    public UnaryMap<Item> trulyrandom$getRedirectMap() {
+    public UnaryMap<Identifier> trulyrandom$getRedirectMap() {
         return trulyrandom$redirectMap;
     }
 

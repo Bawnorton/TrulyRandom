@@ -1,14 +1,14 @@
 package com.bawnorton.trulyrandom.tracker.loot;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.util.collection.UnaryBiMap;
-import com.bawnorton.trulyrandom.util.collection.UnaryHashBiMap;
 import com.bawnorton.trulyrandom.extend.LookupExtender;
 import com.bawnorton.trulyrandom.mixin.accessor.VerticallyAttachableBlockItemAccessor;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.Tracker;
 import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
 import com.bawnorton.trulyrandom.tracker.loot.drop.SilkQuery;
+import com.bawnorton.trulyrandom.util.collection.UnaryBiMap;
+import com.bawnorton.trulyrandom.util.collection.UnaryHashBiMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Block;
@@ -20,7 +20,7 @@ import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
@@ -76,7 +76,7 @@ public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKe
     private final ItemLootMap itemLootMap;
     private final Map<Identifier, Set<LootTableDrops>> sourceMap;
 
-    private Registry<LootTable> lootTableRegistry;
+    private RegistryEntryLookup<LootTable> lootTableRegistry;
 
     public LootTableTracker(UnaryBiMap<RegistryKey<LootTable>> map, ItemLootMap itemLootMap, Map<Identifier, Set<LootTableDrops>> sourceMap, Team team) {
         super(team);
@@ -99,7 +99,7 @@ public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKe
         return result;
     }
 
-    public void setLootTableRegistry(Registry<LootTable> registry) {
+    public void setLootTableRegistry(RegistryEntryLookup<LootTable> registry) {
         this.lootTableRegistry = registry;
     }
 

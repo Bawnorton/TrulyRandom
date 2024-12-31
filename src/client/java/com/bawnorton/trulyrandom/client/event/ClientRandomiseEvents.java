@@ -6,7 +6,7 @@ import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 import net.minecraft.block.BlockState;
-import net.minecraft.item.Item;
+import net.minecraft.util.Identifier;
 
 public class ClientRandomiseEvents {
     private ClientRandomiseEvents() {
@@ -33,6 +33,6 @@ public class ClientRandomiseEvents {
 
     @FunctionalInterface
     public interface ItemModels {
-        void onItemModels(UnaryMap<Item> randomisedMap);
+        void onItemModels(UnaryMap<Identifier> randomisedMap);
     }
 }

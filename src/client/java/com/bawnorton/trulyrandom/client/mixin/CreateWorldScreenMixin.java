@@ -1,6 +1,6 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
-import com.bawnorton.trulyrandom.client.extend.ModulesHolder;
+import com.bawnorton.trulyrandom.extend.ModulesHolder;
 import com.bawnorton.trulyrandom.client.screen.TrulyRandomSettingsScreen;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -24,7 +24,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(CreateWorldScreen.class)
 public abstract class CreateWorldScreenMixin extends Screen implements ModulesHolder {
-    @Shadow @Final private WorldCreator worldCreator;
+    @Shadow @Final
+    WorldCreator worldCreator;
     @Unique
     private Modules trulyrandom$modules = new Modules();
 

@@ -18,7 +18,7 @@ public abstract class InGameHudMixin implements TrackerHintDrawer {
             method = "renderHotbarItem",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/DrawContext;drawItemInSlot(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;II)V"
+                    target = "Lnet/minecraft/client/gui/DrawContext;drawStackOverlay(Lnet/minecraft/client/font/TextRenderer;Lnet/minecraft/item/ItemStack;II)V"
             )
     )
     private void drawHints(DrawContext instance, TextRenderer textRenderer, ItemStack stack, int x, int y, Operation<Void> original) {

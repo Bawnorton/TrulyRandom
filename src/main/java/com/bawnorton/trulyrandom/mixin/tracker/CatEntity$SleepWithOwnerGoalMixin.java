@@ -20,7 +20,7 @@ public abstract class CatEntity$SleepWithOwnerGoalMixin {
 
     @Shadow @Final private CatEntity cat;
 
-    @Inject(method = "dropMorningGifts", at = @At(value = "INVOKE", target = "Lnet/minecraft/registry/ReloadableRegistries$Lookup;getLootTable(Lnet/minecraft/registry/RegistryKey;)Lnet/minecraft/loot/LootTable;"))
+    @Inject(method = "dropMorningGifts", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/passive/CatEntity;forEachGiftedItem(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/registry/RegistryKey;Ljava/util/function/BiConsumer;)Z"))
     private void trackCause(CallbackInfo ci) {
         if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if (cat.getWorld().isClient()) return;

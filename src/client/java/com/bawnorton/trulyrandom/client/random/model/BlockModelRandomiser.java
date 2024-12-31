@@ -10,6 +10,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.Heightmap;
 import net.minecraft.world.chunk.WorldChunk;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
@@ -41,7 +42,7 @@ public class BlockModelRandomiser extends ModelRandomiser {
         }
         for (ChunkPos chunkPos : chunkPositions) {
             if (chunkPos != null) {
-                for (int y = 0; y < client.world.getTopY() << 4; y++) {
+                for (int y = client.world.getBottomSectionCoord(); y < client.world.getTopSectionCoord(); y++) {
                     ((WorldRendererInvoker) client.worldRenderer).invokeScheduleChunkRender(chunkPos.x, y, chunkPos.z, true);
                 }
             }

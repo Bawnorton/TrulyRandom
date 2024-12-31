@@ -18,7 +18,10 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.loot.LootTable;
+import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.server.PlayerManager;
 
 public class EventHandler {
@@ -40,7 +43,7 @@ public class EventHandler {
             randomiser.updateLoot(server, false);
             randomiser.updateRecipes(server, false);
             randomiser.updateTrades(server, false);
-            LootTableDrops.populate(server.getReloadableRegistries().getRegistryManager().get(RegistryKeys.LOOT_TABLE));
+            LootTableDrops.populate((Registry<LootTable>) server.getReloadableRegistries().createRegistryLookup().getOrThrow(RegistryKeys.LOOT_TABLE));
         });
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {

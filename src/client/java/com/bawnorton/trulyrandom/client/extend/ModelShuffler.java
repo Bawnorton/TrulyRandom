@@ -3,13 +3,10 @@ package com.bawnorton.trulyrandom.client.extend;
 import com.bawnorton.trulyrandom.client.mixin.accessor.StateAccessor;
 import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
 import net.minecraft.state.property.Property;
-import net.minecraft.util.math.BlockPos;
-
+import net.minecraft.util.Identifier;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -34,7 +31,6 @@ public interface ModelShuffler<T> {
         List<BlockState> trulyrandom$getBlockStates();
 
         default Map<String, List<BlockState>> buildPropertyMap() {
-            ClientWorld world = MinecraftClient.getInstance().world;
             Map<String, List<BlockState>> propertyMap = new HashMap<>();
             for (BlockState state : trulyrandom$getBlockStates()) {
                 StringBuilder variant = new StringBuilder();
@@ -42,7 +38,7 @@ public interface ModelShuffler<T> {
                     variant.append(StateAccessor.getPropertyMapPrinter().apply(entry));
                 }
                 variant.append(state.isOpaque());
-                variant.append(state.getCullingShape(world, BlockPos.ORIGIN));
+                variant.append(state.getCullingShape());
                 propertyMap.computeIfAbsent(variant.toString(), k -> new ArrayList<>()).add(state);
             }
             propertyMap.forEach((k, v) -> v.sort(Comparator.comparingInt(state -> Registries.BLOCK.getRawId(state.getBlock()))));
@@ -50,6 +46,6 @@ public interface ModelShuffler<T> {
         }
     }
 
-    interface Items extends ModelShuffler<Item> {
+    interface Items extends ModelShuffler<Identifier> {
     }
 }

@@ -1,6 +1,5 @@
 package com.bawnorton.trulyrandom.client.loot.graph.element;
 
-import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.screen.BlockStateGuiRenderer;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
@@ -16,7 +15,7 @@ public class BlockElement extends GraphElement implements BlockStateGuiRenderer 
     }
 
     @Override
-    public void render(DrawContext context, MinecraftClient client, int x, int y, float scale) {
+    public void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale) {
         render(context, client, x, y, 1, block.getDefaultState());
     }
 

@@ -11,7 +11,6 @@ import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.Version;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
@@ -40,11 +39,11 @@ public class TrulyRandom implements ModInitializer {
     }
 
     public static ServerRandomiser getCachedRandomiser() {
-        return RandomiserSaveLoader.fetchUnsafeRandomiser();
+        return RandomiserSaveLoader.getLastSetRandomiser();
     }
 
     public static boolean isCachedRandomiserSet() {
-        return RandomiserSaveLoader.isUnsafeRandomiserSet();
+        return RandomiserSaveLoader.isLastSetRandomiserPresent();
     }
 
     public static Randomiser getClientRandomiser(MinecraftServer server, UUID uuid) {
@@ -71,8 +70,8 @@ public class TrulyRandom implements ModInitializer {
         return cachedServer;
     }
 
-    public static void setServerRandomiser(Modules modules) {
-        RandomiserSaveLoader.setRandomiser(modules);
+    public static void setWorldGenModules(Modules modules) {
+        RandomiserSaveLoader.setWorldGenModules(modules);
     }
 
     @Override

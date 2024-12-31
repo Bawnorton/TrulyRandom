@@ -11,6 +11,7 @@ import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 public class ClientRandomiser extends Randomiser {
@@ -58,7 +59,7 @@ public class ClientRandomiser extends Randomiser {
         blockModelRandomiser.reloadModels(MinecraftClient.getInstance());
     }
 
-    public void updateItemModels(UnaryMap<Item> redirectMap) {
+    public void updateItemModels(UnaryMap<Identifier> redirectMap) {
         itemModelRandomiser.updateItemModels(redirectMap);
         itemModelRandomiser.reloadModels(MinecraftClient.getInstance());
     }

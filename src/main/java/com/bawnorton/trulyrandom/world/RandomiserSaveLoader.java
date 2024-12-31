@@ -10,14 +10,16 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
-import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public class RandomiserSaveLoader extends PersistentState {
     private static ServerRandomiser lastSetRandomiser;
+    private static Modules worldGenModules;
 
     public static final PersistentState.Type<RandomiserSaveLoader> TYPE = new Type<>(
             RandomiserSaveLoader::new,
@@ -38,32 +40,37 @@ public class RandomiserSaveLoader extends PersistentState {
     }
 
     public static RandomiserSaveLoader getServerState(MinecraftServer server) {
-        ServerWorld world = server.getWorld(World.OVERWORLD);
+        ServerWorld world = server.getOverworld();
         if (world == null) throw new IllegalStateException("Tried to get randomiser state before world was loaded");
 
         PersistentStateManager manager = world.getPersistentStateManager();
         RandomiserSaveLoader state = manager.getOrCreate(TYPE, TrulyRandom.MOD_ID);
         state.markDirty();
-        if(lastSetRandomiser == null) {
-            lastSetRandomiser = state.getServerRandomiser();
-        } else {
-            state.serverRandomiser = lastSetRandomiser;
+        if(state.getServerRandomiser() == null) {
+            state.serverRandomiser = new ServerRandomiser(Objects.requireNonNullElseGet(worldGenModules, Modules::new));
         }
+        lastSetRandomiser = state.getServerRandomiser();
         return state;
     }
 
-    public static ServerRandomiser fetchUnsafeRandomiser() {
+    public static ServerRandomiser getLastSetRandomiser() {
         if (lastSetRandomiser != null) return lastSetRandomiser;
 
         throw new IllegalStateException("Tried to get randomiser state before world was loaded");
     }
 
-    public static boolean isUnsafeRandomiserSet() {
+    public static boolean isLastSetRandomiserPresent() {
         return lastSetRandomiser != null;
     }
 
-    public static void setRandomiser(Modules modules) {
-        lastSetRandomiser = new ServerRandomiser(modules);
+    public static void setWorldGenModules(Modules modules) {
+        worldGenModules = modules;
+    }
+
+    public static Modules getWorldGenModules() {
+        if(worldGenModules == null) return lastSetRandomiser.getModules();
+
+        return worldGenModules;
     }
 
     public ServerRandomiser getServerRandomiser() {

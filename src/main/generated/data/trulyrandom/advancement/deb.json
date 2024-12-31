@@ -4,12 +4,8 @@
     "deb": {
       "conditions": {
         "key": {
-          "A": {
-            "tag": "minecraft:planks"
-          },
-          "B": {
-            "tag": "minecraft:wool"
-          }
+          "A": "#minecraft:planks",
+          "B": "#minecraft:wool"
         },
         "pattern": [
           "AAA",

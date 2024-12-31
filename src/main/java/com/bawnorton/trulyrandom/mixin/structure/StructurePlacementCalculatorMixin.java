@@ -2,6 +2,7 @@ package com.bawnorton.trulyrandom.mixin.structure;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.random.module.Module;
+import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import net.minecraft.world.gen.chunk.placement.StructurePlacementCalculator;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,7 +16,7 @@ public abstract class StructurePlacementCalculatorMixin {
     private static <T> Predicate<? super T> setBiomeValidIfStructureRandomiserEnabled(Predicate<? super T> original) {
         return (biome) -> {
             if (original.test(biome)) return true;
-            return TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.STRUCTURES);
+            return RandomiserSaveLoader.getWorldGenModules().isEnabled(Module.STRUCTURES);
         };
     }
 
@@ -23,7 +24,7 @@ public abstract class StructurePlacementCalculatorMixin {
     private <T> Predicate<? super T> allBiomesValidIfStructureRandomiserEnabled(Predicate<? super T> original) {
         return (biome) -> {
             if (original.test(biome)) return true;
-            return TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.STRUCTURES);
+            return RandomiserSaveLoader.getWorldGenModules().isEnabled(Module.STRUCTURES);
         };
     }
 }

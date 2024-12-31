@@ -26,8 +26,8 @@ public abstract class LootPoolEntryMixin {
         if(!isRandomised) return original.call(instance, context);
 
         return switch (instance) {
-            case BlockStatePropertyLootCondition ignored -> isRandomised;
-            case LocationCheckLootCondition ignored -> isRandomised;
+            case BlockStatePropertyLootCondition ignored -> true;
+            case LocationCheckLootCondition ignored -> true;
             default -> original.call(instance, context);
         };
     }

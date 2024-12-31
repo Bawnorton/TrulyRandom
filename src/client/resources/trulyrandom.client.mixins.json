@@ -17,22 +17,20 @@
     "accessor.AbstractBlockAccessor",
     "accessor.ClientChunkManagerAccessor",
     "accessor.ClientChunkManagerAccessor$ClientChunkMapAccessor",
+    "accessor.InventoryScreenAccessor",
+    "accessor.LoadedBlockEntityModelsAccessor",
+    "accessor.RecipeBookWidgetAccessor",
     "accessor.StateAccessor",
     "accessor.WorldRendererInvoker",
     "modernfix.DynamicBlockModelsMixin",
-    "modernfix.DynamicItemsModelsMixin",
-    "tracker.AbstractInventoryScreenMixin",
-    "tracker.BuiltinModelItemRendererMixin",
     "tracker.HandledScreenMixin",
     "tracker.InGameHudMixin",
-    "tracker.InventoryScreenMixin",
-    "tracker.ParentElementMixin"
+    "tracker.RecipeBookScreenMixin"
   ],
   "mixins": [
     "EiglspergerStepsMixin",
     "accessor.CatEntityAccessor",
-    "accessor.ChestBlockEntityAccessor",
-    "accessor.ChestLidAnimatorAccessor",
+    "accessor.ChestModelRendererAccessor",
     "accessor.GuardianEntityAccessor"
   ],
   "injectors": {

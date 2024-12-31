@@ -21,6 +21,7 @@ import net.minecraft.predicate.item.ItemSubPredicate;
 import net.minecraft.predicate.item.ItemSubPredicateTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntryList;
@@ -83,7 +84,7 @@ public class LootTableReader {
         };
     }
 
-    public static SilkQuery queryForSilk(Registry<LootTable> lootTableRegistry, LootTable table) {
+    public static SilkQuery queryForSilk(RegistryEntryLookup<LootTable> lootTableRegistry, LootTable table) {
         SilkQuery query = new SilkQuery();
         for(LootPool pool : ((LootTableAccessor) table).getPools()) {
             List<LootCondition> poolConditions = pool.conditions;
@@ -104,7 +105,7 @@ public class LootTableReader {
         return query;
     }
 
-    public static SilkQuery queryForSilk(Registry<LootTable> lootTableRegistry, LootPoolEntry poolEntry) {
+    public static SilkQuery queryForSilk(RegistryEntryLookup<LootTable> lootTableRegistry, LootPoolEntry poolEntry) {
         SilkQuery query = new SilkQuery();
         switch (poolEntry) {
             case CombinedEntryAccessor combinedEntry -> {
@@ -129,7 +130,7 @@ public class LootTableReader {
                     }
                     case LootTableEntryAccessor lootTableEntry -> {
                         Either<RegistryKey<LootTable>, LootTable> value = lootTableEntry.getValue();
-                        LootTable table = value.map(lootTableRegistry::get, Function.identity());
+                        LootTable table = value.map(key -> lootTableRegistry.getOrThrow(key).value(), Function.identity());
                         query.add(queryForSilk(lootTableRegistry, table));
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + leafEntry);

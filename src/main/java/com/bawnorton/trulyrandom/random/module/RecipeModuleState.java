@@ -22,7 +22,7 @@ public class RecipeModuleState extends StandardModuleState {
     public static final PacketCodec<RegistryByteBuf, RecipeModuleState> PACKET_CODEC = PacketCodec.tuple(
             StandardModuleState.PACKET_CODEC,
             recipeModule -> recipeModule,
-            PacketCodecs.map(HashMap::new, PacketCodecs.registryCodec(Registries.RECIPE_TYPE.getCodec()), PacketCodecs.BOOL),
+            PacketCodecs.map(HashMap::new, PacketCodecs.registryCodec(Registries.RECIPE_TYPE.getCodec()), PacketCodecs.BOOLEAN),
             moduleState -> moduleState.enabledRecipeTypes,
             RecipeModuleState::new
     );

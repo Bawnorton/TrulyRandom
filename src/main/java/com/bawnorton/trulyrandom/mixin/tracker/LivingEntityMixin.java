@@ -8,6 +8,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,7 +27,7 @@ public abstract class LivingEntityMixin extends Entity {
     }
 
     @Inject(method = "dropLoot", at = @At(value = "INVOKE", target = "Lnet/minecraft/registry/ReloadableRegistries$Lookup;getLootTable(Lnet/minecraft/registry/RegistryKey;)Lnet/minecraft/loot/LootTable;"))
-    private void trackCause(DamageSource damageSource, boolean causedByPlayer, CallbackInfo ci) {
+    private void trackCause(ServerWorld world, DamageSource damageSource, boolean causedByPlayer, CallbackInfo ci) {
         if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if (getWorld().isClient()) return;
 

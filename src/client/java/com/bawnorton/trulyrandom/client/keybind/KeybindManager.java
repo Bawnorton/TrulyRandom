@@ -16,12 +16,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.item.Item;
-import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +36,7 @@ public class KeybindManager {
     public static final ActionedKeybind RELOAD_CHUNKS = registerDevOnlyKeybind("key.trulyrandom.reload_chunks", GLFW.GLFW_KEY_KP_0, client -> client.worldRenderer.reload());
     public static final ActionedKeybind QUERY_HAND = registerDevOnlyKeybind("key.trulyrandom.query_hand", GLFW.GLFW_KEY_KP_1, client -> {
         Item handItem = client.player.getMainHandStack().getItem();
-        ModelShuffler.Items items = (ModelShuffler.Items) client.getItemRenderer().getModels();
+        ModelShuffler.Items items = (ModelShuffler.Items) client.getBakedModelManager();
         TrulyRandom.LOGGER.info("Hand item: {} ({})", handItem, items.trulyrandom$getRedirectMap().get(handItem));
         HitResult hitResult = client.crosshairTarget;
         if (hitResult instanceof BlockHitResult blockHitResult) {

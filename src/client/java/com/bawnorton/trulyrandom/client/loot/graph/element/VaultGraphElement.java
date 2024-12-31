@@ -18,7 +18,7 @@ public class VaultGraphElement extends IdBasedGraphElement implements BlockState
     }
 
     @Override
-    public void render(DrawContext context, MinecraftClient client, int x, int y, float scale) {
+    public void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale) {
         VaultBlock vaultBlock = (VaultBlock) Blocks.VAULT;
         BlockState state = vaultBlock.getDefaultState();
         if(lootTableId.isOminous()) {

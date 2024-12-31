@@ -1,7 +1,7 @@
 package com.bawnorton.trulyrandom.mixin.structure;
 
-import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.random.module.Module;
+import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.world.gen.structure.Structure;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,6 +12,6 @@ public abstract class StructureMixin {
     @ModifyReturnValue(method = "isBiomeValid", at = @At("RETURN"))
     private static boolean setBiomeValidIfStructureRandomiserEnabled(boolean original) {
         if (original) return true;
-        return TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.STRUCTURES);
+        return RandomiserSaveLoader.getWorldGenModules().isEnabled(Module.STRUCTURES);
     }
 }

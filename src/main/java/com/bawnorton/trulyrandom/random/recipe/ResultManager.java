@@ -1,30 +1,38 @@
 package com.bawnorton.trulyrandom.random.recipe;
 
+import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.extend.ResultClearer;
-import com.bawnorton.trulyrandom.extend.ResultSetter;
+import com.bawnorton.trulyrandom.extend.ResultHolder;
 import com.bawnorton.trulyrandom.mixin.accessor.SmithingTrimRecipeAccessor;
-import net.minecraft.block.Block;
-import net.minecraft.block.ShulkerBoxBlock;
-import net.minecraft.block.SuspiciousStewIngredient;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.LoreComponent;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.equipment.trim.ArmorTrim;
+import net.minecraft.item.equipment.trim.ArmorTrimMaterial;
+import net.minecraft.item.equipment.trim.ArmorTrimMaterials;
+import net.minecraft.item.equipment.trim.ArmorTrimPattern;
+import net.minecraft.item.equipment.trim.ArmorTrimPatterns;
+import net.minecraft.loot.context.LootContextTypes;
 import net.minecraft.potion.Potion;
 import net.minecraft.recipe.*;
 import net.minecraft.recipe.input.SmithingRecipeInput;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.text.Text;
+import net.minecraft.util.context.ContextParameterMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ResultManager {
     private final Map<Class<? extends Recipe<?>>, ResultGetter> getters = new HashMap<>();
@@ -32,29 +40,40 @@ public class ResultManager {
 
     public ResultManager() {
         getters.put(SmithingTrimRecipe.class, new SmithingTrimResultGetter());
-        getters.put(SuspiciousStewRecipe.class, this::getSuspiciousStewResult);
         getters.put(BookCloningRecipe.class, this::getBookCloningResult);
         getters.put(BannerDuplicateRecipe.class, this::getBannerDuplicateResult);
         getters.put(FireworkStarFadeRecipe.class, this::getFireworkStarFadeResult);
         getters.put(FireworkStarRecipe.class, this::getFireworkStarResult);
+        getters.put(FireworkRocketRecipe.class, this::getFireworkRocketResult);
         getters.put(ShieldDecorationRecipe.class, this::getShieldDecorationResult);
         getters.put(TippedArrowRecipe.class, this::getTippedArrowResult);
         getters.put(ArmorDyeRecipe.class, this::getArmorDyeResult);
         getters.put(MapCloningRecipe.class, this::getMapCloningResult);
+        getters.put(MapExtendingRecipe.class, this::getMapCloningResult);
         getters.put(CraftingDecoratedPotRecipe.class, this::getDecoratedPotResult);
         getters.put(RepairItemRecipe.class, this::getRepairItemResult);
-        getters.put(ShulkerBoxColoringRecipe.class, this::getShulkerBoxColoringResult);
+        getters.put(TransmuteRecipe.class, this::getTransmuteResult);
     }
 
-    public ItemStack getResult(RecipeEntry<?> recipe, MinecraftServer server, long seed) {
+    public void setRandom(long seed) {
         random = new Random(seed);
+    }
+
+    public ItemStack getResult(RecipeEntry<?> recipe, MinecraftServer server) {
         //noinspection SuspiciousMethodCalls
-        return getters.getOrDefault(recipe.value().getClass(), this::getNormalResult).getResult(recipe, server);
+        ItemStack result = getters.getOrDefault(recipe.value().getClass(), this::getNormalResult).getResult(recipe, server);
+        if(result.isEmpty()) {
+            result = Items.PAPER.getDefaultStack();
+            result.set(DataComponentTypes.CUSTOM_NAME, Text.literal("This is here so the game doesn't crash"));
+            result.set(DataComponentTypes.LORE, new LoreComponent(List.of(Text.literal("Unknown recipe type: " + recipe.id().toString()))));
+            TrulyRandom.LOGGER.warn("Unknown recipe type: {}", recipe.value().getClass().getSimpleName());
+        }
+        return result;
     }
 
     public RecipeEntry<?> setResult(RecipeEntry<?> recipe, ItemStack newResult) {
-        if (recipe.value() instanceof ResultSetter resultSetter) {
-            resultSetter.trulyrandom$setResult(newResult);
+        if (recipe.value() instanceof ResultHolder resultHolder) {
+            resultHolder.trulyrandom$setResult(newResult);
             return recipe;
         }
         return recipe;
@@ -69,15 +88,10 @@ public class ResultManager {
     }
 
     private ItemStack getNormalResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        return recipe.value().getResult(server.getRegistryManager());
-    }
-
-    private ItemStack getSuspiciousStewResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        List<SuspiciousStewIngredient> ingredients = SuspiciousStewIngredient.getAll();
-        SuspiciousStewIngredient ingredient = ingredients.get(random.nextInt(ingredients.size()));
-        ItemStack suspiciousStew = Items.SUSPICIOUS_STEW.getDefaultStack();
-        suspiciousStew.set(DataComponentTypes.SUSPICIOUS_STEW_EFFECTS, ingredient.getStewEffects());
-        return suspiciousStew;
+        if(recipe.value() instanceof ResultHolder resultHolder) {
+            return resultHolder.trulyrandom$getResult();
+        }
+        throw new UnsupportedOperationException("Recipe type \"" + recipe.value().getClass().getSimpleName() + "\" is not supported.");
     }
 
     private ItemStack getBookCloningResult(RecipeEntry<?> recipe, MinecraftServer server) {
@@ -94,6 +108,10 @@ public class ResultManager {
 
     private ItemStack getFireworkStarResult(RecipeEntry<?> recipe, MinecraftServer server) {
         return Items.FIREWORK_STAR.getDefaultStack();
+    }
+
+    private ItemStack getFireworkRocketResult(RecipeEntry<?> recipeEntry, MinecraftServer server) {
+        return Items.FIREWORK_ROCKET.getDefaultStack();
     }
 
     private ItemStack getShieldDecorationResult(RecipeEntry<?> recipe, MinecraftServer server) {
@@ -132,30 +150,39 @@ public class ResultManager {
         return item.getDefaultStack();
     }
 
-    private ItemStack getShulkerBoxColoringResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        List<Item> shulkerBoxes = Registries.BLOCK.stream()
-                .filter(ShulkerBoxBlock.class::isInstance)
-                .map(Block::asItem)
-                .toList();
-        Item item = shulkerBoxes.get(random.nextInt(shulkerBoxes.size()));
+    private ItemStack getTransmuteResult(RecipeEntry<?> recipe, MinecraftServer server) {
+        List<Item> transmutableItems = Registries.ITEM.streamEntries().filter(ref -> ref.isIn(ItemTags.SHULKER_BOXES) || ref.isIn(ItemTags.BUNDLES)).map(RegistryEntry.Reference::value).toList();
+        Item item = transmutableItems.get(random.nextInt(transmutableItems.size()));
         return item.getDefaultStack();
     }
-
 
     private class SmithingTrimResultGetter implements ResultGetter {
         private List<ItemStack> bases;
         private List<ItemStack> additions;
 
         public ItemStack getResult(RecipeEntry<?> recipe, MinecraftServer server) {
+            ItemStack defaultTrimmed = Items.IRON_CHESTPLATE.getDefaultStack();
+            Optional<RegistryEntry.Reference<ArmorTrimMaterial>> defaultMat = ArmorTrimMaterials.get(server.getRegistryManager(), Items.REDSTONE.getDefaultStack());
+            Optional<RegistryEntry.Reference<ArmorTrimPattern>> defaultPat = ArmorTrimPatterns.get(server.getRegistryManager(), Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE.getDefaultStack());
+            defaultTrimmed.set(DataComponentTypes.TRIM, new ArmorTrim(defaultMat.orElseThrow(), defaultPat.orElseThrow()));
+
             SmithingTrimRecipeAccessor accessor = (SmithingTrimRecipeAccessor) recipe.value();
-            ItemStack template = accessor.getTemplate().getMatchingStacks()[0];
+            Optional<Ingredient> maybeTemplate = accessor.getTemplate();
+            if(maybeTemplate.isEmpty()) return defaultTrimmed;
+
+            ContextParameterMap context = new ContextParameterMap.Builder().build(LootContextTypes.EMPTY);
+            ItemStack template = accessor.getTemplate().orElseThrow().toDisplay().getFirst(context);
             if (bases == null || bases.isEmpty()) {
-                bases = Stream.of(accessor.getBase().getMatchingStacks())
-                        .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+                Optional<Ingredient> maybeBase = accessor.getBase();
+                if(maybeBase.isEmpty()) return defaultTrimmed;
+
+                bases = new ArrayList<>(maybeBase.orElseThrow().getMatchingItems().map(ItemStack::new).toList());
             }
             if (additions == null || additions.isEmpty()) {
-                additions = Stream.of(accessor.getAddition().getMatchingStacks())
-                        .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+                Optional<Ingredient> maybeAddition = accessor.getAddition();
+                if(maybeAddition.isEmpty()) return defaultTrimmed;
+
+                additions = new ArrayList<>(maybeAddition.orElseThrow().getMatchingItems().map(ItemStack::new).toList());
             }
             ItemStack base = bases.remove(random.nextInt(bases.size()));
             ItemStack addition = additions.remove(random.nextInt(additions.size()));

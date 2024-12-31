@@ -1,8 +1,7 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
-import com.bawnorton.trulyrandom.client.extend.ModulesHolder;
+import com.bawnorton.trulyrandom.extend.ModulesHolder;
 import com.bawnorton.trulyrandom.random.module.Modules;
-import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import com.mojang.datafixers.kinds.App;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.resource.DataConfiguration;
@@ -31,15 +30,15 @@ public abstract class DataConfigurationMixin implements ModulesHolder {
                 Modules.CODEC
                         .optionalFieldOf("trulyrandom$randomiserModules").xmap(optional -> optional.orElse(new Modules()), Optional::ofNullable)
                         .forGetter(dataConfig -> ((ModulesHolder) (Object) dataConfig).trulyrandom$getRandomiserModules())
-        ).apply(instance, (dataConfig, randomiser) -> {
-            ((ModulesHolder) (Object) dataConfig).trulyrandom$setRandomiserModules(randomiser);
+        ).apply(instance, (dataConfig, modules) -> {
+            ((ModulesHolder) (Object) dataConfig).trulyrandom$setRandomiserModules(modules);
             return dataConfig;
         });
     }
 
     @Override
     public Modules trulyrandom$getRandomiserModules() {
-        return trulyrandom$randomiserModules == null ? new Modules() : trulyrandom$randomiserModules;
+        return trulyrandom$randomiserModules;
     }
 
     @Override

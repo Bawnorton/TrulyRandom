@@ -15,7 +15,7 @@ public class DispenserGraphElement extends IdBasedGraphElement {
     }
 
     @Override
-    public void render(DrawContext context, MinecraftClient client, int x, int y, float scale) {
+    public void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale) {
         context.drawItemWithoutEntity(Items.DISPENSER.getDefaultStack(), x - 8, y - 8);
     }
 

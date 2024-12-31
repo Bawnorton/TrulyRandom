@@ -2,18 +2,19 @@ package com.bawnorton.trulyrandom.client.screen.lootbook;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
-import com.bawnorton.trulyrandom.client.extend.InventoryScreenExtender;
 import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
 import com.bawnorton.trulyrandom.client.loot.LootBookController;
+import com.bawnorton.trulyrandom.client.mixin.accessor.RecipeBookWidgetAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.ButtonTextures;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
+import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.Item;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -29,7 +30,7 @@ public class LootBookWidget implements Drawable, Element, Selectable {
             TrulyRandom.id("loot_book/button"),
             TrulyRandom.id("loot_book/button_focused")
     );
-    private static final Identifier BACKGROUND_TEXTURE = Identifier.of("minecraft", "textures/gui/recipe_book.png");
+    private static final Identifier BACKGROUND_TEXTURE = RecipeBookWidgetAccessor.getTexture();
 
     public int topOffset;
     private int rightOffset;
@@ -184,7 +185,7 @@ public class LootBookWidget implements Drawable, Element, Selectable {
         if(!(isShort && isGraphOpen())) {
             int x = (parentWidth - 147) / 2 + rightOffset;
             int y = (parentHeight - 166) / 2 + topOffset;
-            context.drawTexture(BACKGROUND_TEXTURE, x, y, 1, 1, 147, 166);
+            context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND_TEXTURE, x, y, 1f, 1f, 147, 166, 256, 256);
             searchField.render(context, mouseX, mouseY, delta);
             lootArea.draw(context, x, y, mouseX, mouseY, delta);
         }

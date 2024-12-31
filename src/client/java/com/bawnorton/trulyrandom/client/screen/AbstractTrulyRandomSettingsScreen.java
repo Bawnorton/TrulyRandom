@@ -41,7 +41,7 @@ public abstract class AbstractTrulyRandomSettingsScreen extends Screen {
         addModules();
         addFooter();
         layout.forEachChild(this::addDrawableChild);
-        initTabNavigation();
+        refreshWidgetPositions();
     }
 
     protected void addHeader() {
@@ -100,7 +100,7 @@ public abstract class AbstractTrulyRandomSettingsScreen extends Screen {
     }
 
     @Override
-    protected void initTabNavigation() {
+    protected void refreshWidgetPositions() {
         layout.refreshPositions();
     }
 

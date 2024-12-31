@@ -8,8 +8,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.loot.condition.MatchToolLootCondition;
 import net.minecraft.loot.context.LootContext;
-import net.minecraft.loot.context.LootContextParameter;
 import net.minecraft.loot.context.LootContextParameters;
+import net.minecraft.util.context.ContextParameter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -20,10 +20,10 @@ public abstract class MatchToolLootConditionMixin {
             method = "test(Lnet/minecraft/loot/context/LootContext;)Z",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/loot/context/LootContext;get(Lnet/minecraft/loot/context/LootContextParameter;)Ljava/lang/Object;"
+                    target = "Lnet/minecraft/loot/context/LootContext;get(Lnet/minecraft/util/context/ContextParameter;)Ljava/lang/Object;"
             )
     )
-    private <T> T checkKillingEntityForTool(LootContext instance, LootContextParameter<T> parameter, Operation<T> original) {
+    private <T> T checkKillingEntityForTool(LootContext instance, ContextParameter<T> parameter, Operation<T> original) {
         T stack = original.call(instance, parameter);
         if(!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return stack;
         if(stack != null) return stack;

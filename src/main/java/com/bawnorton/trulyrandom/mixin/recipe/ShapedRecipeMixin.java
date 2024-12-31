@@ -1,6 +1,6 @@
 package com.bawnorton.trulyrandom.mixin.recipe;
 
-import com.bawnorton.trulyrandom.extend.ResultSetter;
+import com.bawnorton.trulyrandom.extend.ResultHolder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.ShapedRecipe;
 import org.spongepowered.asm.mixin.Final;
@@ -9,12 +9,17 @@ import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ShapedRecipe.class)
-public abstract class ShapedRecipeMixin implements ResultSetter {
+public abstract class ShapedRecipeMixin implements ResultHolder {
     @Shadow @Final @Mutable
     ItemStack result;
 
     @Override
     public void trulyrandom$setResult(ItemStack result) {
         this.result = result;
+    }
+
+    @Override
+    public ItemStack trulyrandom$getResult() {
+        return result;
     }
 }

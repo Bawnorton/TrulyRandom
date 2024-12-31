@@ -16,7 +16,7 @@ public class StandardModuleState implements ModuleState {
     ).apply(instance, StandardModuleState::new));
 
     public static final PacketCodec<RegistryByteBuf, StandardModuleState> PACKET_CODEC = PacketCodec.tuple(
-            PacketCodecs.BOOL, StandardModuleState::isEnabled,
+            PacketCodecs.BOOLEAN, StandardModuleState::isEnabled,
             PacketCodecs.VAR_LONG, StandardModuleState::getSeed,
             StandardModuleState::new
     );

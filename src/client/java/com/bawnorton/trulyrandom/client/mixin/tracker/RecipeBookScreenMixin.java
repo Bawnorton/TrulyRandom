@@ -1,7 +1,8 @@
 package com.bawnorton.trulyrandom.client.mixin.tracker;
 
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
-import com.bawnorton.trulyrandom.client.extend.InventoryScreenExtender;
+import com.bawnorton.trulyrandom.client.extend.RecipeBookScreenExtender;
+import com.bawnorton.trulyrandom.client.mixin.accessor.InventoryScreenAccessor;
 import com.bawnorton.trulyrandom.client.screen.lootbook.LootBookWidget;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
@@ -11,6 +12,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
+import net.minecraft.client.gui.screen.ingame.RecipeBookScreen;
 import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
@@ -25,11 +27,16 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(InventoryScreen.class)
-public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin implements InventoryScreenExtender {
-    @Shadow private boolean narrow;
-    @Shadow private boolean mouseDown;
-    @Shadow @Final private RecipeBookWidget recipeBook;
+@Mixin(RecipeBookScreen.class)
+public abstract class RecipeBookScreenMixin extends HandledScreenMixin implements RecipeBookScreenExtender {
+    protected RecipeBookScreenMixin(Text title) {
+        super(title);
+    }
+
+    @Shadow
+    private boolean narrow;
+    @Shadow @Final
+    private RecipeBookWidget<?> recipeBook;
 
     @Unique private TexturedButtonWidget recipeButton;
     @Unique private TexturedButtonWidget lootBookButton;
@@ -39,10 +46,6 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
 
     @Unique
     private boolean isShort;
-
-    protected InventoryScreenMixin(Text title) {
-        super(title);
-    }
 
     @Override
     public LootBookWidget trulyrandom$getLootBook() {
@@ -56,22 +59,26 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
 
     @Unique
     private void resetButtonPositions() {
+        if(lootBookButton == null) return;
+
         recipeButton.setX(x + 104);
         lootBookButton.setX(recipeButton.getX() + 22);
         recipeButton.setY(height / 2 - 22 + lootBook.topOffset);
         lootBookButton.setY(recipeButton.getY());
     }
 
+    @SuppressWarnings("ConstantValue")
     @Inject(
-            method = "init",
+            method = "addRecipeBook",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/screen/ingame/InventoryScreen;addSelectableChild(Lnet/minecraft/client/gui/Element;)Lnet/minecraft/client/gui/Element;",
+                    target = "Lnet/minecraft/client/gui/screen/ingame/RecipeBookScreen;addSelectableChild(Lnet/minecraft/client/gui/Element;)Lnet/minecraft/client/gui/Element;",
                     shift = At.Shift.AFTER
             )
     )
     private void initLootBook(CallbackInfo ci) {
         if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+        if(!((Object) this instanceof InventoryScreen invScreen)) return;
 
         isShort = height < 350;
         lootBook.initialize(width, height, client, narrow, isShort);
@@ -83,7 +90,7 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             x = lootBook.findLeftEdge(width, backgroundWidth);
             trulyrandom$resetY();
             resetButtonPositions();
-            mouseDown = true;
+            ((InventoryScreenAccessor) invScreen).setMouseDown(true);
         }) {
             @Override
             public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
@@ -119,21 +126,10 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
         addSelectableChild(lootBook);
     }
 
-    @ModifyArg(
-            method = "init",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/widget/TexturedButtonWidget;<init>(IIIILnet/minecraft/client/gui/screen/ButtonTextures;Lnet/minecraft/client/gui/widget/ButtonWidget$PressAction;)V"
-            ),
-            index = 1
-    )
-    private int shiftDownWhenGraphOpen(int y) {
-        return y;
-    }
-
-    @Inject(method = "method_19891", at = @At("TAIL"))
+    @Inject(method = "method_64513", at = @At("TAIL"))
     private void considerLootBook(ButtonWidget button, CallbackInfo ci) {
         if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+        if(lootBookButton == null) return;
 
         if(recipeBook.isOpen() && lootBook.isOpen()) {
             lootBook.toggleOpen();
@@ -143,10 +139,10 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
     }
 
     @ModifyArg(
-            method = "init",
+            method = "addRecipeBook",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/screen/ingame/InventoryScreen;addDrawableChild(Lnet/minecraft/client/gui/Element;)Lnet/minecraft/client/gui/Element;"
+                    target = "Lnet/minecraft/client/gui/screen/ingame/RecipeBookScreen;addDrawableChild(Lnet/minecraft/client/gui/Element;)Lnet/minecraft/client/gui/Element;"
             )
     )
     private Element captureRecipeButton(Element button) {
@@ -158,10 +154,10 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             method = "render",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/screen/ingame/AbstractInventoryScreen;render(Lnet/minecraft/client/gui/DrawContext;IIF)V"
+                    target = "Lnet/minecraft/client/gui/screen/ingame/HandledScreen;render(Lnet/minecraft/client/gui/DrawContext;IIF)V"
             )
     )
-    private void renderLootBook(InventoryScreen instance, DrawContext context, int mouseX, int mouseY, float delta, Operation<Void> original) {
+    private void renderLootBook(RecipeBookScreen<?> instance, DrawContext context, int mouseX, int mouseY, float delta, Operation<Void> original) {
         if (!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
             if(lootBook.isOpen()) {
                 lootBook.toggleOpen();
@@ -183,14 +179,15 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
     }
 
     @WrapWithCondition(
-            method = "render",
+            method = "drawSlots",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/screen/recipebook/RecipeBookWidget;drawGhostSlots(Lnet/minecraft/client/gui/DrawContext;IIZF)V"
+                    target = "Lnet/minecraft/client/gui/screen/recipebook/RecipeBookWidget;drawGhostSlots(Lnet/minecraft/client/gui/DrawContext;Z)V"
             )
     )
-    private boolean dontDropSlotsIfGraphOpen(RecipeBookWidget instance, DrawContext context, int x, int y, boolean notInventory, float delta) {
+    private boolean dontDrawSlotsIfGraphOpen(RecipeBookWidget<?> instance, DrawContext context, boolean resultHasPadding) {
         if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return true;
+        if(lootBookButton == null) return true;
 
         return !lootBook.isGraphOpen();
     }
@@ -201,6 +198,7 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
     )
     private void renderLootBookTooltip(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+        if(lootBookButton == null) return;
 
         lootBook.drawTooltip(context, mouseX, mouseY);
     }
@@ -209,11 +207,11 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             method = "keyPressed",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/screen/ingame/AbstractInventoryScreen;keyPressed(III)Z"
+                    target = "Lnet/minecraft/client/gui/screen/ingame/HandledScreen;keyPressed(III)Z"
             )
     )
-    private boolean keyPressedInLootBook(InventoryScreen instance, int keyCode, int scanCode, int modifiers, Operation<Boolean> original) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+    private boolean keyPressedInLootBook(RecipeBookScreen<?> instance, int keyCode, int scanCode, int modifiers, Operation<Boolean> original) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES) || lootBookButton == null) {
             return original.call(instance, keyCode, scanCode, modifiers);
         }
 
@@ -224,11 +222,11 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             method = "charTyped",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/screen/ingame/AbstractInventoryScreen;charTyped(CI)Z"
+                    target = "Lnet/minecraft/client/gui/screen/ingame/HandledScreen;charTyped(CI)Z"
             )
     )
-    private boolean charTypedInLootBook(InventoryScreen instance, char chr, int modifiers, Operation<Boolean> original) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+    private boolean charTypedInLootBook(RecipeBookScreen<?> instance, char chr, int modifiers, Operation<Boolean> original) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES) || lootBookButton == null) {
             return original.call(instance, chr, modifiers);
         }
 
@@ -239,11 +237,11 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             method = "isPointWithinBounds",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/screen/ingame/AbstractInventoryScreen;isPointWithinBounds(IIIIDD)Z"
+                    target = "Lnet/minecraft/client/gui/screen/ingame/HandledScreen;isPointWithinBounds(IIIIDD)Z"
             )
     )
-    private boolean isPointWithinLootBookBounds(InventoryScreen instance, int x, int y, int width, int height, double pointX, double pointY, Operation<Boolean> original) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+    private boolean isPointWithinLootBookBounds(RecipeBookScreen<?> instance, int x, int y, int width, int height, double pointX, double pointY, Operation<Boolean> original) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES) || lootBookButton == null) {
             return original.call(instance, x, y, width, height, pointX, pointY);
         }
 
@@ -261,11 +259,11 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
             method = "mouseClicked",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/screen/ingame/AbstractInventoryScreen;mouseClicked(DDI)Z"
+                    target = "Lnet/minecraft/client/gui/screen/ingame/HandledScreen;mouseClicked(DDI)Z"
             )
     )
-    private boolean mouseClickedInLootBook(InventoryScreen instance, double mouseX, double mouseY, int button, Operation<Boolean> original) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+    private boolean mouseClickedInLootBook(RecipeBookScreen<?> instance, double mouseX, double mouseY, int button, Operation<Boolean> original) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES) || lootBookButton == null) {
             return original.call(instance, mouseX, mouseY, button);
         }
 
@@ -284,32 +282,34 @@ public abstract class InventoryScreenMixin extends AbstractInventoryScreenMixin 
         }
     }
 
-    @Override
-    protected void mouseDragInInvScreen(double mouseX, double mouseY, int button, double deltaX, double deltaY, CallbackInfoReturnable<Boolean> cir) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
-
-        if(lootBook.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
-            cir.setReturnValue(true);
-        }
-    }
-
     @ModifyReturnValue(
             method = "isClickOutsideBounds",
             at = @At("RETURN")
     )
     private boolean isClickOutsideLootBook(boolean original, double mouseX, double mouseY, int left, int top) {
         if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return original;
-        if (!original) return false;
+        if (lootBookButton == null) return original;
 
-        return lootBook.isClickOutsideBounds(mouseX, mouseY, x, y, backgroundWidth, backgroundHeight);
+        return original && lootBook.isClickOutsideBounds(mouseX, mouseY, x, y, backgroundWidth, backgroundHeight);
     }
 
     @Override
-    protected int changeEffectX(int x) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return x;
-        if (lootBook.isOpen()) {
-            return x + 149;
+    protected void mouseDragInInvScreen(double mouseX, double mouseY, int button, double deltaX, double deltaY, CallbackInfoReturnable<Boolean> cir) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+        if(lootBookButton == null) return;
+
+        if(lootBook.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
+            cir.setReturnValue(true);
         }
-        return super.changeEffectX(x);
+    }
+
+    @Override
+    protected void mouseScrolledInInvScreen(double mouseX, double mouseY, double horizontalAmount, double verticalAmount, CallbackInfoReturnable<Boolean> cir) {
+        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+        if(lootBookButton == null) return;
+
+        if(lootBook.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) {
+            cir.setReturnValue(true);
+        }
     }
 }

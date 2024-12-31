@@ -1,3 +1,4 @@
+/* TODO
 package com.bawnorton.trulyrandom.client.extend.modernfix;
 
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
@@ -25,4 +26,4 @@ public interface DynamicItemModelShuffler extends ModelShuffler.Items {
             trulyrandom$getRedirectMap().put(originalItem, randomItem);
         }
     }
-}
+}*/

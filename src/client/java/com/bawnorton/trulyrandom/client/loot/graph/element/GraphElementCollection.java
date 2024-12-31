@@ -3,7 +3,6 @@ package com.bawnorton.trulyrandom.client.loot.graph.element;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +24,7 @@ public class GraphElementCollection extends GraphElement implements Iterable<Gra
     }
 
     @Override
-    public void render(DrawContext context, MinecraftClient client, int x, int y, float scale) {
+    public void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale) {
         MatrixStack matrices = context.getMatrices();
         matrices.push();
         float collectionScale = 1.4f;
@@ -34,16 +33,16 @@ public class GraphElementCollection extends GraphElement implements Iterable<Gra
         y = (int) (y * collectionScale);
         if(elements.size() >= 3) {
             GraphElement first = elements.getFirst();
-            first.render(context, client, x, y - 8, scale / collectionScale);
+            first.render(context, client, mouseX, mouseY, x, y - 8, scale / collectionScale);
             GraphElement second = elements.get(1);
-            second.render(context, client, x - 8, y + 8, scale / collectionScale);
+            second.render(context, client, mouseX, mouseY, x - 8, y + 8, scale / collectionScale);
             GraphElement third = elements.get(2);
-            third.render(context, client, x + 8, y + 8, scale / collectionScale);
+            third.render(context, client, mouseX, mouseY, x + 8, y + 8, scale / collectionScale);
         } else if (elements.size() == 2) {
             GraphElement first = elements.getFirst();
-            first.render(context, client, x - 8, y, scale / collectionScale);
+            first.render(context, client, mouseX, mouseY, x - 8, y, scale / collectionScale);
             GraphElement second = elements.get(1);
-            second.render(context, client, x + 8, y, scale / collectionScale);
+            second.render(context, client, mouseX, mouseY, x + 8, y, scale / collectionScale);
         }
         matrices.pop();
     }

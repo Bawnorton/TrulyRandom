@@ -4,12 +4,8 @@
     "wob": {
       "conditions": {
         "key": {
-          "A": {
-            "item": "minecraft:stick"
-          },
-          "B": {
-            "item": "minecraft:string"
-          }
+          "A": "minecraft:stick",
+          "B": "minecraft:string"
         },
         "pattern": [
           "AB ",

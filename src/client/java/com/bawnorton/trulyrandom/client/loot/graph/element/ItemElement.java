@@ -22,7 +22,7 @@ public class ItemElement extends GraphElement {
     }
 
     @Override
-    public void render(DrawContext context, MinecraftClient client, int x, int y, float scale) {
+    public void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale) {
         context.drawItemWithoutEntity(item.getDefaultStack(), x - 8, y - 8);
     }
 

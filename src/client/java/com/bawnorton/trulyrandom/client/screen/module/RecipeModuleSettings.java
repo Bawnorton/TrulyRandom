@@ -13,6 +13,7 @@ import net.minecraft.recipe.RecipeType;
 import net.minecraft.registry.Registries;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,7 +36,7 @@ public class RecipeModuleSettings extends Screen {
         addBody();
         addFooter();
         layout.forEachChild(this::addDrawableChild);
-        initTabNavigation();
+        refreshWidgetPositions();
     }
 
     protected void addHeader() {
@@ -46,7 +47,9 @@ public class RecipeModuleSettings extends Screen {
         GridWidget columns = layout.addBody(new GridWidget());
         columns.setRowSpacing(2);
         GridWidget.Adder adder = columns.createAdder(2);
-        enabledRecipeTypes.forEach((recipeType, enabled) -> {
+        enabledRecipeTypes.entrySet().stream().sorted(Comparator.comparing(entry -> entry.getKey().toString())).forEach(entry -> {
+            RecipeType<?> recipeType = entry.getKey();
+            Boolean enabled = entry.getValue();
             TextWidget specialReciesTitle = new TextWidget(
                     0,
                     0,
@@ -90,7 +93,7 @@ public class RecipeModuleSettings extends Screen {
     }
 
     @Override
-    protected void initTabNavigation() {
+    protected void refreshWidgetPositions() {
         layout.refreshPositions();
     }
 }

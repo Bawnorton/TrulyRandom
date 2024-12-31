@@ -6,6 +6,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.SpawnReason;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 
@@ -17,11 +18,11 @@ public class EntityGraphElement extends GraphElement implements LivingEntityGuiR
     }
 
     @Override
-    public void render(DrawContext context, MinecraftClient client, int x, int y, float scale) {
-        Entity entity = entityType.create(client.world);
+    public void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale) {
+        Entity entity = entityType.create(client.world, SpawnReason.COMMAND);
         if(!(entity instanceof LivingEntity livingEntity)) return;
 
-        render(livingEntity, client, x, y, scale);
+        render(context, mouseX, mouseY, livingEntity, x, y, scale);
     }
 
     @Override

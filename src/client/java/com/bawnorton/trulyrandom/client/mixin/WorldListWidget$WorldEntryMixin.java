@@ -1,8 +1,7 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
-import com.bawnorton.trulyrandom.client.extend.ModulesHolder;
+import com.bawnorton.trulyrandom.extend.ModulesHolder;
 import com.bawnorton.trulyrandom.random.module.Modules;
-import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.world.WorldListWidget;
 import net.minecraft.world.level.storage.LevelSummary;

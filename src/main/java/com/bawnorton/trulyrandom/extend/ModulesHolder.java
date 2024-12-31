@@ -1,4 +1,4 @@
-package com.bawnorton.trulyrandom.client.extend;
+package com.bawnorton.trulyrandom.extend;
 
 import com.bawnorton.trulyrandom.random.module.Modules;
 

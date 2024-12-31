@@ -67,7 +67,7 @@ public class ItemLootMap extends HashMap<Item, ItemLootMap.Result> {
             ).apply(instance, Result::new));
 
             public static final PacketCodec<RegistryByteBuf, Result> PACKET_CODEC = PacketCodec.tuple(
-                    PacketCodecs.BOOL, result -> result.withSilk,
+                    PacketCodecs.BOOLEAN, result -> result.withSilk,
                     PacketCodecs.registryValue(RegistryKeys.BLOCK).collect(PacketCodecs.toList()), Result::associatedBlocks,
                     Result::new
             );

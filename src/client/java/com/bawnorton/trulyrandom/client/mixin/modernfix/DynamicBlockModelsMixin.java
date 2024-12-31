@@ -12,12 +12,11 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.block.BlockModels;
 import net.minecraft.client.render.model.BakedModel;
-import org.embeddedt.modernfix.dynamicresources.DynamicModelCache;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import java.util.Map;
 
 @Mixin(value = BlockModels.class, priority = 1500)
 @AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, version = @VersionPredicate(min = "5.11"))
@@ -25,14 +24,11 @@ public abstract class DynamicBlockModelsMixin implements DynamicBlockModelShuffl
     @Unique
     private final UnaryMap<BlockState> trulyrandom$redirectMap = new UnaryHashMap<>();
 
-    @SuppressWarnings("MixinAnnotationTarget")
-    @Shadow
-    @Final
-    private DynamicModelCache<BlockState> mfix$modelCache;
+    @Shadow private Map<BlockState, BakedModel> models;
 
     @TargetHandler(
             mixin = "org.embeddedt.modernfix.common.mixin.perf.dynamic_resources.BlockModelShaperMixin",
-            name = "lambda$new$0"
+            name = "method_3335"
     )
     @WrapOperation(
             method = "@MixinSquared:Handler",
@@ -51,8 +47,8 @@ public abstract class DynamicBlockModelsMixin implements DynamicBlockModelShuffl
     }
 
     public void trulyrandom$resetModels() {
+        trulyrandom$redirectMap.keySet().forEach(key -> models.put(key, null));
         trulyrandom$redirectMap.clear();
-        mfix$modelCache.clear();
     }
 
     public boolean trulyrandom$isShuffled() {
