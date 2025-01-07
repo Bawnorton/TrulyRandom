@@ -31,6 +31,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -116,6 +117,7 @@ public class RecipeRandomiser extends ServerRandomiserModule {
                     }
                     return true;
                 })
+                .sorted(Comparator.comparing(entry -> entry.getKey().getValue()))
                 .toList();
         Map<RegistryKey<Recipe<?>>, RecipeEntry<?>> recipes = new HashMap<>();
         List<ItemStack> outputs = new ArrayList<>();
