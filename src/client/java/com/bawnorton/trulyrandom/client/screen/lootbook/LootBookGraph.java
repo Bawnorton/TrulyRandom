@@ -1,9 +1,9 @@
 package com.bawnorton.trulyrandom.client.screen.lootbook;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.client.loot.LootBookController;
-import com.bawnorton.trulyrandom.client.loot.graph.LootGraph;
-import com.bawnorton.trulyrandom.client.loot.graph.element.GraphElement;
+import com.bawnorton.trulyrandom.client.graph.TrackingGraphBookController;
+import com.bawnorton.trulyrandom.client.graph.TrackingGraph;
+import com.bawnorton.trulyrandom.client.graph.element.GraphElement;
 import com.bawnorton.trulyrandom.client.screen.widget.ItemButton;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.advancement.AdvancementFrame;
@@ -15,6 +15,7 @@ import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.advancement.AdvancementObtainedStatus;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
@@ -22,6 +23,7 @@ import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
 
 public class LootBookGraph implements Drawable, Element {
@@ -35,8 +37,8 @@ public class LootBookGraph implements Drawable, Element {
     public static final int HEIGHT = 167;
     public static final int WIDTH = 325;
 
-    private LootBookController controller;
-    private LootGraph graph;
+    private TrackingGraphBookController controller;
+    private TrackingGraph graph;
     private MinecraftClient client;
     private Item item;
     private int x;
@@ -48,7 +50,7 @@ public class LootBookGraph implements Drawable, Element {
     private ItemButton centre;
     private ItemButton close;
 
-    public void initalize(MinecraftClient client, LootBookController controller, LootBookWidget widget, int x, int y) {
+    public void initalize(MinecraftClient client, TrackingGraphBookController controller, LootBookWidget widget, int x, int y) {
         this.client = client;
         this.controller = controller;
         this.x = x;
@@ -128,6 +130,18 @@ public class LootBookGraph implements Drawable, Element {
             context.fill(sourceX, sourceY + 1, halfX, sourceY - 1, colour);
             context.fill(halfX - 1, sourceY, halfX + 1, targetY, colour);
             context.fill(halfX, targetY + 1, targetX, targetY - 1, colour);
+
+            // draw arrow head
+            if (source.isHovered()) {
+                VertexConsumer consumer = client.getBufferBuilders().getEntityVertexConsumers().getBuffer(RenderLayer.getGui());
+                Matrix4f matrix4f = context.getMatrices().peek().getPositionMatrix();
+                int x = targetX - 20;
+                consumer.vertex(matrix4f, x, targetY - 6, 0).color(Colors.GREEN);
+                consumer.vertex(matrix4f, x, targetY + 6, 0).color(Colors.GREEN);
+                consumer.vertex(matrix4f, x + 6, targetY, 0).color(Colors.GREEN);
+                consumer.vertex(matrix4f, x, targetY - 6, 0).color(Colors.GREEN);
+            }
+
             context.getMatrices().pop();
         });
         context.getMatrices().push();
@@ -136,17 +150,7 @@ public class LootBookGraph implements Drawable, Element {
             Vector2f pos = graph.getPos(vertex);
             int xPos = centreX + offsetX + Math.round(pos.x) - 16;
             int yPos = centreY + offsetY + Math.round(pos.y) - 16;
-
-            Identifier texture;
-            if (vertex.getTo().isEmpty()) {
-                texture = AdvancementObtainedStatus.OBTAINED.getFrameTexture(AdvancementFrame.CHALLENGE);
-            } else {
-                if (vertex.isHovered()) {
-                    RenderSystem.setShaderColor(0, 1, 0, 1);
-                }
-                texture = AdvancementObtainedStatus.UNOBTAINED.getFrameTexture(AdvancementFrame.TASK);
-            }
-            context.drawGuiTexture(RenderLayer::getGuiTextured, texture, xPos, yPos, 32, 32);
+            vertex.renderBackground(context, xPos, yPos, 32, 32);
             RenderSystem.setShaderColor(1, 1, 1, 1);
             vertex.render(context, client, mouseX, mouseY, xPos + 16, yPos + 16, scale);
         });

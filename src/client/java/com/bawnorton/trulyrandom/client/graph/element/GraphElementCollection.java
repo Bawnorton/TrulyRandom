@@ -1,4 +1,4 @@
-package com.bawnorton.trulyrandom.client.loot.graph.element;
+package com.bawnorton.trulyrandom.client.graph.element;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -16,8 +16,8 @@ public class GraphElementCollection extends GraphElement implements Iterable<Gra
     public GraphElementCollection(List<GraphElement> elements) {
         this.elements = elements;
         elements.forEach(element -> {
-            element.getTo().forEach(this::addTo);
-            element.getFrom().forEach(this::addFrom);
+            element.getTo().forEach(to -> addTo(to, element.getConnection(to)));
+            element.getFrom().forEach(from -> addFrom(from, element.getConnection(from)));
             element.getTo().clear();
             element.getFrom().clear();
         });

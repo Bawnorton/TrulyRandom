@@ -2,6 +2,8 @@ package com.bawnorton.trulyrandom.client.network;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
+import com.bawnorton.trulyrandom.client.extend.RecipeBookScreenExtender;
+import com.bawnorton.trulyrandom.client.mixin.accessor.InventoryScreenAccessor;
 import com.bawnorton.trulyrandom.client.random.ClientRandomiser;
 import com.bawnorton.trulyrandom.client.screen.TargetedTrulyRandomSettingsScreen;
 import com.bawnorton.trulyrandom.client.screen.TrulyRandomSettingsScreen;
@@ -104,6 +106,9 @@ public class ClientNetworking {
 
     private static void handleSyncRecipeTracker(SyncRecipeTrackerS2CPacket packet, ClientPlayNetworking.Context context) {
         TrulyRandomClient.getRandomiser().setRecipeTracker(packet.tracker());
+        if(context.client().currentScreen instanceof RecipeBookScreenExtender extender) {
+            extender.trulyrandom$refreshResults();
+        }
         runCallback(SyncRecipeTrackerS2CPacket.PACKET_ID);
     }
 

@@ -47,7 +47,7 @@ public class LootTableDrops {
         this.lootTableKey = key;
         this.lootTableId = LootTableIdentifier.from(key.getValue());
         this.drops = drops;
-        this.dropType = DropTypes.getDropType(LootTableIdentifier.from(key.getValue()));
+        this.dropType = GraphTypes.getDropType(LootTableIdentifier.from(key.getValue()));
     }
 
     public static void populate(Registry<LootTable> lootTableRegistry) {

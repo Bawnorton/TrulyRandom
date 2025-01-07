@@ -1,4 +1,4 @@
-package com.bawnorton.trulyrandom.client.loot.graph.element;
+package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
@@ -10,10 +10,11 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.text.Text;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class ItemElement extends GraphElement {
-    private final Item item;
+    protected final Item item;
     private int counter = 0;
     private int offset = 0;
 
@@ -62,11 +63,10 @@ public class ItemElement extends GraphElement {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof ItemElement itemElement) {
-            return itemElement.item.equals(item);
-        }
-        return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ItemElement that)) return false;
+        return Objects.equals(item, that.item);
     }
 
     @Override

@@ -208,6 +208,10 @@ public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKe
         return sourceMap.getOrDefault(Registries.ITEM.getId(item), Set.of());
     }
 
+    public boolean knowsSource(Item item) {
+        return sourceMap.containsKey(Registries.ITEM.getId(item));
+    }
+
     @Override
     public void reset() {
         knownLootTables.clear();

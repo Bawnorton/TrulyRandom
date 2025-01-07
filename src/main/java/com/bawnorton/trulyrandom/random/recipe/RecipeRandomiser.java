@@ -11,9 +11,13 @@ import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.mojang.serialization.DataResult;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.s2c.play.RecipeBookRemoveS2CPacket;
-import net.minecraft.network.packet.s2c.play.RecipeBookSettingsS2CPacket;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 import net.minecraft.recipe.PreparedRecipes;
 import net.minecraft.recipe.Recipe;
@@ -31,11 +35,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Function;
 
 public class RecipeRandomiser extends ServerRandomiserModule {
     private final Map<Team, RecipeTracker> trackers = new HashMap<>();
     private final ResultManager resultManager = new ResultManager();
     private final Map<RegistryKey<Recipe<?>>, ItemStack> originalOutputs = new HashMap<>();
+    private final Function<RegistryKey<Recipe<?>>, RecipeEntry<?>> recipeRegistry;
+    private final Map<Item, List<RegistryKey<Recipe<?>>>> outputToRecipes = new HashMap<>();
 
     public RecipeRandomiser(MinecraftServer server, long seed) {
         resultManager.setRandom(seed);
@@ -43,10 +50,43 @@ public class RecipeRandomiser extends ServerRandomiserModule {
             ItemStack result = resultManager.getResult(recipe, server);
             originalOutputs.put(key, result);
         });
+        recipeRegistry = key -> getRecipes(server).get(key);
+    }
+
+    public void trackRecipeOutput(Team team, RegistryKey<Recipe<?>> recipe, ItemStack result) {
+        trackers.computeIfAbsent(team, k -> {
+            RecipeTracker tracker = new RecipeTracker();
+            tracker.setRecipeRegistry(recipeRegistry);
+            tracker.setTeam(k);
+            return tracker;
+        }).track(recipe, result);
     }
 
     private Map<RegistryKey<Recipe<?>>, RecipeEntry<?>> getRecipes(MinecraftServer server) {
         return ((PreparedRecipesAccessor) ((ServerRecipeManagerAccessor) server.getRecipeManager()).getPreparedRecipes()).getByKey();
+    }
+
+    public NbtCompound writeNbt(NbtCompound nbt) {
+        NbtList trackerNbt = new NbtList();
+        trackers.forEach((team, tracker) -> {
+            DataResult<NbtElement> result = RecipeTracker.CODEC.encodeStart(NbtOps.INSTANCE, tracker);
+            result.result().ifPresent(trackerNbt::add);
+            result.error().ifPresent(e -> TrulyRandom.LOGGER.error(e.message()));
+        });
+        nbt.put("trackers", trackerNbt);
+        return nbt;
+    }
+
+    public void readNbt(NbtCompound nbt) {
+        NbtList trackerNbt = nbt.getList("trackers", NbtElement.COMPOUND_TYPE);
+        for (NbtElement element : trackerNbt) {
+            DataResult<RecipeTracker> result = RecipeTracker.CODEC.parse(NbtOps.INSTANCE, element);
+            result.result().ifPresent(tracker -> {
+                trackers.put(tracker.getTeam(), tracker);
+                tracker.setRecipeRegistry(recipeRegistry);
+            });
+            result.error().ifPresent(e -> TrulyRandom.LOGGER.error(e.message()));
+        }
     }
 
     @Override
@@ -71,7 +111,7 @@ public class RecipeRandomiser extends ServerRandomiserModule {
         recipeEntries = recipeEntries.stream()
                 .filter(entry -> {
                     if(!moduleState.isRecipeTypeEnabled(entry.getValue().value().getType())) {
-                        newRecipes.add(new RecipeMetadata(entry.getKey(), entry.getValue()));
+                        newRecipes.add(new RecipeMetadata(entry.getValue()));
                         return false;
                     }
                     return true;
@@ -87,12 +127,14 @@ public class RecipeRandomiser extends ServerRandomiserModule {
             outputs.add(result);
         }
         Collections.shuffle(outputs, new Random(seed));
+        outputToRecipes.clear();
         for (int i = 0; i < outputs.size(); i++) {
             ItemStack output = outputs.get(i);
             RegistryKey<Recipe<?>> key = recipeEntries.get(i).getKey();
+            outputToRecipes.computeIfAbsent(output.getItem(), k -> new ArrayList<>()).add(key);
             RecipeEntry<?> recipe = recipes.get(key);
             RecipeEntry<?> newRecipe = resultManager.setResult(recipe, output);
-            newRecipes.add(new RecipeMetadata(key, newRecipe));
+            newRecipes.add(new RecipeMetadata(newRecipe));
         }
 
         updateRecipes(server, newRecipes);
@@ -101,11 +143,13 @@ public class RecipeRandomiser extends ServerRandomiserModule {
     private void resetRecipeManager(MinecraftServer server) {
         List<Map.Entry<RegistryKey<Recipe<?>>, RecipeEntry<?>>> recipeEntries = new ArrayList<>(getRecipes(server).entrySet());
         List<RecipeMetadata> newRecipes = new ArrayList<>();
+        outputToRecipes.clear();
         for (Map.Entry<RegistryKey<Recipe<?>>, RecipeEntry<?>> recipeEntry : recipeEntries) {
             RecipeEntry<?> recipe = recipeEntry.getValue();
             ItemStack result = originalOutputs.get(recipeEntry.getKey());
             RecipeEntry<?> newRecipe = resultManager.clearOrSetResult(recipe, result);
-            newRecipes.add(new RecipeMetadata(recipeEntry.getKey(), newRecipe));
+            outputToRecipes.computeIfAbsent(result.getItem(), k -> new ArrayList<>()).add(recipeEntry.getKey());
+            newRecipes.add(new RecipeMetadata(newRecipe));
         }
         updateRecipes(server, newRecipes);
     }
@@ -134,6 +178,10 @@ public class RecipeRandomiser extends ServerRandomiserModule {
     @Override
     public List<RecipeTracker> getTrackers() {
         return new ArrayList<>(trackers.values());
+    }
+
+    public List<RegistryKey<Recipe<?>>> getRecipesForOutput(Item item) {
+        return outputToRecipes.getOrDefault(item, List.of());
     }
 
     private void resyncPlayerRecipes(MinecraftServer server) {

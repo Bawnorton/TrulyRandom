@@ -1,8 +1,7 @@
-package com.bawnorton.trulyrandom.client.loot.graph;
+package com.bawnorton.trulyrandom.client.graph;
 
-import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.client.loot.graph.element.GraphElement;
-import com.bawnorton.trulyrandom.client.loot.graph.element.GraphElementCollection;
+import com.bawnorton.trulyrandom.client.graph.element.GraphElement;
+import com.bawnorton.trulyrandom.client.graph.element.GraphElementCollection;
 import it.unimi.dsi.fastutil.Pair;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
@@ -24,14 +23,14 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class LootGraph {
+public class TrackingGraph {
     private final GraphElement root;
     private final Graph<GraphElement, DefaultEdge> graph;
     private final List<ChangeListener> listeners = new ArrayList<>();
     private Map<GraphElement, Vector2f> posMap;
     private final Object mutex = new Object();
 
-    public LootGraph(GraphElement root) {
+    public TrackingGraph(GraphElement root) {
         GraphBuilder<GraphElement, DefaultEdge, ? extends SimpleDirectedGraph<GraphElement, DefaultEdge>> graphBuilder = SimpleDirectedGraph.createBuilder(DefaultEdge.class);
         this.root = root.supplyGraph(graphBuilder);
         this.graph = graphBuilder.build();
@@ -130,6 +129,6 @@ public class LootGraph {
     }
 
     public interface ChangeListener {
-        void onChange(LootGraph graph);
+        void onChange(TrackingGraph graph);
     }
 }

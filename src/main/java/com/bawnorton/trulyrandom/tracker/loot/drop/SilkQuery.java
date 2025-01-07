@@ -36,7 +36,7 @@ public class SilkQuery {
     }
 
     public boolean needsSilk(Item item) {
-        return needsSilk.contains(Registries.ITEM.getEntry(item));
+        return needsSilk.contains(Registries.ITEM.getEntry(item)) && !doesNotNeedSilk(item);
     }
 
     public boolean doesNotNeedSilk(Item item) {

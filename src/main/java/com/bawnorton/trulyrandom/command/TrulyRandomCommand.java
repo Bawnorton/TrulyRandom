@@ -12,11 +12,15 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.command.argument.ItemStackArgument;
+import net.minecraft.command.argument.ItemStackArgumentType;
 import net.minecraft.command.argument.RegistryEntryArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnReason;
+import net.minecraft.item.Item;
 import net.minecraft.loot.LootTable;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -27,13 +31,15 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.text.Texts;
 import net.minecraft.util.math.BlockPos;
+import java.util.List;
 import java.util.Optional;
 
-public class TrulyRandomSettingsCommand {
+public class TrulyRandomCommand {
     private final PostExecuteRunner runner;
 
-    public TrulyRandomSettingsCommand() {
+    public TrulyRandomCommand() {
         runner = new PostExecuteRunner();
         runner.register();
     }
@@ -92,6 +98,34 @@ public class TrulyRandomSettingsCommand {
                                                     .append("drops from")
                                                     .append(ScreenTexts.LINE_BREAK)
                                                     .append("%s".formatted(from)),
+                                            true
+                                    );
+                                    return 1;
+                                })
+                        )
+                )
+                .then(CommandManager.literal("recipe")
+                        .then(CommandManager.argument("recipe", ItemStackArgumentType.itemStack(commandRegistryAccess))
+                                .executes(context -> {
+                                    ServerCommandSource source = context.getSource();
+                                    ServerRandomiser randomiser = TrulyRandom.getRandomiser(source.getServer());
+                                    ItemStackArgument itemStackArgument = ItemStackArgumentType.getItemStackArgument(context, "recipe");
+                                    Item item = itemStackArgument.getItem();
+                                    List<RegistryKey<Recipe<?>>> recipes = randomiser.getRecipeRandomiser().getRecipesForOutput(item);
+                                    if (recipes.isEmpty()) {
+                                        context.getSource().sendError(Text.of("No recipes found for %s".formatted(item.getTranslationKey())));
+                                        return 0;
+                                    }
+                                    List<Text> texts = recipes.stream()
+                                            .map(RegistryKey::getValue)
+                                            .map(identifier -> Text.of(identifier.toString()))
+                                            .toList();
+                                    context.getSource().sendFeedback(
+                                            () -> Text.literal("Recipes for ")
+                                                    .append(item.getName())
+                                                    .append(Text.literal(":"))
+                                                    .append(ScreenTexts.LINE_BREAK)
+                                                    .append(Texts.join(texts, ScreenTexts.LINE_BREAK)),
                                             true
                                     );
                                     return 1;

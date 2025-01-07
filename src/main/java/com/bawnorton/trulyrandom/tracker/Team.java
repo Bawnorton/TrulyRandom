@@ -92,4 +92,17 @@ public final class Team {
     public boolean isEmpty() {
         return players.isEmpty();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Team team) {
+            return owner.equals(team.owner) && players.equals(team.players);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return owner.hashCode() ^ players.hashCode();
+    }
 }

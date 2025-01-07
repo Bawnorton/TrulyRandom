@@ -1,7 +1,9 @@
 package com.bawnorton.trulyrandom.client.screen.lootbook;
 
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
+import com.bawnorton.trulyrandom.client.random.ClientRandomiser;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
+import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ButtonTextures;
@@ -11,8 +13,11 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class LootBookResults {
     private static final ButtonTextures PAGE_FORWARD_TEXTURES = new ButtonTextures(
@@ -26,7 +31,7 @@ public class LootBookResults {
 
     private MinecraftClient client;
 
-    private List<Item> drops;
+    private List<Item> items;
     private final List<LootResultButton> resultButtons = new ArrayList<>(20);
     private LootResultButton hoveredResultButton;
     private Item lastClickedItem;
@@ -38,6 +43,7 @@ public class LootBookResults {
     private ToggleButtonWidget prevPageButton;
 
     private LootTableTracker lootTracker;
+    private RecipeTracker recipeTracker;
 
     public LootBookResults() {
         for(int i = 0; i < 20; i++) {
@@ -48,8 +54,8 @@ public class LootBookResults {
     public void initalize(MinecraftClient client, int parentRight, int parentTop) {
         this.client = client;
         y = parentTop;
-        lootTracker = TrulyRandomClient.getRandomiser().getLootTableTracker();
-        drops = lootTracker.getAllDrops();
+        refreshTrackers();
+        items = getAllItems();
 
         for (int i = 0; i < resultButtons.size(); i++) {
             LootResultButton resultButton = resultButtons.get(i);
@@ -65,13 +71,19 @@ public class LootBookResults {
         prevPageButton.setTextures(PAGE_BACKWARD_TEXTURES);
     }
 
+    public void refreshTrackers() {
+        ClientRandomiser clientRandomiser = TrulyRandomClient.getRandomiser();
+        lootTracker = clientRandomiser.getLootTableTracker();
+        recipeTracker = clientRandomiser.getRecipeTracker();
+    }
+
     public void clearHovered() {
         hoveredResultButton = null;
     }
 
-    public void setResults(List<Item> lootTables, boolean resetCurrentPage) {
-        this.drops = lootTables;
-        pageCount = (int) Math.ceil(lootTables.size() / 20.0);
+    public void setResults(List<Item> items, boolean resetCurrentPage) {
+        this.items = items;
+        pageCount = (int) Math.ceil(items.size() / 20.0);
         if(pageCount <= currentPage || resetCurrentPage) {
             currentPage = 0;
         }
@@ -83,8 +95,8 @@ public class LootBookResults {
         int previousButtons = 20 * currentPage;
         for(int i = 0; i < resultButtons.size(); i++) {
             LootResultButton resultButton = resultButtons.get(i);
-            if(i + previousButtons < drops.size()) {
-                Item drop = drops.get(i + previousButtons);
+            if(i + previousButtons < items.size()) {
+                Item drop = items.get(i + previousButtons);
                 resultButton.showDrop(drop);
                 resultButton.visible = true;
             } else {
@@ -170,7 +182,11 @@ public class LootBookResults {
         return lastClickedItem;
     }
 
-    public List<Item> getAllDrops() {
-        return lootTracker.getAllDrops().stream().sorted(Comparator.comparing(item -> item.getName().getString())).toList();
+    public List<Item> getAllItems() {
+        Set<Item> allItems = new HashSet<>(lootTracker.getAllDrops());
+        allItems.addAll(recipeTracker.getAllOutputs());
+        return allItems.stream()
+                .sorted(Comparator.comparing(item -> item.getName().getString()))
+                .toList();
     }
 }

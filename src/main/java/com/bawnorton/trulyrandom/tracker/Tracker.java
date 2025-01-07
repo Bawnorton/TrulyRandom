@@ -26,6 +26,9 @@ public abstract class Tracker<F, T> {
 
     public void markDirty() {
         dirty = true;
+        if(this.team == null) {
+            throw new IllegalStateException("Team is not set, encoding will fail");
+        }
     }
 
     public void setDirty(boolean dirty) {

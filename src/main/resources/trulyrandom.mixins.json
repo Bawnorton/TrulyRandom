@@ -29,6 +29,8 @@
     "loot.condition.RandomChanceLootConditionMixin",
     "loot.condition.RandomChanceWithEnchantedBonusLootConditionMixin",
     "loot.condition.SetCountLootFunctionMixin",
+    "tracker.ItemStackMixin",
+    "tracker.ServerPlayerEntityMixin",
     "recipe.ShapedRecipeMixin",
     "recipe.ShapelessRecipeMixin",
     "recipe.SingleStackRecipeMixin",

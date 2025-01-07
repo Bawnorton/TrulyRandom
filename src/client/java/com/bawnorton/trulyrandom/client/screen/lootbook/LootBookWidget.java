@@ -3,7 +3,7 @@ package com.bawnorton.trulyrandom.client.screen.lootbook;
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
-import com.bawnorton.trulyrandom.client.loot.LootBookController;
+import com.bawnorton.trulyrandom.client.graph.TrackingGraphBookController;
 import com.bawnorton.trulyrandom.client.mixin.accessor.RecipeBookWidgetAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -12,7 +12,6 @@ import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.Item;
@@ -42,7 +41,7 @@ public class LootBookWidget implements Drawable, Element, Selectable {
 
     private final LootBookResults lootArea = new LootBookResults();
     private final LootBookGraph graph = new LootBookGraph();
-    private final LootBookController controller = TrulyRandomClient.getLootBookController();
+    private final TrackingGraphBookController controller = TrulyRandomClient.getLootBookController();
     private final List<Consumer<LootBookGraph>> graphOpenListeners = new ArrayList<>();
     private final List<Consumer<LootBookGraph>> graphCloseListeners = new ArrayList<>();
 
@@ -130,11 +129,12 @@ public class LootBookWidget implements Drawable, Element, Selectable {
         }
     }
 
-    private void refreshResults() {
-        List<Item> drops = new ArrayList<>(lootArea.getAllDrops());
+    public void refreshResults() {
+        lootArea.refreshTrackers();
+        List<Item> items = new ArrayList<>(lootArea.getAllItems());
         String search = searchField.getText();
         if(!search.isEmpty()) {
-            drops = drops.stream()
+            items = items.stream()
                     .filter(drop -> {
                         String name = drop.getName().getString();
                         String transformed = name.toLowerCase();
@@ -143,7 +143,7 @@ public class LootBookWidget implements Drawable, Element, Selectable {
                     .toList();
         }
 
-        lootArea.setResults(drops, false);
+        lootArea.setResults(items, false);
     }
 
     private void openGraph(Item lastClickedItem) {

@@ -22,6 +22,7 @@ public class ServerRandomiser extends Randomiser {
 
     private boolean initialised = false;
     private NbtCompound lootRandomiserData;
+    private NbtCompound recipeRandomiserData;
 
     public ServerRandomiser(@NotNull Modules modules) {
         super(modules);
@@ -41,6 +42,7 @@ public class ServerRandomiser extends Randomiser {
     public NbtCompound writeNbt(NbtCompound nbt) {
         super.writeNbt(nbt);
         nbt.put("loot_randomiser", lootRandomiser.writeNbt(new NbtCompound()));
+        nbt.put("recipe_randomiser", recipeRandomiser.writeNbt(new NbtCompound()));
         return nbt;
     }
 
@@ -48,6 +50,7 @@ public class ServerRandomiser extends Randomiser {
     public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
         super.readNbt(nbt, lookup);
         lootRandomiserData = nbt.getCompound("loot_randomiser");
+        recipeRandomiserData = nbt.getCompound("recipe_randomiser");
     }
 
     public void init(MinecraftServer server) {
@@ -56,9 +59,8 @@ public class ServerRandomiser extends Randomiser {
         this.recipeRandomiser = new RecipeRandomiser(server, modules.getSeed(Module.RECIPES));
         this.tradeRandomiser = new TradeRandomiser();
 
-        if (lootRandomiserData != null) {
-            lootRandomiser.readNbt(lootRandomiserData);
-        }
+        if (lootRandomiserData != null) lootRandomiser.readNbt(lootRandomiserData);
+        if (recipeRandomiserData != null) recipeRandomiser.readNbt(recipeRandomiserData);
     }
 
     public boolean initialised() {

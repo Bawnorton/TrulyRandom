@@ -1,4 +1,4 @@
-package com.bawnorton.trulyrandom.client.loot.graph.element;
+package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.client.mixin.accessor.CatEntityAccessor;
 import com.bawnorton.trulyrandom.client.screen.LivingEntityGuiRenderer;

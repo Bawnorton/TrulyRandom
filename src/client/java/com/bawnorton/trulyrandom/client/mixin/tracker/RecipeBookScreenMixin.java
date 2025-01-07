@@ -48,13 +48,15 @@ public abstract class RecipeBookScreenMixin extends HandledScreenMixin implement
     private boolean isShort;
 
     @Override
-    public LootBookWidget trulyrandom$getLootBook() {
-        return lootBook;
+    public void trulyrandom$resetY() {
+        y = (height - backgroundHeight) / 2 + lootBook.topOffset;
     }
 
     @Override
-    public void trulyrandom$resetY() {
-        y = (height - backgroundHeight) / 2 + lootBook.topOffset;
+    public void trulyrandom$refreshResults() {
+        if(lootBook.isOpen()) {
+            lootBook.refreshResults();
+        }
     }
 
     @Unique
