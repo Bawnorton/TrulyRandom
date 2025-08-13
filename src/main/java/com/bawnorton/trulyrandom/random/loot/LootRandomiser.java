@@ -1,6 +1,5 @@
 package com.bawnorton.trulyrandom.random.loot;
 
-import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
@@ -8,22 +7,16 @@ import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import com.bawnorton.trulyrandom.util.collection.UnaryBiMap;
 import com.bawnorton.trulyrandom.util.collection.UnaryHashBiMap;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.block.Blocks;
 import net.minecraft.loot.LootTable;
-import net.minecraft.loot.LootTables;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.PersistentState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.*;
@@ -67,6 +60,23 @@ public class LootRandomiser extends ServerRandomiserModule {
         });
     }
 
+    public static Codec<LootRandomiser> codec(PersistentState.Context context) {
+        ServerWorld world = context.getWorldOrThrow();
+        MinecraftServer server = world.getServer();
+        return RecordCodecBuilder.create(instance -> instance.group(
+                LootTableTracker.CODEC.listOf().fieldOf("trackers").forGetter(LootRandomiser::getTrackerList)
+        ).apply(instance, (trackers) -> {
+            LootRandomiser randomiser = new LootRandomiser(server);
+            Map<Team, LootTableTracker> trackerMap = randomiser.getTrackers();
+            trackerMap.clear();
+            for (LootTableTracker tracker : trackers) {
+                trackerMap.put(tracker.getTeam(), tracker);
+                tracker.setLootTableRegistry(server.getReloadableRegistries().createRegistryLookup().getOrThrow(RegistryKeys.LOOT_TABLE));
+            }
+            return randomiser;
+        }));
+    }
+
     public RegistryKey<LootTable> getLootTable(@NotNull List<Team> teams, RegistryKey<LootTable> key) {
         RegistryKey<LootTable> result = redirectMap.getOrDefault(key, key);
         if (!result.equals(key)) {
@@ -85,29 +95,6 @@ public class LootRandomiser extends ServerRandomiserModule {
 
     public RegistryKey<LootTable> getSourceTable(RegistryKey<LootTable> key) {
         return redirectMap.inverse().getOrDefault(key, key);
-    }
-
-    public NbtCompound writeNbt(NbtCompound nbt) {
-        NbtList trackerNbt = new NbtList();
-        trackers.forEach((team, tracker) -> {
-            DataResult<NbtElement> result = LootTableTracker.CODEC.encodeStart(NbtOps.INSTANCE, tracker);
-            result.result().ifPresent(trackerNbt::add);
-            result.error().ifPresent(e -> TrulyRandom.LOGGER.error(e.message()));
-        });
-        nbt.put("trackers", trackerNbt);
-        return nbt;
-    }
-
-    public void readNbt(NbtCompound nbt) {
-        NbtList trackerNbt = nbt.getList("trackers", NbtElement.COMPOUND_TYPE);
-        for (NbtElement element : trackerNbt) {
-            DataResult<LootTableTracker> result = LootTableTracker.CODEC.parse(NbtOps.INSTANCE, element);
-            result.result().ifPresent(tracker -> {
-                trackers.put(tracker.getTeam(), tracker);
-                tracker.setLootTableRegistry(lootTableRegistry);
-            });
-            result.error().ifPresent(e -> TrulyRandom.LOGGER.error(e.message()));
-        }
     }
 
     @Override
@@ -142,7 +129,12 @@ public class LootRandomiser extends ServerRandomiserModule {
     }
 
     @Override
-    public List<LootTableTracker> getTrackers() {
+    public Map<Team, LootTableTracker> getTrackers() {
+        return trackers;
+    }
+
+    @Override
+    public List<LootTableTracker> getTrackerList() {
         return new ArrayList<>(trackers.values());
     }
 

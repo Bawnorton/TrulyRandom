@@ -1,8 +1,8 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
-import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
-import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
+//import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
+//import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
 import com.bawnorton.trulyrandom.util.collection.UnaryHashMap;
 import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import net.minecraft.client.render.item.model.ItemModel;
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Random;
 
 @Mixin(BakedModelManager.class)
-@AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, invert = true)
+//@AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, invert = true)
 public abstract class VanillaItemsModelsMixin implements ModelShuffler.Items {
     @Unique
     private final UnaryMap<Identifier> trulyrandom$redirectMap = new UnaryHashMap<>();

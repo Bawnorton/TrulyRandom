@@ -30,15 +30,15 @@ public class GameplayGraphElement extends IdBasedGraphElement implements LivingE
 
             panda.setSneezing(true);
             render(context, mouseX, mouseY, panda, x - 3, y, scale);
-            context.getMatrices().push();
-            context.getMatrices().translate(0, 0, 300);
-            context.getMatrices().scale(0.5F, 0.5F, 1);
+            context.getMatrices().pushMatrix();
+            context.getMatrices().translate(0, 0);
+            context.getMatrices().scale(0.5F, 0.5F);
             x = (int) (x / 0.5);
             y = (int) (y / 0.5);
             x += 8;
             y += 8;
             context.drawItemWithoutEntity(Items.SLIME_BALL.getDefaultStack(), x, y);
-            context.getMatrices().pop();
+            context.getMatrices().popMatrix();
         } else if (lootTableId.isCatMorningGift()) {
             CatEntity cat = EntityType.CAT.create(client.world, SpawnReason.COMMAND);
             if(cat == null) return;

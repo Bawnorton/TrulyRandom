@@ -1,5 +1,6 @@
 package com.bawnorton.trulyrandom.client.screen.lootbook;
 
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.tooltip.Tooltip;
@@ -30,13 +31,12 @@ public class LootResultButton extends ClickableWidget {
 
     @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawGuiTexture(RenderLayer::getGuiTextured, SLOT_TEXTURE, getX(), getY(), width, height);
+        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, SLOT_TEXTURE, getX(), getY(), width, height);
         ItemStack stack = drop.getDefaultStack();
         context.drawItemWithoutEntity(stack, getX() + 4, getY() + 4);
     }
 
     @NotNull
-    @Override
     public Tooltip getTooltip() {
         return Tooltip.of(drop.getName());
     }

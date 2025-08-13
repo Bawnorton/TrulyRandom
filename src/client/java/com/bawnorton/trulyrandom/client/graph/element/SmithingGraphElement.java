@@ -1,6 +1,7 @@
 package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.Items;
@@ -18,7 +19,7 @@ public class SmithingGraphElement extends CraftingStationGraphElement {
     @Override
     protected void renderRecipeTooltip(DrawContext context, RecipeEntry<?> recipe, int mouseX, int mouseY) {
         context.drawGuiTexture(
-                RenderLayer::getGuiTextured,
+                RenderPipelines.GUI_TEXTURED,
                 SMITHING,
                 mouseX + (BACKGROUND_WIDTH - 54) / 2,
                 mouseY + (BACKGROUND_HEIGHT - 9) / 2,
@@ -26,15 +27,15 @@ public class SmithingGraphElement extends CraftingStationGraphElement {
                 9
         );
         if(recipe.value() instanceof SmithingRecipe smithingRecipe) {
-            context.getMatrices().push();
-            context.getMatrices().scale(0.5f, 0.5f, 1);
+            context.getMatrices().pushMatrix();
+            context.getMatrices().scale(0.5f, 0.5f);
             int x = mouseX * 2;
             int y = mouseY * 2;
             smithingRecipe.template().ifPresent(ingredient -> renderIngredient(context, ingredient, x + 20, y + 25, true));
-            smithingRecipe.base().ifPresent(ingredient -> renderIngredient(context, ingredient, x + 39, y + 25, true));
+            renderIngredient(context, smithingRecipe.base(), x + 39, y + 25, true);
             smithingRecipe.addition().ifPresent(ingredient -> renderIngredient(context, ingredient, x + 57, y + 25, true));
             renderOutput(context, x + 111, y + 25);
-            context.getMatrices().pop();
+            context.getMatrices().popMatrix();
         }
     }
 }

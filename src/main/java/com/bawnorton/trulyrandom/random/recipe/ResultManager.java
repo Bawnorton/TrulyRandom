@@ -60,7 +60,6 @@ public class ResultManager {
     }
 
     public ItemStack getResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        //noinspection SuspiciousMethodCalls
         ItemStack result = getters.getOrDefault(recipe.value().getClass(), this::getNormalResult).getResult(recipe, server);
         if(result.isEmpty()) {
             result = Items.PAPER.getDefaultStack();
@@ -162,27 +161,22 @@ public class ResultManager {
 
         public ItemStack getResult(RecipeEntry<?> recipe, MinecraftServer server) {
             ItemStack defaultTrimmed = Items.IRON_CHESTPLATE.getDefaultStack();
-            Optional<RegistryEntry.Reference<ArmorTrimMaterial>> defaultMat = ArmorTrimMaterials.get(server.getRegistryManager(), Items.REDSTONE.getDefaultStack());
-            Optional<RegistryEntry.Reference<ArmorTrimPattern>> defaultPat = ArmorTrimPatterns.get(server.getRegistryManager(), Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE.getDefaultStack());
+            Optional<RegistryEntry<ArmorTrimMaterial>> defaultMat = ArmorTrimMaterials.get(server.getRegistryManager(), Items.REDSTONE.getDefaultStack());
+            Optional<RegistryEntry.Reference<ArmorTrimPattern>> defaultPat = server.getRegistryManager()
+                    .getOrThrow(RegistryKeys.TRIM_PATTERN)
+                    .getEntry(ArmorTrimPatterns.COAST.getValue());
             defaultTrimmed.set(DataComponentTypes.TRIM, new ArmorTrim(defaultMat.orElseThrow(), defaultPat.orElseThrow()));
 
             SmithingTrimRecipeAccessor accessor = (SmithingTrimRecipeAccessor) recipe.value();
-            Optional<Ingredient> maybeTemplate = accessor.getTemplate();
-            if(maybeTemplate.isEmpty()) return defaultTrimmed;
-
             ContextParameterMap context = new ContextParameterMap.Builder().build(LootContextTypes.EMPTY);
-            ItemStack template = accessor.getTemplate().orElseThrow().toDisplay().getFirst(context);
+            ItemStack template = accessor.getTemplate().toDisplay().getFirst(context);
             if (bases == null || bases.isEmpty()) {
-                Optional<Ingredient> maybeBase = accessor.getBase();
-                if(maybeBase.isEmpty()) return defaultTrimmed;
-
-                bases = new ArrayList<>(maybeBase.orElseThrow().getMatchingItems().map(ItemStack::new).toList());
+                Ingredient base = accessor.getBase();
+                bases = new ArrayList<>(base.getMatchingItems().map(ItemStack::new).toList());
             }
             if (additions == null || additions.isEmpty()) {
-                Optional<Ingredient> maybeAddition = accessor.getAddition();
-                if(maybeAddition.isEmpty()) return defaultTrimmed;
-
-                additions = new ArrayList<>(maybeAddition.orElseThrow().getMatchingItems().map(ItemStack::new).toList());
+                Ingredient addition = accessor.getAddition();
+                additions = new ArrayList<>(addition.getMatchingItems().map(ItemStack::new).toList());
             }
             ItemStack base = bases.remove(random.nextInt(bases.size()));
             ItemStack addition = additions.remove(random.nextInt(additions.size()));

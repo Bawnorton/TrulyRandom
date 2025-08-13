@@ -9,12 +9,12 @@ import java.util.Optional;
 @Mixin(SmithingTrimRecipe.class)
 public interface SmithingTrimRecipeAccessor {
     @Accessor
-    Optional<Ingredient> getTemplate();
+    Ingredient getTemplate();
 
     @Accessor
-    Optional<Ingredient> getBase();
+    Ingredient getBase();
 
     @Accessor
-    Optional<Ingredient> getAddition();
+    Ingredient getAddition();
 
 }

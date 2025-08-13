@@ -6,7 +6,7 @@ import net.minecraft.text.Text;
 
 public class LongEditBoxWidget extends EditBoxWidget {
     public LongEditBoxWidget(int x, int y, int width, int height, Text placeholder, long message, TextRenderer textRenderer) {
-        super(textRenderer, x, y, width, height, placeholder, Text.of(Long.toString(message)));
+        super(textRenderer, x, y, width, height, placeholder, Text.of(Long.toString(message)), 0xffe0e0e0, true, 0xffd0d0d0, true, true);
     }
 
     public long getLong() {

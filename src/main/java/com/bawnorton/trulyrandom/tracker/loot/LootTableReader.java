@@ -1,7 +1,13 @@
 package com.bawnorton.trulyrandom.tracker.loot;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.mixin.accessor.*;
+import com.bawnorton.trulyrandom.mixin.accessor.CombinedEntryAccessor;
+import com.bawnorton.trulyrandom.mixin.accessor.DynamicEntryAccessor;
+import com.bawnorton.trulyrandom.mixin.accessor.EnchantmentsPredicateAccessor;
+import com.bawnorton.trulyrandom.mixin.accessor.ItemEntryAccessor;
+import com.bawnorton.trulyrandom.mixin.accessor.LootTableAccessor;
+import com.bawnorton.trulyrandom.mixin.accessor.LootTableEntryAccessor;
+import com.bawnorton.trulyrandom.mixin.accessor.TagEntryAccessor;
 import com.bawnorton.trulyrandom.tracker.loot.drop.SilkQuery;
 import com.mojang.datafixers.util.Either;
 import net.minecraft.block.DecoratedPotBlock;
@@ -14,11 +20,16 @@ import net.minecraft.loot.LootPool;
 import net.minecraft.loot.LootTable;
 import net.minecraft.loot.condition.LootCondition;
 import net.minecraft.loot.condition.MatchToolLootCondition;
-import net.minecraft.loot.entry.*;
+import net.minecraft.loot.entry.CombinedEntry;
+import net.minecraft.loot.entry.DynamicEntry;
+import net.minecraft.loot.entry.EmptyEntry;
+import net.minecraft.loot.entry.LeafEntry;
+import net.minecraft.loot.entry.LootPoolEntry;
+import net.minecraft.loot.entry.TagEntry;
+import net.minecraft.predicate.component.ComponentPredicate;
+import net.minecraft.predicate.component.ComponentPredicateTypes;
 import net.minecraft.predicate.item.EnchantmentPredicate;
 import net.minecraft.predicate.item.ItemPredicate;
-import net.minecraft.predicate.item.ItemSubPredicate;
-import net.minecraft.predicate.item.ItemSubPredicateTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryEntryLookup;
@@ -29,6 +40,7 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 public class LootTableReader {
@@ -157,8 +169,9 @@ public class LootTableReader {
         ItemPredicate predicate = condition.predicate().orElse(null);
         if (predicate == null) return false;
 
-        ItemSubPredicate subPredicate = predicate.subPredicates().get(ItemSubPredicateTypes.ENCHANTMENTS);
-        if (!(subPredicate instanceof EnchantmentsPredicateAccessor enchantmentsPredicate)) return false;
+        Map<ComponentPredicate.Type<?>, ComponentPredicate> partial = predicate.components().partial();
+        ComponentPredicate componentPredicate = partial.get(ComponentPredicateTypes.ENCHANTMENTS);
+        if (!(componentPredicate instanceof EnchantmentsPredicateAccessor enchantmentsPredicate)) return false;
 
         List<EnchantmentPredicate> enchantmentPredicates = enchantmentsPredicate.callGetEnchantments();
         for (EnchantmentPredicate enchantmentPredicate : enchantmentPredicates) {

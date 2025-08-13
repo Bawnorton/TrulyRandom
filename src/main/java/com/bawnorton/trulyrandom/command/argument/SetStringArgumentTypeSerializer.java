@@ -28,7 +28,7 @@ public class SetStringArgumentTypeSerializer implements ArgumentSerializer<SetSt
 
     @Override
     public Properties getArgumentTypeProperties(SetStringArgumentType argumentType) {
-        return new Properties(argumentType.options);
+        return new Properties(argumentType.options());
     }
 
     public final class Properties implements ArgumentSerializer.ArgumentTypeProperties<SetStringArgumentType> {

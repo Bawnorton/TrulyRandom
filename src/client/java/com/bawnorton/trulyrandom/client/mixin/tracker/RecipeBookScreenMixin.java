@@ -156,7 +156,7 @@ public abstract class RecipeBookScreenMixin extends HandledScreenMixin implement
             method = "render",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/screen/ingame/HandledScreen;render(Lnet/minecraft/client/gui/DrawContext;IIF)V"
+                    target = "Lnet/minecraft/client/gui/screen/ingame/HandledScreen;renderMain(Lnet/minecraft/client/gui/DrawContext;IIF)V"
             )
     )
     private void renderLootBook(RecipeBookScreen<?> instance, DrawContext context, int mouseX, int mouseY, float delta, Operation<Void> original) {

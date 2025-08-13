@@ -4,13 +4,14 @@ import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.random.Randomiser;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.Modules;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Uuids;
 import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.world.PersistentStateType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,22 +22,33 @@ public class RandomiserSaveLoader extends PersistentState {
     private static ServerRandomiser lastSetRandomiser;
     private static Modules worldGenModules;
 
-    public static final PersistentState.Type<RandomiserSaveLoader> TYPE = new Type<>(
+    public static final PersistentStateType<RandomiserSaveLoader> TYPE = new PersistentStateType<>(
+            TrulyRandom.MOD_ID,
             RandomiserSaveLoader::new,
-            RandomiserSaveLoader::fromNbt,
+            RandomiserSaveLoader::codec,
             null
     );
 
     private ServerRandomiser serverRandomiser;
     private Map<UUID, Modules> clientRandomisers;
 
-    public static RandomiserSaveLoader fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        RandomiserSaveLoader state = new RandomiserSaveLoader();
-        state.serverRandomiser = ServerRandomiser.fromNbt(nbt.getCompound("randomiser"), registryLookup);
-        state.clientRandomisers = new HashMap<>();
-        NbtCompound clientRandomisers = nbt.getCompound("client_randomisers");
-        clientRandomisers.getKeys().forEach(uuid -> state.getClientRandomisers().put(UUID.fromString(uuid), Modules.fromNbt(clientRandomisers.getCompound(uuid))));
-        return state;
+    private RandomiserSaveLoader(Context context) {
+        this.serverRandomiser = new ServerRandomiser(Objects.requireNonNullElseGet(worldGenModules, Modules::new), context.getWorldOrThrow().getServer());
+        this.clientRandomisers = new HashMap<>();
+        markDirty();
+    }
+
+    private RandomiserSaveLoader(ServerRandomiser serverRandomiser, Map<UUID, Modules> clientRandomisers) {
+        this.serverRandomiser = serverRandomiser;
+        this.clientRandomisers = clientRandomisers;
+        markDirty();
+    }
+
+    public static Codec<RandomiserSaveLoader> codec(Context context) {
+        return RecordCodecBuilder.create(instance -> instance.group(
+                ServerRandomiser.codec(context).fieldOf("randomiser").forGetter(RandomiserSaveLoader::getServerRandomiser),
+                Codec.unboundedMap(Uuids.CODEC, Modules.CODEC).fieldOf("client_randomisers").forGetter(RandomiserSaveLoader::getClientRandomisers)
+        ).apply(instance, RandomiserSaveLoader::new));
     }
 
     public static RandomiserSaveLoader getServerState(MinecraftServer server) {
@@ -44,10 +56,10 @@ public class RandomiserSaveLoader extends PersistentState {
         if (world == null) throw new IllegalStateException("Tried to get randomiser state before world was loaded");
 
         PersistentStateManager manager = world.getPersistentStateManager();
-        RandomiserSaveLoader state = manager.getOrCreate(TYPE, TrulyRandom.MOD_ID);
+        RandomiserSaveLoader state = manager.getOrCreate(TYPE);
         state.markDirty();
         if(state.getServerRandomiser() == null) {
-            state.serverRandomiser = new ServerRandomiser(Objects.requireNonNullElseGet(worldGenModules, Modules::new));
+            state.serverRandomiser = new ServerRandomiser(Objects.requireNonNullElseGet(worldGenModules, Modules::new), server);
         }
         lastSetRandomiser = state.getServerRandomiser();
         return state;
@@ -84,22 +96,13 @@ public class RandomiserSaveLoader extends PersistentState {
         return clientRandomisers;
     }
 
-    public Randomiser getClientRandomiser(UUID uuid) {
+    public Randomiser getClientRandomiser(UUID uuid, MinecraftServer server) {
         Modules modules = getClientRandomisers().computeIfAbsent(uuid, k -> new Modules());
 
-        return new ServerRandomiser(modules);
+        return new ServerRandomiser(modules, server);
     }
 
     public void setClientRandomiser(UUID uuid, Modules modules) {
         getClientRandomisers().put(uuid, modules);
-    }
-
-    @Override
-    public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        nbt.put("randomiser", getServerRandomiser().writeNbt(new NbtCompound()));
-        NbtCompound clientRandomisers = new NbtCompound();
-        getClientRandomisers().forEach((uuid, modules) -> clientRandomisers.put(uuid.toString(), modules.writeNbt(new NbtCompound())));
-        nbt.put("client_randomisers", clientRandomisers);
-        return nbt;
     }
 }

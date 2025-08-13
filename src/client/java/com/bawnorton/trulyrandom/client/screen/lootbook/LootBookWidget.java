@@ -6,6 +6,7 @@ import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
 import com.bawnorton.trulyrandom.client.graph.TrackingGraphBookController;
 import com.bawnorton.trulyrandom.client.mixin.accessor.RecipeBookWidgetAccessor;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
@@ -180,17 +181,14 @@ public class LootBookWidget implements Drawable, Element, Selectable {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         if(!open) return;
 
-        context.getMatrices().push();
-        context.getMatrices().translate(0, 0, 100F);
         if(!(isShort && isGraphOpen())) {
             int x = (parentWidth - 147) / 2 + rightOffset;
             int y = (parentHeight - 166) / 2 + topOffset;
-            context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND_TEXTURE, x, y, 1f, 1f, 147, 166, 256, 256);
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, BACKGROUND_TEXTURE, x, y, 1f, 1f, 147, 166, 256, 256);
             searchField.render(context, mouseX, mouseY, delta);
             lootArea.draw(context, x, y, mouseX, mouseY, delta);
         }
         renderGraph(context, mouseX, mouseY, delta);
-        context.getMatrices().pop();
     }
 
     public void renderGraph(DrawContext context, int mouseX, int mouseY, float delta) {

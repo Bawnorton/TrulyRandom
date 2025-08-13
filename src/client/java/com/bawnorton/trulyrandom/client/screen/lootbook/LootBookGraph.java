@@ -5,17 +5,24 @@ import com.bawnorton.trulyrandom.client.graph.TrackingGraphBookController;
 import com.bawnorton.trulyrandom.client.graph.TrackingGraph;
 import com.bawnorton.trulyrandom.client.graph.element.GraphElement;
 import com.bawnorton.trulyrandom.client.screen.widget.ItemButton;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.advancement.AdvancementFrame;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
+import net.minecraft.client.gui.ScreenRect;
+import net.minecraft.client.gui.render.state.ColoredQuadGuiElementRenderState;
+import net.minecraft.client.gui.render.state.SimpleGuiElementRenderState;
 import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.advancement.AdvancementObtainedStatus;
 import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.texture.TextureSetup;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
@@ -23,7 +30,7 @@ import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
+import org.joml.Matrix3x2fStack;
 import org.joml.Vector2f;
 
 public class LootBookGraph implements Drawable, Element {
@@ -85,9 +92,9 @@ public class LootBookGraph implements Drawable, Element {
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         if(item == null) return;
 
-        context.getMatrices().push();
-        context.getMatrices().translate(0, 0, 100);
-        context.drawGuiTexture(RenderLayer::getGuiTextured, BACKGROUND_TEXTURE, x, y, WIDTH, HEIGHT);
+        Matrix3x2fStack matrices = context.getMatrices();
+        matrices.pushMatrix();
+        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, BACKGROUND_TEXTURE, x, y, WIDTH, HEIGHT);
 
         int centreX = x + WIDTH / 2;
         int centreY = y + HEIGHT / 2;
@@ -100,7 +107,7 @@ public class LootBookGraph implements Drawable, Element {
         }
 
         context.enableScissor(x + BORDER_WIDTH, y + BORDER_WIDTH, x + WIDTH - BORDER_WIDTH, y + HEIGHT - BORDER_WIDTH);
-        context.getMatrices().scale(scale, scale, 1);
+        matrices.scale(scale, scale);
         graph.forEachVertex(vertex -> {
             ScreenPos screenPos = mapToScreen(vertex, centreX, centreY, mouseX, mouseY);
             if (screenPos == null) return;
@@ -110,6 +117,8 @@ public class LootBookGraph implements Drawable, Element {
             }
         });
         graph.forEachEdge((source, target) -> {
+            if(source.isHovered()) return;
+            
             Vector2f sourcePos = graph.getPos(source);
             Vector2f targetPos = graph.getPos(target);
             int sourceX = centreX + offsetX + Math.round(sourcePos.x);
@@ -118,54 +127,64 @@ public class LootBookGraph implements Drawable, Element {
             int targetY = centreY + offsetY + Math.round(targetPos.y);
             int halfX = sourceX + (targetX - sourceX) / 2;
 
-            int colour;
-            context.getMatrices().push();
-            if (source.isHovered()) {
-                colour = Colors.GREEN;
-                context.getMatrices().translate(0, 0, 10);
-            } else {
-                colour = Colors.WHITE;
-            }
-
-            context.fill(sourceX, sourceY + 1, halfX, sourceY - 1, colour);
-            context.fill(halfX - 1, sourceY, halfX + 1, targetY, colour);
-            context.fill(halfX, targetY + 1, targetX, targetY - 1, colour);
+            context.fill(sourceX, sourceY + 1, halfX, sourceY - 1, Colors.WHITE);
+            context.fill(halfX - 1, sourceY, halfX + 1, targetY, Colors.WHITE);
+            context.fill(halfX, targetY + 1, targetX, targetY - 1, Colors.WHITE);
+        });
+        graph.forEachEdge((source, target) -> {
+            if(!source.isHovered()) return;
+            
+            Vector2f sourcePos = graph.getPos(source);
+            Vector2f targetPos = graph.getPos(target);
+            int sourceX = centreX + offsetX + Math.round(sourcePos.x);
+            int sourceY = centreY + offsetY + Math.round(sourcePos.y);
+            int targetX = centreX + offsetX + Math.round(targetPos.x);
+            int targetY = centreY + offsetY + Math.round(targetPos.y);
+            int halfX = sourceX + (targetX - sourceX) / 2;
+            
+            context.fill(sourceX, sourceY + 1, halfX, sourceY - 1, Colors.GREEN);
+            context.fill(halfX - 1, sourceY, halfX + 1, targetY, Colors.GREEN);
+            context.fill(halfX, targetY + 1, targetX, targetY - 1, Colors.GREEN);
 
             // draw arrow head
-            if (source.isHovered()) {
-                VertexConsumer consumer = client.getBufferBuilders().getEntityVertexConsumers().getBuffer(RenderLayer.getGui());
-                Matrix4f matrix4f = context.getMatrices().peek().getPositionMatrix();
-                int x = targetX - 20;
-                consumer.vertex(matrix4f, x, targetY - 6, 0).color(Colors.GREEN);
-                consumer.vertex(matrix4f, x, targetY + 6, 0).color(Colors.GREEN);
-                consumer.vertex(matrix4f, x + 6, targetY, 0).color(Colors.GREEN);
-                consumer.vertex(matrix4f, x, targetY - 6, 0).color(Colors.GREEN);
-            }
+            ScreenRect scissorArea = context.scissorStack.peekLast();
+            context.state.addSimpleElement(new SimpleGuiElementRenderState() {
+                @Override
+                public @Nullable ScreenRect bounds() {
+                    return scissorArea;
+                }
 
-            context.getMatrices().pop();
+                @Override
+                public void setupVertices(VertexConsumer vertices, float depth) {
+                    float scaledX = scale * (targetX - 20);
+                    float scaledY = scale * targetY;
+                    vertices.vertex(matrices, scaledX, scaledY - 6 * scale, depth).color(Colors.GREEN);
+                    vertices.vertex(matrices, scaledX, scaledY + 6 * scale, depth).color(Colors.GREEN);
+                    vertices.vertex(matrices, scaledX + 6 * scale, scaledY, depth).color(Colors.GREEN);
+                    vertices.vertex(matrices, scaledX, scaledY - 6 * scale, depth).color(Colors.GREEN);
+                }
+
+                public RenderPipeline pipeline() { return RenderPipelines.GUI; }
+                public TextureSetup textureSetup() { return TextureSetup.empty(); }
+                public @Nullable ScreenRect scissorArea() { return scissorArea; }
+            });
         });
-        context.getMatrices().push();
-        context.getMatrices().translate(0, 0, 100);
+        matrices.pushMatrix();
         graph.forEachVertex(vertex -> {
             Vector2f pos = graph.getPos(vertex);
             int xPos = centreX + offsetX + Math.round(pos.x) - 16;
             int yPos = centreY + offsetY + Math.round(pos.y) - 16;
             vertex.renderBackground(context, xPos, yPos, 32, 32);
-            RenderSystem.setShaderColor(1, 1, 1, 1);
             vertex.render(context, client, mouseX, mouseY, xPos + 16, yPos + 16, scale);
         });
-        context.getMatrices().pop();
+        matrices.popMatrix();
 
         graph.forEachVertex(GraphElement::clearHovered);
         context.disableScissor();
 
-        context.getMatrices().pop();
-
-        context.getMatrices().push();
-        context.getMatrices().translate(0, 0, 500);
+        matrices.popMatrix();
         centre.render(context, mouseX, mouseY, delta);
         close.render(context, mouseX, mouseY, delta);
-        context.getMatrices().pop();
     }
 
     public void drawTooltip(DrawContext context, int mouseX, int mouseY) {
@@ -173,8 +192,6 @@ public class LootBookGraph implements Drawable, Element {
 
         int centreX = x + WIDTH / 2;
         int centreY = y + HEIGHT / 2;
-        context.getMatrices().push();
-        context.getMatrices().translate(0, 0, 1000);
         graph.forEachVertex(vertex -> {
             ScreenPos screenPos = mapToScreen(vertex, centreX, centreY, mouseX, mouseY);
             if (screenPos == null) return;
@@ -183,7 +200,6 @@ public class LootBookGraph implements Drawable, Element {
                 vertex.drawTooltip(context, mouseX, mouseY);
             }
         });
-        context.getMatrices().pop();
     }
 
 

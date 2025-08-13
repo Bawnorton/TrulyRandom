@@ -9,62 +9,40 @@ import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
 import com.bawnorton.trulyrandom.random.recipe.RecipeRandomiser;
 import com.bawnorton.trulyrandom.random.trade.TradeRandomiser;
 import com.bawnorton.trulyrandom.tracker.Tracker;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.PersistentState;
 import org.jetbrains.annotations.NotNull;
 
 public class ServerRandomiser extends Randomiser {
-    private LootRandomiser lootRandomiser;
-    private RecipeRandomiser recipeRandomiser;
-    private TradeRandomiser tradeRandomiser;
+    private final LootRandomiser lootRandomiser;
+    private final RecipeRandomiser recipeRandomiser;
+    private final TradeRandomiser tradeRandomiser;
 
-    private boolean initialised = false;
-    private NbtCompound lootRandomiserData;
-    private NbtCompound recipeRandomiserData;
-
-    public ServerRandomiser(@NotNull Modules modules) {
+    public ServerRandomiser(@NotNull Modules modules, MinecraftServer server) {
         super(modules);
-    }
-
-    private ServerRandomiser() {
-        this(new Modules());
-    }
-
-    public static ServerRandomiser fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-        ServerRandomiser randomiser = new ServerRandomiser();
-        randomiser.readNbt(nbt, lookup);
-        return randomiser;
-    }
-
-    @Override
-    public NbtCompound writeNbt(NbtCompound nbt) {
-        super.writeNbt(nbt);
-        nbt.put("loot_randomiser", lootRandomiser.writeNbt(new NbtCompound()));
-        nbt.put("recipe_randomiser", recipeRandomiser.writeNbt(new NbtCompound()));
-        return nbt;
-    }
-
-    @Override
-    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-        super.readNbt(nbt, lookup);
-        lootRandomiserData = nbt.getCompound("loot_randomiser");
-        recipeRandomiserData = nbt.getCompound("recipe_randomiser");
-    }
-
-    public void init(MinecraftServer server) {
-        initialised = true;
         this.lootRandomiser = new LootRandomiser(server);
-        this.recipeRandomiser = new RecipeRandomiser(server, modules.getSeed(Module.RECIPES));
+        this.recipeRandomiser = new RecipeRandomiser(server);
         this.tradeRandomiser = new TradeRandomiser();
-
-        if (lootRandomiserData != null) lootRandomiser.readNbt(lootRandomiserData);
-        if (recipeRandomiserData != null) recipeRandomiser.readNbt(recipeRandomiserData);
+        this.recipeRandomiser.setOriginalOutputs(server, modules.getSeed(Module.RECIPES));
     }
 
-    public boolean initialised() {
-        return initialised;
+    private ServerRandomiser(Modules modules, MinecraftServer server, LootRandomiser lootRandomiser, RecipeRandomiser recipeRandomiser) {
+        super(modules);
+        this.lootRandomiser = lootRandomiser;
+        this.recipeRandomiser = recipeRandomiser;
+        this.tradeRandomiser = new TradeRandomiser();
+        this.recipeRandomiser.setOriginalOutputs(server, modules.getSeed(Module.RECIPES));
+    }
+
+    public static Codec<ServerRandomiser> codec(PersistentState.Context context) {
+        return RecordCodecBuilder.create(instance -> instance.group(
+                Modules.CODEC.fieldOf("modules").forGetter(Randomiser::getModules),
+                LootRandomiser.codec(context).fieldOf("loot_randomiser").forGetter(ServerRandomiser::getLootRandomiser),
+                RecipeRandomiser.codec(context).fieldOf("recipe_randomiser").forGetter(ServerRandomiser::getRecipeRandomiser)
+        ).apply(instance, (modules, lootRandomiser, recipeRandomiser) -> new ServerRandomiser(modules, context.getWorldOrThrow().getServer(), lootRandomiser, recipeRandomiser)));
     }
 
     public LootRandomiser getLootRandomiser() {
@@ -109,8 +87,6 @@ public class ServerRandomiser extends Randomiser {
     }
 
     private void update(ServerRandomiserModule randomiser, MinecraftServer server, boolean seedChanged, boolean force) {
-        if (!initialised) throw new IllegalStateException("Randomiser not initialised");
-
         boolean moduleEnabled = modules.isEnabled(randomiser.getModule());
         boolean isRandomised = randomiser.isRandomised();
 
@@ -118,13 +94,13 @@ public class ServerRandomiser extends Randomiser {
             if(isRandomised) {
                 randomiser.reset(server);
                 randomiser.setRandomised(false);
-                randomiser.getTrackers().forEach(Tracker::reset);
+                randomiser.getTrackerList().forEach(Tracker::reset);
             }
         } else if (!isRandomised || seedChanged || force) {
             randomiser.randomise(server, modules.getSeed(randomiser.getModule()));
             randomiser.setRandomised(true);
             if(seedChanged) {
-                randomiser.getTrackers().forEach(Tracker::reset);
+                randomiser.getTrackerList().forEach(Tracker::reset);
             }
         }
     }

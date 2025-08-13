@@ -1,8 +1,6 @@
 package com.bawnorton.trulyrandom.random;
 
 import com.bawnorton.trulyrandom.random.module.Modules;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class Randomiser {
@@ -10,15 +8,6 @@ public abstract class Randomiser {
 
     protected Randomiser(@NotNull Modules modules) {
         this.modules = modules;
-    }
-
-    public NbtCompound writeNbt(NbtCompound nbt) {
-        nbt.put("modules",  modules.writeNbt(new NbtCompound()));
-        return nbt;
-    }
-
-    public void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-        modules.readNbt(nbt.getCompound("modules"));
     }
 
     public @NotNull Modules getModules() {

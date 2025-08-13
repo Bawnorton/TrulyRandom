@@ -1,3 +1,4 @@
+/*
 package com.bawnorton.trulyrandom.client.mixin.modernfix;
 
 import com.bawnorton.mixinsquared.TargetHandler;
@@ -55,3 +56,4 @@ public abstract class DynamicBlockModelsMixin implements DynamicBlockModelShuffl
         return !trulyrandom$redirectMap.isEmpty();
     }
 }
+*/

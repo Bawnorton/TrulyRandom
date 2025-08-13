@@ -84,8 +84,8 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                                 "BBB"
                         ),
                         Map.of(
-                                'A', Ingredient.fromTag(itemRegistry.getOrThrow(ItemTags.PLANKS)),
-                                'B', Ingredient.fromTag(itemRegistry.getOrThrow(ItemTags.WOOL))
+                                'A', Ingredient.ofTag(itemRegistry.getOrThrow(ItemTags.PLANKS)),
+                                'B', Ingredient.ofTag(itemRegistry.getOrThrow(ItemTags.WOOL))
                         )
                     )
                 ),

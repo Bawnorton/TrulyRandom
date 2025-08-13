@@ -2,7 +2,7 @@ package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.client.mixin.accessor.ChestModelRendererAccessor;
 import com.bawnorton.trulyrandom.client.mixin.accessor.LoadedBlockEntityModelsAccessor;
-import com.bawnorton.trulyrandom.client.screen.BlockStateGuiRenderer;
+import com.bawnorton.trulyrandom.client.screen.render.BlockStateElementRenderState;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ChestGraphElement extends IdBasedGraphElement implements BlockStateGuiRenderer {
+public class ChestGraphElement extends IdBasedGraphElement {
     private int counter = 0;
     private int offset = 0;
     private final List<Item> chestContent;
@@ -47,11 +47,11 @@ public class ChestGraphElement extends IdBasedGraphElement implements BlockState
         Map<Block, SpecialModelRenderer<?>> renderers = ((LoadedBlockEntityModelsAccessor) models).getRenderers();
         ChestModelRenderer modelRenderer = (ChestModelRenderer) renderers.get(chest);
         ((ChestModelRendererAccessor) modelRenderer).setOpenness(0.7f);
-        render(context, client, x, y + 2, 45, 0.8f, state);
-        ((ChestModelRendererAccessor) modelRenderer).setOpenness(0);
-        context.getMatrices().push();
-        context.getMatrices().translate(0, 0, 300);
-        context.getMatrices().scale(0.5F, 0.5F, 1);
+        context.state.addSpecialElement(new BlockStateElementRenderState(
+                state, x, y, scale, 45, context.scissorStack.peekLast()
+        ));
+        context.getMatrices().pushMatrix();
+        context.getMatrices().scale(0.5F, 0.5F);
 
         x = (int) (x / 0.5);
         y = (int) (y / 0.5);
@@ -59,7 +59,7 @@ public class ChestGraphElement extends IdBasedGraphElement implements BlockState
         y -= 9;
 
         context.drawItemWithoutEntity(chestContent.get(offset).getDefaultStack(), x, y);
-        context.getMatrices().pop();
+        context.getMatrices().popMatrix();
     }
 
     @Override

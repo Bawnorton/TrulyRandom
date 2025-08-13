@@ -1,12 +1,6 @@
 package com.bawnorton.trulyrandom.random.module;
 
-import com.bawnorton.trulyrandom.TrulyRandom;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
@@ -42,12 +36,6 @@ public class Modules implements Iterable<Module> {
             }
         }
         this.moduleStates = moduleStates;
-    }
-
-    public static Modules fromNbt(NbtCompound nbt) {
-        Modules modules = new Modules();
-        modules.readNbt(nbt);
-        return modules;
     }
 
     public boolean isEnabled(Module module) {
@@ -138,19 +126,6 @@ public class Modules implements Iterable<Module> {
         return stateClass.cast(moduleStates.get(module));
     }
 
-    public NbtCompound writeNbt(NbtCompound nbt) {
-        DataResult<NbtElement> result = CODEC.encodeStart(NbtOps.INSTANCE, this);
-        result.ifSuccess(nbtElement -> nbt.put("modules", nbtElement));
-        result.ifError(nbtElementError -> TrulyRandom.LOGGER.error("Could not encode modules \"{}\"", nbtElementError));
-        return nbt;
-    }
-
-    public void readNbt(NbtCompound nbt) {
-        DataResult<Modules> result = CODEC.parse(NbtOps.INSTANCE, nbt.getCompound("modules"));
-        result.ifSuccess(this::copy);
-        result.ifError(modulesError -> TrulyRandom.LOGGER.error("Could not parse modules \"{}\"", modulesError));
-    }
-
     public Modules copy() {
         Map<Module, ModuleState> copy = new HashMap<>();
         moduleStates.forEach((module, state) -> copy.put(module, state.copy()));
@@ -172,12 +147,5 @@ public class Modules implements Iterable<Module> {
     @Override
     public Iterator<Module> iterator() {
         return moduleStates.keySet().iterator();
-    }
-
-    private record StateHolder(Module module, ModuleState state) {
-        public static final Codec<StateHolder> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Module.CODEC.fieldOf("module").forGetter(StateHolder::module),
-                ModuleState.CODEC.fieldOf("state").forGetter(StateHolder::state)
-        ).apply(instance, StateHolder::new));
     }
 }

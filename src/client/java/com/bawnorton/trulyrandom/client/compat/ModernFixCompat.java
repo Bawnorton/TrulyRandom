@@ -1,3 +1,4 @@
+/*
 package com.bawnorton.trulyrandom.client.compat;
 
 import org.embeddedt.modernfix.core.ModernFixMixinPlugin;
@@ -13,3 +14,4 @@ public class ModernFixCompat {
         return options.get("mixin.perf.dynamic_resources").isEnabled();
     }
 }
+*/

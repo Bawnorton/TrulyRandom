@@ -3,6 +3,7 @@ package com.bawnorton.trulyrandom.client.extend;
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.Item;
@@ -17,9 +18,9 @@ public interface TrackerHintDrawer {
         boolean knowsLootTable = tracker.knowsItemLootTable(item);
         boolean brokeWithSilk = tracker.brokeWithSilk(item);
         if(knowsLootTable && !brokeWithSilk) {
-            context.drawGuiTexture(RenderLayer::getGuiTextured, NOT_SILKED, x, y, 16, 16);
+            context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, NOT_SILKED, x, y, 16, 16);
         } else if (!knowsLootTable) {
-            context.drawGuiTexture(RenderLayer::getGuiTextured, UNBROKEN, x, y, 16, 16);
+            context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, UNBROKEN, x, y, 16, 16);
         }
     }
 }

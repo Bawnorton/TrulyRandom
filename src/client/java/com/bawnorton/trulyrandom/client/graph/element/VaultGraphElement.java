@@ -1,6 +1,6 @@
 package com.bawnorton.trulyrandom.client.graph.element;
 
-import com.bawnorton.trulyrandom.client.screen.BlockStateGuiRenderer;
+import com.bawnorton.trulyrandom.client.screen.render.BlockStateElementRenderState;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public class VaultGraphElement extends IdBasedGraphElement implements BlockStateGuiRenderer {
+public class VaultGraphElement extends IdBasedGraphElement {
     public VaultGraphElement(LootTableIdentifier tableId) {
         super(tableId);
     }
@@ -24,9 +24,9 @@ public class VaultGraphElement extends IdBasedGraphElement implements BlockState
         if(lootTableId.isOminous()) {
             state = state.with(VaultBlock.OMINOUS, true);
         }
-        context.getMatrices().push();
-        render(context, client, x, y, 225, scale, state);
-        context.getMatrices().pop();
+        context.state.addSpecialElement(new BlockStateElementRenderState(
+                state, x, y, scale, 225, context.scissorStack.peekLast()
+        ));
     }
 
     @Override

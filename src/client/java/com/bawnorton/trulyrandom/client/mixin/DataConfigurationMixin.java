@@ -17,10 +17,11 @@ public abstract class DataConfigurationMixin implements ModulesHolder {
     @Unique
     private Modules trulyrandom$randomiserModules;
 
-    @ModifyArg(method = "<clinit>",
+    @ModifyArg(
+            method = "<clinit>",
             at = @At(
                     value = "INVOKE",
-                    target = "Lcom/mojang/serialization/codecs/RecordCodecBuilder;create(Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;",
+                    target = "Lcom/mojang/serialization/codecs/RecordCodecBuilder;mapCodec(Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;",
                     remap = false
             )
     )

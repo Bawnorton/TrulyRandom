@@ -28,7 +28,7 @@ public abstract class AbstractBlockMixin {
             )
     )
     private void trackCause(BlockState state, LootWorldContext.Builder builder, CallbackInfoReturnable<List<ItemStack>> cir) {
-        if (!TrulyRandom.isCachedRandomiserSet()) return;
+        if (TrulyRandom.noRandomiserSet()) return;
         if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         
         LootTableTracker.LOOT_CAUSERS.remove();

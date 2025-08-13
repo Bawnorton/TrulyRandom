@@ -80,7 +80,7 @@ public abstract class MerchantEntityMixin extends PassiveEntity {
     }
 
     @WrapOperation(
-            method = "writeCustomDataToNbt",
+            method = "writeCustomData",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/entity/passive/MerchantEntity;getOffers()Lnet/minecraft/village/TradeOfferList;"

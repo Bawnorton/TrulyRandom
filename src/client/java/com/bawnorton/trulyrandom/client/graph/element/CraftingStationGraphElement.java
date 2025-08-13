@@ -4,6 +4,7 @@ import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.util.Cycler;
 import net.minecraft.advancement.AdvancementFrame;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.advancement.AdvancementObtainedStatus;
 import net.minecraft.client.render.RenderLayer;
@@ -55,14 +56,14 @@ public abstract class CraftingStationGraphElement extends GraphElement {
     @Override
     public void renderBackground(DrawContext context, int x, int y, int width, int height) {
         Identifier texture = AdvancementObtainedStatus.UNOBTAINED.getFrameTexture(AdvancementFrame.GOAL);
-        context.drawGuiTexture(RenderLayer::getGuiTextured, texture, x, y, width, height, isHovered() ? 0xFF6666FF : 0xFFAAAAFF);
+        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, texture, x, y, width, height, isHovered() ? 0xFF6666FF : 0xFFAAAAFF);
     }
 
     protected abstract void renderRecipeTooltip(DrawContext context, RecipeEntry<?> recipe, int mouseX, int mouseY);
 
     @Override
     public void drawTooltip(DrawContext context, int mouseX, int mouseY) {
-        context.drawGuiTexture(RenderLayer::getGuiTextured, RECIPE_BACKGROUND, mouseX, mouseY, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
+        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, RECIPE_BACKGROUND, mouseX, mouseY, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
         renderRecipeTooltip(context, recipe, mouseX, mouseY);
     }
 

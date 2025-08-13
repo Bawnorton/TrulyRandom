@@ -1,3 +1,4 @@
+/*
 package com.bawnorton.trulyrandom.client.extend.modernfix;
 
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
@@ -39,3 +40,4 @@ public interface DynamicBlockModelShuffler extends ModelShuffler.BlockStates {
         }
     }
 }
+*/

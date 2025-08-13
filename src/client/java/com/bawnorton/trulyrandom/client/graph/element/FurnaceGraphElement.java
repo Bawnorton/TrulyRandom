@@ -1,6 +1,7 @@
 package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.Item;
@@ -20,7 +21,7 @@ public class FurnaceGraphElement extends CraftingStationGraphElement {
     @Override
     protected void renderRecipeTooltip(DrawContext context, RecipeEntry<?> recipe, int mouseX, int mouseY) {
         context.drawGuiTexture(
-                RenderLayer::getGuiTextured,
+                RenderPipelines.GUI_TEXTURED,
                 FURNACE,
                 mouseX + (BACKGROUND_WIDTH - 41) / 2,
                 mouseY + (BACKGROUND_HEIGHT - 27) / 2,
@@ -28,14 +29,14 @@ public class FurnaceGraphElement extends CraftingStationGraphElement {
                 27
         );
         if(recipe.value() instanceof AbstractCookingRecipe cookingRecipe) {
-            context.getMatrices().push();
-            context.getMatrices().scale(0.5f, 0.5f, 1);
+            context.getMatrices().pushMatrix();
+            context.getMatrices().scale(0.5f, 0.5f);
             mouseX *= 2;
             mouseY *= 2;
             renderIngredient(context, cookingRecipe.ingredient(), mouseX + 35, mouseY + 7, true);
             renderIngredient(context, Ingredient.ofItem(Items.COAL), mouseX + 35, mouseY + 43, false);
             renderOutput(context, mouseX + 94, mouseY + 25);
-            context.getMatrices().pop();
+            context.getMatrices().popMatrix();
         }
     }
 }

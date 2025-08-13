@@ -75,7 +75,7 @@ public class EventHandler {
 
     private static void registerTickEvents() {
         ServerTickEvents.START_WORLD_TICK.register(world -> {
-            if(!TrulyRandom.isCachedRandomiserSet()) return;
+            if(TrulyRandom.noRandomiserSet()) return;
 
             ServerRandomiser randomiser = TrulyRandom.getCachedRandomiser();
             PlayerManager playerManager = world.getServer().getPlayerManager();

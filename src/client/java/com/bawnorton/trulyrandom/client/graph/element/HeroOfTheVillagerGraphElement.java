@@ -3,18 +3,19 @@ package com.bawnorton.trulyrandom.client.graph.element;
 import com.bawnorton.trulyrandom.client.screen.LivingEntityGuiRenderer;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.client.texture.StatusEffectSpriteManager;
+import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.passive.VillagerEntity;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.village.VillagerData;
 import net.minecraft.village.VillagerProfession;
-import net.minecraft.village.VillagerType;
 import java.lang.reflect.Field;
 
 public class HeroOfTheVillagerGraphElement extends GameplayGraphElement implements LivingEntityGuiRenderer {
@@ -25,14 +26,16 @@ public class HeroOfTheVillagerGraphElement extends GameplayGraphElement implemen
         String giftId = lootTableId.getSegments()[2];
         String villagerId = giftId.substring(0, giftId.lastIndexOf('_'));
         Field[] fields = VillagerProfession.class.getFields();
-        villagerData = new VillagerData(VillagerType.PLAINS, VillagerProfession.NONE, 1);
+        villagerData = VillagerEntity.createVillagerData();
         try {
             for (Field field : fields) {
                 Object value = field.get(null);
-                if (!(value instanceof VillagerProfession vp)) continue;
+                if (!(value instanceof RegistryKey vp)) continue;
 
-                if(vp.id().equals(villagerId)) {
-                    this.villagerData = new VillagerData(VillagerType.PLAINS, vp, 1);
+                if(vp.getValue().toString().equals(villagerId)) {
+                    DynamicRegistryManager registryManager = MinecraftClient.getInstance().world.getRegistryManager();
+                    villagerData = villagerData.withProfession(registryManager, vp);
+                    break;
                 }
             }
         } catch (IllegalAccessException ignored) {
@@ -47,15 +50,12 @@ public class HeroOfTheVillagerGraphElement extends GameplayGraphElement implemen
         villagerEntity.setVillagerData(villagerData);
         render(context, mouseX, mouseY, villagerEntity, x - 4, y, scale);
 
-        StatusEffectSpriteManager statusEffectSpriteManager = client.getStatusEffectSpriteManager();
-        Sprite sprite = statusEffectSpriteManager.getSprite(StatusEffects.HERO_OF_THE_VILLAGE);
-        context.getMatrices().push();
-        context.drawSpriteStretched(RenderLayer::getGuiTextured, sprite, x, y, 12, 12);
-        context.getMatrices().pop();
+        Identifier sprite = InGameHud.getEffectTexture(StatusEffects.HERO_OF_THE_VILLAGE);
+        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, sprite, x, y, 12, 12);
     }
 
     @Override
     protected Text getTooltip() {
-        return Text.translatable("trulyrandom.loot_book.hotv.%s".formatted(villagerData.getProfession().id()));
+        return Text.translatable("trulyrandom.loot_book.hotv.%s".formatted(villagerData.profession().getIdAsString()));
     }
 }

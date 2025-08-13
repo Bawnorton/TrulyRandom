@@ -22,7 +22,6 @@
     "accessor.RecipeBookWidgetAccessor",
     "accessor.StateAccessor",
     "accessor.WorldRendererInvoker",
-    "modernfix.DynamicBlockModelsMixin",
     "tracker.HandledScreenMixin",
     "tracker.InGameHudMixin",
     "tracker.RecipeBookScreenMixin"

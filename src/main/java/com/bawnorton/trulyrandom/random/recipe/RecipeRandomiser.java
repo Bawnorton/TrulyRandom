@@ -11,13 +11,10 @@ import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
 import net.minecraft.recipe.PreparedRecipes;
 import net.minecraft.recipe.Recipe;
@@ -29,6 +26,8 @@ import net.minecraft.recipe.StonecuttingRecipe;
 import net.minecraft.recipe.display.CuttingRecipeDisplay;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.PersistentState;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -45,13 +44,32 @@ public class RecipeRandomiser extends ServerRandomiserModule {
     private final Function<RegistryKey<Recipe<?>>, RecipeEntry<?>> recipeRegistry;
     private final Map<Item, List<RegistryKey<Recipe<?>>>> outputToRecipes = new HashMap<>();
 
-    public RecipeRandomiser(MinecraftServer server, long seed) {
+    public RecipeRandomiser(MinecraftServer server) {
+        recipeRegistry = key -> getRecipes(server).get(key);
+    }
+
+    public void setOriginalOutputs(MinecraftServer server, long seed) {
         resultManager.setRandom(seed);
         getRecipes(server).forEach((key, recipe) -> {
             ItemStack result = resultManager.getResult(recipe, server);
             originalOutputs.put(key, result);
         });
-        recipeRegistry = key -> getRecipes(server).get(key);
+    }
+
+    public static Codec<RecipeRandomiser> codec(PersistentState.Context context) {
+        ServerWorld world = context.getWorldOrThrow();
+        MinecraftServer server = world.getServer();
+        return RecordCodecBuilder.create(instance -> instance.group(
+                RecipeTracker.CODEC.listOf().fieldOf("trackers").forGetter(RecipeRandomiser::getTrackerList)
+        ).apply(instance, (trackers) -> {
+            RecipeRandomiser randomiser = new RecipeRandomiser(server);
+            Map<Team, RecipeTracker> trackerMap = randomiser.getTrackers();
+            trackerMap.clear();
+            for (RecipeTracker tracker : trackers) {
+                trackerMap.put(tracker.getTeam(), tracker);
+            }
+            return randomiser;
+        }));
     }
 
     public void trackRecipeOutput(Team team, RegistryKey<Recipe<?>> recipe, ItemStack result) {
@@ -65,29 +83,6 @@ public class RecipeRandomiser extends ServerRandomiserModule {
 
     private Map<RegistryKey<Recipe<?>>, RecipeEntry<?>> getRecipes(MinecraftServer server) {
         return ((PreparedRecipesAccessor) ((ServerRecipeManagerAccessor) server.getRecipeManager()).getPreparedRecipes()).getByKey();
-    }
-
-    public NbtCompound writeNbt(NbtCompound nbt) {
-        NbtList trackerNbt = new NbtList();
-        trackers.forEach((team, tracker) -> {
-            DataResult<NbtElement> result = RecipeTracker.CODEC.encodeStart(NbtOps.INSTANCE, tracker);
-            result.result().ifPresent(trackerNbt::add);
-            result.error().ifPresent(e -> TrulyRandom.LOGGER.error(e.message()));
-        });
-        nbt.put("trackers", trackerNbt);
-        return nbt;
-    }
-
-    public void readNbt(NbtCompound nbt) {
-        NbtList trackerNbt = nbt.getList("trackers", NbtElement.COMPOUND_TYPE);
-        for (NbtElement element : trackerNbt) {
-            DataResult<RecipeTracker> result = RecipeTracker.CODEC.parse(NbtOps.INSTANCE, element);
-            result.result().ifPresent(tracker -> {
-                trackers.put(tracker.getTeam(), tracker);
-                tracker.setRecipeRegistry(recipeRegistry);
-            });
-            result.error().ifPresent(e -> TrulyRandom.LOGGER.error(e.message()));
-        }
     }
 
     @Override
@@ -178,7 +173,12 @@ public class RecipeRandomiser extends ServerRandomiserModule {
     }
 
     @Override
-    public List<RecipeTracker> getTrackers() {
+    public Map<Team, RecipeTracker> getTrackers() {
+        return trackers;
+    }
+
+    @Override
+    public List<RecipeTracker> getTrackerList() {
         return new ArrayList<>(trackers.values());
     }
 

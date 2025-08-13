@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.9-SNAPSHOT'
+    id 'fabric-loom' version '1.11-SNAPSHOT'
     id 'maven-publish'
     id "me.modmuss50.mod-publish-plugin" version "0.7.3"
 }
@@ -56,7 +56,6 @@ dependencies {
 
     modRuntimeOnly("maven.modrinth:sodium:${project.sodium_version}")
     modRuntimeOnly("maven.modrinth:iris:${project.iris_version}")
-    modCompileOnly("maven.modrinth:modernfix:${project.modernfix_version}")
 
     // needed for iris
     runtimeOnly("org.anarres:jcpp:1.4.14")

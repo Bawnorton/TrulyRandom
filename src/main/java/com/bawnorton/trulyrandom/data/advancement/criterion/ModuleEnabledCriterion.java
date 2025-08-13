@@ -19,7 +19,7 @@ public final class ModuleEnabledCriterion extends AbstractCriterion<ModuleEnable
     }
 
     public void trigger(ServerPlayerEntity player) {
-        trigger(player, conditions -> TrulyRandom.getRandomiser(player.server).getModules().isEnabled(conditions.module));
+        trigger(player, conditions -> TrulyRandom.getRandomiser(player.getServer()).getModules().isEnabled(conditions.module));
     }
 
     public record Conditions(Optional<LootContextPredicate> player, Module module) implements AbstractCriterion.Conditions {

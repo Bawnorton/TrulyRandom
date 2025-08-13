@@ -14,13 +14,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
-public class SetStringArgumentType implements ArgumentType<String> {
-    final List<String> options;
-
-    SetStringArgumentType(List<String> options) {
-        this.options = options;
-    }
-
+public record SetStringArgumentType(List<String> options) implements ArgumentType<String> {
     public static SetStringArgumentType of(String... options) {
         return new SetStringArgumentType(Stream.of(options).map(String::toLowerCase).map(String::trim).toList());
     }

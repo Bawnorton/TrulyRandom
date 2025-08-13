@@ -5,9 +5,8 @@ import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.Tracker;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 public abstract class ServerRandomiserModule extends RandomiserModule {
     public abstract void randomise(MinecraftServer server, long seed);
@@ -16,10 +15,12 @@ public abstract class ServerRandomiserModule extends RandomiserModule {
 
     public abstract Tracker<?, ?> getTracker(TeamMember teamMember);
 
-    public abstract List<? extends Tracker<?, ?>> getTrackers();
+    public abstract Map<Team, ? extends Tracker<?, ?>> getTrackers();
+
+    public abstract List<? extends Tracker<?, ?>> getTrackerList();
 
     public void initTracker(PlayerEntity player) {
-        getTrackers().stream()
+        getTrackerList().stream()
                 .map(Tracker::getTeam)
                 .filter(team -> team != null && team.getOwnerAndPlayers().contains(player.getUuid()))
                 .findFirst()

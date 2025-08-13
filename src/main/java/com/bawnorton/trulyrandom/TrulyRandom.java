@@ -30,10 +30,6 @@ public class TrulyRandom implements ModInitializer {
 
     public static ServerRandomiser getRandomiser(MinecraftServer server) {
         ServerRandomiser randomiser = RandomiserSaveLoader.getServerState(server).getServerRandomiser();
-        if (!randomiser.initialised()) {
-            randomiser.init(server);
-        }
-
         cachedServer = server;
         return randomiser;
     }
@@ -42,12 +38,12 @@ public class TrulyRandom implements ModInitializer {
         return RandomiserSaveLoader.getLastSetRandomiser();
     }
 
-    public static boolean isCachedRandomiserSet() {
-        return RandomiserSaveLoader.isLastSetRandomiserPresent();
+    public static boolean noRandomiserSet() {
+        return !RandomiserSaveLoader.isLastSetRandomiserPresent();
     }
 
     public static Randomiser getClientRandomiser(MinecraftServer server, UUID uuid) {
-        return RandomiserSaveLoader.getServerState(server).getClientRandomiser(uuid);
+        return RandomiserSaveLoader.getServerState(server).getClientRandomiser(uuid, server);
     }
 
     public static void setClientRandomiser(MinecraftServer server, UUID uuid, Modules modules) {

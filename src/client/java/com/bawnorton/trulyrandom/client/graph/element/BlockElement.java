@@ -1,13 +1,13 @@
 package com.bawnorton.trulyrandom.client.graph.element;
 
-import com.bawnorton.trulyrandom.client.screen.BlockStateGuiRenderer;
+import com.bawnorton.trulyrandom.client.screen.render.BlockStateElementRenderState;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 
-public class BlockElement extends GraphElement implements BlockStateGuiRenderer {
+public class BlockElement extends GraphElement {
     private final Block block;
 
     public BlockElement(Block block) {
@@ -16,7 +16,9 @@ public class BlockElement extends GraphElement implements BlockStateGuiRenderer 
 
     @Override
     public void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale) {
-        render(context, client, x, y, 1, block.getDefaultState());
+        context.state.addSpecialElement(new BlockStateElementRenderState(
+                block.getDefaultState(), x, y, scale, 45, context.scissorStack.peekLast()
+        ));
     }
 
     @Override

@@ -6,6 +6,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix3x2fStack;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -25,10 +26,10 @@ public class GraphElementCollection extends GraphElement implements Iterable<Gra
 
     @Override
     public void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale) {
-        MatrixStack matrices = context.getMatrices();
-        matrices.push();
+        Matrix3x2fStack matrices = context.getMatrices();
+        matrices.pushMatrix();
         float collectionScale = 1.4f;
-        matrices.scale(1f / collectionScale, 1f / collectionScale, 1);
+        matrices.scale(1f / collectionScale, 1f / collectionScale);
         x = (int) (x * collectionScale);
         y = (int) (y * collectionScale);
         if(elements.size() >= 3) {
@@ -44,7 +45,7 @@ public class GraphElementCollection extends GraphElement implements Iterable<Gra
             GraphElement second = elements.get(1);
             second.render(context, client, mouseX, mouseY, x + 8, y, scale / collectionScale);
         }
-        matrices.pop();
+        matrices.popMatrix();
     }
 
     @Override

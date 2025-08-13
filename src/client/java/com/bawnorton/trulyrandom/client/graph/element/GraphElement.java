@@ -4,9 +4,9 @@ import com.bawnorton.trulyrandom.tracker.loot.drop.TrackingConnection;
 import net.minecraft.advancement.AdvancementFrame;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.advancement.AdvancementObtainedStatus;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
@@ -66,7 +66,7 @@ public abstract class GraphElement {
             }
             texture = AdvancementObtainedStatus.UNOBTAINED.getFrameTexture(AdvancementFrame.TASK);
         }
-        context.drawGuiTexture(RenderLayer::getGuiTextured, texture, x, y, width, height, color);
+        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, texture, x, y, width, height, color);
     }
 
     public abstract void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale);

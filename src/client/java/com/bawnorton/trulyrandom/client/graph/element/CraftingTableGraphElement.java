@@ -2,6 +2,7 @@ package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import it.unimi.dsi.fastutil.ints.IntList;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.item.Items;
@@ -22,7 +23,7 @@ public class CraftingTableGraphElement extends CraftingStationGraphElement {
     @Override
     protected void renderRecipeTooltip(DrawContext context, RecipeEntry<?> recipe, int mouseX, int mouseY) {
         context.drawGuiTexture(
-                RenderLayer::getGuiTextured,
+                RenderPipelines.GUI_TEXTURED,
                 CRAFTING,
                 mouseX + (BACKGROUND_WIDTH - 58) / 2,
                 mouseY + (BACKGROUND_HEIGHT - 27) / 2,
@@ -33,8 +34,8 @@ public class CraftingTableGraphElement extends CraftingStationGraphElement {
         List<Ingredient> ingredients = placement.getIngredients();
         IntList slots = placement.getPlacementSlots();
 
-        context.getMatrices().push();
-        context.getMatrices().scale(0.5f, 0.5f, 1);
+        context.getMatrices().pushMatrix();
+        context.getMatrices().scale(0.5f, 0.5f);
         mouseX *= 2;
         mouseY *= 2;
         int skipCount = 0;
@@ -54,6 +55,6 @@ public class CraftingTableGraphElement extends CraftingStationGraphElement {
             renderIngredient(context, ingredients.get(slot), x, y, true);
         }
         renderOutput(context, mouseX + 111, mouseY + 25);
-        context.getMatrices().pop();
+        context.getMatrices().popMatrix();
     }
 }

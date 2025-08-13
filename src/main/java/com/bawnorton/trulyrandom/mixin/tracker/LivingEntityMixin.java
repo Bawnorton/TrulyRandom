@@ -20,7 +20,8 @@ import java.util.List;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends Entity {
-    @Shadow @Nullable protected PlayerEntity attackingPlayer;
+    @Shadow
+    public abstract @Nullable PlayerEntity getAttackingPlayer();
 
     protected LivingEntityMixin(EntityType<?> type, World world) {
         super(type, world);
@@ -32,6 +33,7 @@ public abstract class LivingEntityMixin extends Entity {
         if (getWorld().isClient()) return;
 
         LootTableTracker.LOOT_CAUSERS.remove();
+        PlayerEntity attackingPlayer = getAttackingPlayer();
         if (causedByPlayer && attackingPlayer != null) {
             LootTableTracker.LOOT_CAUSERS.set(List.of(attackingPlayer.trulyrandom$getTeam()));
         }

@@ -2,9 +2,11 @@ package com.bawnorton.trulyrandom.client.event;
 
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.keybind.KeybindManager;
+import com.bawnorton.trulyrandom.client.screen.render.BlockStateGuiRenderer;
 import com.bawnorton.trulyrandom.network.packet.c2s.HandshakeC2SPacket;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.SpecialGuiElementRegistry;
 
 public class ClientEventHandler {
     public static void init() {
@@ -21,5 +23,7 @@ public class ClientEventHandler {
             sender.sendPacket(new HandshakeC2SPacket());
             TrulyRandomClient.getLootBookController().reset();
         });
+
+        SpecialGuiElementRegistry.register(ctx -> new BlockStateGuiRenderer(ctx.vertexConsumers()));
     }
 }

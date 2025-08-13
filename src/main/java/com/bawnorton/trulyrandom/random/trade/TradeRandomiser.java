@@ -81,8 +81,13 @@ public class TradeRandomiser extends ServerRandomiserModule {
     }
 
     @Override
-    public List<TradeTracker> getTrackers() {
+    public List<TradeTracker> getTrackerList() {
         return new ArrayList<>(trackers.values());
+    }
+
+    @Override
+    public Map<Team, TradeTracker> getTrackers() {
+        return trackers;
     }
 
     @Override

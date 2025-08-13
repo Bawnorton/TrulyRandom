@@ -79,8 +79,7 @@ public class TrulyRandomCommand {
                         )
                 )
                 .then(CommandManager.literal("drop")
-                        .then(CommandManager.argument("loot_table", RegistryEntryArgumentType.LootTableArgumentType.lootTable(commandRegistryAccess))
-                                .suggests(LootCommand.SUGGESTION_PROVIDER)
+                        .then(CommandManager.argument("loot_table", RegistryEntryArgumentType.lootTable(commandRegistryAccess))
                                 .executes(context -> {
                                     ServerCommandSource source = context.getSource();
                                     ServerRandomiser randomiser = TrulyRandom.getRandomiser(source.getServer());
@@ -140,7 +139,7 @@ public class TrulyRandomCommand {
                                     ServerPlayerEntity player = context.getSource()
                                             .getPlayer();
                                     assert player != null;
-                                    ServerWorld world = player.getServerWorld();
+                                    ServerWorld world = player.getWorld();
                                     BlockPos up = player.getBlockPos()
                                             .add(0, 20, 0);
                                     Registries.BLOCK.forEach((block -> {
