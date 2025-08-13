@@ -128,12 +128,12 @@ publishMods {
     modrinth {
         accessToken = providers.gradleProperty("MODRINTH_TOKEN")
         projectId = "ZyPspk90"
-        minecraftVersions.addAll("1.21", "1.21.1")
+        minecraftVersions.addAll("1.21.8")
     }
 
     curseforge {
         accessToken = providers.gradleProperty("CURSEFORGE_TOKEN")
         projectId = "1087424"
-        minecraftVersions.addAll("1.21", "1.21.1")
+        minecraftVersions.addAll("1.21.8")
     }
 }
