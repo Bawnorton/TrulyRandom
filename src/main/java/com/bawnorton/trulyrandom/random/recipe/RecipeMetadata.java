@@ -1,15 +1,15 @@
 package com.bawnorton.trulyrandom.random.recipe;
 
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
 
-public record RecipeMetadata(RecipeEntry<?> entry) {
-    public static final PacketCodec<RegistryByteBuf, RecipeMetadata> PACKET_CODEC = PacketCodec.tuple(
-            RecipeEntry.PACKET_CODEC, RecipeMetadata::entry,
+public record RecipeMetadata(RecipeHolder<?> entry) {
+    public static final StreamCodec<RegistryFriendlyByteBuf, RecipeMetadata> STREAM_CODEC = StreamCodec.composite(
+            RecipeHolder.STREAM_CODEC, RecipeMetadata::entry,
             RecipeMetadata::new
     );
 
@@ -21,7 +21,7 @@ public record RecipeMetadata(RecipeEntry<?> entry) {
         return recipe().getType();
     }
 
-    public RegistryKey<Recipe<?>> key() {
+    public ResourceKey<Recipe<?>> key() {
         return entry.id();
     }
 }

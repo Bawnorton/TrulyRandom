@@ -10,34 +10,31 @@ import com.bawnorton.trulyrandom.mixin.accessor.LootTableEntryAccessor;
 import com.bawnorton.trulyrandom.mixin.accessor.TagEntryAccessor;
 import com.bawnorton.trulyrandom.tracker.loot.drop.SilkQuery;
 import com.mojang.datafixers.util.Either;
-import net.minecraft.block.DecoratedPotBlock;
-import net.minecraft.block.ShulkerBoxBlock;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.loot.LootPool;
-import net.minecraft.loot.LootTable;
-import net.minecraft.loot.condition.LootCondition;
-import net.minecraft.loot.condition.MatchToolLootCondition;
-import net.minecraft.loot.entry.CombinedEntry;
-import net.minecraft.loot.entry.DynamicEntry;
-import net.minecraft.loot.entry.EmptyEntry;
-import net.minecraft.loot.entry.LeafEntry;
-import net.minecraft.loot.entry.LootPoolEntry;
-import net.minecraft.loot.entry.TagEntry;
-import net.minecraft.predicate.component.ComponentPredicate;
-import net.minecraft.predicate.component.ComponentPredicateTypes;
-import net.minecraft.predicate.item.EnchantmentPredicate;
-import net.minecraft.predicate.item.ItemPredicate;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryEntryLookup;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.advancements.criterion.EnchantmentPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
+import net.minecraft.core.component.predicates.DataComponentPredicate;
+import net.minecraft.core.component.predicates.DataComponentPredicates;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagEntry;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.block.DecoratedPotBlock;
+import net.minecraft.world.level.block.ShulkerBoxBlock;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.entries.*;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.level.storage.loot.predicates.MatchTool;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,59 +46,59 @@ public class LootTableReader {
         List<LootPool> pools = accessor.getPools();
         List<Item> items = new ArrayList<>();
         for(LootPool pool : pools) {
-            List<LootPoolEntry> entries = pool.entries;
-            for(LootPoolEntry entry : entries) {
+            List<LootPoolEntryContainer> entries = pool.entries;
+            for(LootPoolEntryContainer entry : entries) {
                 items.addAll(readEntry(lootTableRegistry, entry));
             }
         }
         return items;
     }
 
-    private static List<Item> readEntry(Registry<LootTable> lootTableRegistry, LootPoolEntry entry) {
+    private static List<Item> readEntry(Registry<LootTable> lootTableRegistry, LootPoolEntryContainer entry) {
         return switch (entry) {
-            case CombinedEntry combinedEntry -> {
-                CombinedEntryAccessor accessor = (CombinedEntryAccessor) combinedEntry;
+            case CompositeEntryBase compositeEntryBase -> {
+                CombinedEntryAccessor accessor = (CombinedEntryAccessor) compositeEntryBase;
                 List<Item> items = new ArrayList<>();
-                for(LootPoolEntry lootPoolEntry : accessor.getChildren()) {
+                for(LootPoolEntryContainer lootPoolEntry : accessor.getChildren()) {
                     items.addAll(readEntry(lootTableRegistry, lootPoolEntry));
                 }
                 yield items;
             }
-            case LeafEntry leafEntry -> switch (leafEntry) {
+            case LootPoolSingletonContainer singletonContainer -> switch (singletonContainer) {
                 case DynamicEntryAccessor dynamicEntry -> {
                     Identifier name = dynamicEntry.getName();
                     if(name.equals(DecoratedPotBlock.SHERDS_DYNAMIC_DROP_ID)) {
                         yield List.of(Items.DECORATED_POT);
-                    } else if (name.equals(ShulkerBoxBlock.CONTENTS_DYNAMIC_DROP_ID)) {
+                    } else if (name.equals(ShulkerBoxBlock.CONTENTS)) {
                         yield List.of(Items.SHULKER_BOX);
                     }
                     yield List.of();
                 }
-                case EmptyEntry ignored -> List.of();
+                case EmptyLootItem ignored -> List.of();
                 case ItemEntryAccessor itemEntry -> List.of(itemEntry.getItem().value());
                 case LootTableEntryAccessor lootTableEntry -> {
-                    Either<RegistryKey<LootTable>, LootTable> value = lootTableEntry.getValue();
+                    Either<ResourceKey<LootTable>, LootTable> value = lootTableEntry.getValue();
                     LootTable table = value.map(lootTableRegistry::get, Function.identity());
                     yield read(lootTableRegistry, table);
                 }
                 case TagEntryAccessor tagEntry -> {
                     TagKey<Item> name = tagEntry.getName();
                     List<Item> items = new ArrayList<>();
-                    Registries.ITEM.iterateEntries(name).forEach(regEntry -> items.add(regEntry.value()));
+                    BuiltInRegistries.ITEM.getTagOrEmpty(name).forEach(regEntry -> items.add(regEntry.value()));
                     yield items;
                 }
-                default -> throw new IllegalStateException("Unexpected value: " + leafEntry);
+                default -> throw new IllegalStateException("Unexpected value: " + singletonContainer);
             };
             default -> throw new IllegalStateException("Unexpected value: " + entry);
         };
     }
 
-    public static SilkQuery queryForSilk(RegistryEntryLookup<LootTable> lootTableRegistry, LootTable table) {
+    public static SilkQuery queryForSilk(HolderGetter<LootTable> lootTableRegistry, LootTable table) {
         SilkQuery query = new SilkQuery();
         for(LootPool pool : ((LootTableAccessor) table).getPools()) {
-            List<LootCondition> poolConditions = pool.conditions;
+            List<LootItemCondition> poolConditions = pool.conditions;
             boolean poolNeedsSilk = doesAnyConditionNeedSilk(poolConditions);
-            for(LootPoolEntry entry : pool.entries) {
+            for(LootPoolEntryContainer entry : pool.entries) {
                 if(poolNeedsSilk) {
                     if(!(entry instanceof ItemEntryAccessor itemEntry)) {
                         TrulyRandom.LOGGER.warn("Non item entry: {}", entry.getClass().getSimpleName());
@@ -117,7 +114,7 @@ public class LootTableReader {
         return query;
     }
 
-    public static SilkQuery queryForSilk(RegistryEntryLookup<LootTable> lootTableRegistry, LootPoolEntry poolEntry) {
+    public static SilkQuery queryForSilk(HolderGetter<LootTable> lootTableRegistry, LootPoolEntry poolEntry) {
         SilkQuery query = new SilkQuery();
         switch (poolEntry) {
             case CombinedEntryAccessor combinedEntry -> {
@@ -126,13 +123,13 @@ public class LootTableReader {
                     query.add(queryForSilk(lootTableRegistry, childEntry));
                 }
             }
-            case LeafEntry leafEntry -> {
+            case LootPoolSingletonContainer leafEntry -> {
                 switch (leafEntry) {
-                    case DynamicEntry ignored -> {}
-                    case EmptyEntry ignored -> {}
+                    case DynamicLoot ignored -> {}
+                    case EmptyLootItem ignored -> {}
                     case TagEntry ignored -> {}
                     case ItemEntryAccessor itemEntry -> {
-                        List<LootCondition> conditions = itemEntry.getConditions();
+                        List<LootItemCondition> conditions = itemEntry.getConditions();
                         boolean anyConditionRequiresSilk = doesAnyConditionNeedSilk(conditions);
                         if(anyConditionRequiresSilk) {
                             query.addNeedsSilk(itemEntry.getItem());
@@ -141,7 +138,7 @@ public class LootTableReader {
                         }
                     }
                     case LootTableEntryAccessor lootTableEntry -> {
-                        Either<RegistryKey<LootTable>, LootTable> value = lootTableEntry.getValue();
+                        Either<ResourceKey<LootTable>, LootTable> value = lootTableEntry.getValue();
                         LootTable table = value.map(key -> lootTableRegistry.getOrThrow(key).value(), Function.identity());
                         query.add(queryForSilk(lootTableRegistry, table));
                     }
@@ -153,33 +150,33 @@ public class LootTableReader {
         return query;
     }
 
-    private static boolean doesAnyConditionNeedSilk(List<LootCondition> conditions) {
+    private static boolean doesAnyConditionNeedSilk(List<LootItemCondition> conditions) {
         boolean anyConditionRequiresSilk = false;
-        for(LootCondition condition : conditions) {
-            if (!(condition instanceof MatchToolLootCondition matchToolLootCondition)) continue;
+        for(LootItemCondition condition : conditions) {
+            if (!(condition instanceof MatchTool matchTool)) continue;
 
-            if(doesConditionNeedSilk(matchToolLootCondition)) {
+            if(doesConditionNeedSilk(matchTool)) {
                 anyConditionRequiresSilk = true;
             }
         }
         return anyConditionRequiresSilk;
     }
 
-    public static boolean doesConditionNeedSilk(MatchToolLootCondition condition) {
-        ItemPredicate predicate = condition.predicate().orElse(null);
+    public static boolean doesConditionNeedSilk(MatchTool matchTool) {
+        ItemPredicate predicate = matchTool.predicate().orElse(null);
         if (predicate == null) return false;
 
-        Map<ComponentPredicate.Type<?>, ComponentPredicate> partial = predicate.components().partial();
-        ComponentPredicate componentPredicate = partial.get(ComponentPredicateTypes.ENCHANTMENTS);
+        Map<DataComponentPredicate.Type<?>, DataComponentPredicate> partial = predicate.components().partial();
+        DataComponentPredicate componentPredicate = partial.get(DataComponentPredicates.ENCHANTMENTS);
         if (!(componentPredicate instanceof EnchantmentsPredicateAccessor enchantmentsPredicate)) return false;
 
         List<EnchantmentPredicate> enchantmentPredicates = enchantmentsPredicate.callGetEnchantments();
         for (EnchantmentPredicate enchantmentPredicate : enchantmentPredicates) {
-            RegistryEntryList<Enchantment> enchantments = enchantmentPredicate.enchantments().orElse(null);
+            HolderSet<Enchantment> enchantments = enchantmentPredicate.enchantments().orElse(null);
             if (enchantments == null) continue;
 
-            for (RegistryEntry<Enchantment> enchantment : enchantments) {
-                if (!enchantment.getIdAsString().equals(Enchantments.SILK_TOUCH.getValue().toString())) continue;
+            for (Holder<Enchantment> enchantment : enchantments) {
+                if (!enchantment.getRegisteredName().equals(Enchantments.SILK_TOUCH.identifier().toString())) continue;
 
                 return true;
             }

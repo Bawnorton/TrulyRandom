@@ -1,9 +1,9 @@
 package com.bawnorton.trulyrandom.random.module;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,8 +14,8 @@ import java.util.Map;
 public class Modules implements Iterable<Module> {
     public static final Codec<Modules> CODEC = Codec.unboundedMap(Module.CODEC, ModuleState.CODEC)
             .xmap(Modules::new, modules -> modules.moduleStates);
-    public static final PacketCodec<RegistryByteBuf, Modules> PACKET_CODEC = PacketCodecs.map(HashMap::new, Module.PACKET_CODEC, ModuleState.PACKET_CODEC)
-            .xmap(Modules::new, modules -> new HashMap<>(modules.moduleStates));
+    public static final StreamCodec<RegistryFriendlyByteBuf, Modules> STREAM_CODEC = ByteBufCodecs.map(HashMap::new, Module.STREAM_CODEC, ModuleState.STREAM_CODEC)
+            .map(Modules::new, modules -> new HashMap<>(modules.moduleStates));
 
     private final Map<Module, ModuleState> moduleStates;
     private final Map<Module, Boolean> enabledMemento = new HashMap<>();

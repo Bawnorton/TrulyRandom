@@ -4,28 +4,25 @@ import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.extend.ResultClearer;
 import com.bawnorton.trulyrandom.extend.ResultHolder;
 import com.bawnorton.trulyrandom.mixin.accessor.SmithingTrimRecipeAccessor;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
-import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.equipment.trim.ArmorTrim;
-import net.minecraft.item.equipment.trim.ArmorTrimMaterial;
-import net.minecraft.item.equipment.trim.ArmorTrimMaterials;
-import net.minecraft.item.equipment.trim.ArmorTrimPattern;
-import net.minecraft.item.equipment.trim.ArmorTrimPatterns;
-import net.minecraft.loot.context.LootContextTypes;
-import net.minecraft.potion.Potion;
-import net.minecraft.recipe.*;
-import net.minecraft.recipe.input.SmithingRecipeInput;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.Text;
-import net.minecraft.util.context.ContextParameterMap;
+import net.minecraft.server.RegistryLayer;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.util.context.ContextMap;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.equipment.trim.*;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,11 +43,11 @@ public class ResultManager {
         getters.put(FireworkStarRecipe.class, this::getFireworkStarResult);
         getters.put(FireworkRocketRecipe.class, this::getFireworkRocketResult);
         getters.put(ShieldDecorationRecipe.class, this::getShieldDecorationResult);
-        getters.put(TippedArrowRecipe.class, this::getTippedArrowResult);
-        getters.put(ArmorDyeRecipe.class, this::getArmorDyeResult);
-        getters.put(MapCloningRecipe.class, this::getMapCloningResult);
+        getters.put(ImbueRecipe.class, this::getImbueResult);
+        getters.put(DyeRecipe.class, this::getDyeResult);
+//        getters.put(MapCloningRecipe.class, this::getMapCloningResult);
         getters.put(MapExtendingRecipe.class, this::getMapCloningResult);
-        getters.put(CraftingDecoratedPotRecipe.class, this::getDecoratedPotResult);
+        getters.put(DecoratedPotRecipe.class, this::getDecoratedPotResult);
         getters.put(RepairItemRecipe.class, this::getRepairItemResult);
         getters.put(TransmuteRecipe.class, this::getTransmuteResult);
     }
@@ -59,18 +56,18 @@ public class ResultManager {
         random = new Random(seed);
     }
 
-    public ItemStack getResult(RecipeEntry<?> recipe, MinecraftServer server) {
+    public ItemStack getResult(RecipeHolder<?> recipe, MinecraftServer server) {
         ItemStack result = getters.getOrDefault(recipe.value().getClass(), this::getNormalResult).getResult(recipe, server);
         if(result.isEmpty()) {
-            result = Items.PAPER.getDefaultStack();
-            result.set(DataComponentTypes.CUSTOM_NAME, Text.literal("This is here so the game doesn't crash"));
-            result.set(DataComponentTypes.LORE, new LoreComponent(List.of(Text.literal("Unknown recipe type: " + recipe.id().toString()))));
+            result = Items.PAPER.getDefaultInstance();
+            result.set(DataComponents.CUSTOM_NAME, Component.literal("This is here so the game doesn't crash"));
+            result.set(DataComponents.LORE, new ItemLore(List.of(Component.literal("Unknown recipe type: " + recipe.id()))));
             TrulyRandom.LOGGER.warn("Unknown recipe type: {}", recipe.value().getClass().getSimpleName());
         }
         return result;
     }
 
-    public RecipeEntry<?> setResult(RecipeEntry<?> recipe, ItemStack newResult) {
+    public RecipeHolder<?> setResult(RecipeHolder<?> recipe, ItemStack newResult) {
         if (recipe.value() instanceof ResultHolder resultHolder) {
             resultHolder.trulyrandom$setResult(newResult);
             return recipe;
@@ -78,7 +75,7 @@ public class ResultManager {
         return recipe;
     }
 
-    public RecipeEntry<?> clearOrSetResult(RecipeEntry<?> recipe, ItemStack result) {
+    public RecipeHolder<?> clearOrSetResult(RecipeHolder<?> recipe, ItemStack result) {
         if (recipe.value() instanceof ResultClearer resultClearer) {
             resultClearer.trulyrandom$clearResult();
             return recipe;
@@ -86,107 +83,121 @@ public class ResultManager {
         return setResult(recipe, result);
     }
 
-    private ItemStack getNormalResult(RecipeEntry<?> recipe, MinecraftServer server) {
+    private ItemStack getNormalResult(RecipeHolder<?> recipe, MinecraftServer server) {
         if(recipe.value() instanceof ResultHolder resultHolder) {
             return resultHolder.trulyrandom$getResult();
         }
         throw new UnsupportedOperationException("Recipe type \"" + recipe.value().getClass().getSimpleName() + "\" is not supported.");
     }
 
-    private ItemStack getBookCloningResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        return Items.WRITABLE_BOOK.getDefaultStack();
+    private ItemStack getBookCloningResult(RecipeHolder<?> recipe, MinecraftServer server) {
+        return Items.WRITABLE_BOOK.getDefaultInstance();
     }
 
-    private ItemStack getBannerDuplicateResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        return Items.WHITE_BANNER.getDefaultStack();
+    private ItemStack getBannerDuplicateResult(RecipeHolder<?> recipe, MinecraftServer server) {
+        return Items.WHITE_BANNER.getDefaultInstance();
     }
 
-    private ItemStack getFireworkStarFadeResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        return Items.FIREWORK_STAR.getDefaultStack();
+    private ItemStack getFireworkStarFadeResult(RecipeHolder<?> recipe, MinecraftServer server) {
+        return Items.FIREWORK_STAR.getDefaultInstance();
     }
 
-    private ItemStack getFireworkStarResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        return Items.FIREWORK_STAR.getDefaultStack();
+    private ItemStack getFireworkStarResult(RecipeHolder<?> recipe, MinecraftServer server) {
+        return Items.FIREWORK_STAR.getDefaultInstance();
     }
 
-    private ItemStack getFireworkRocketResult(RecipeEntry<?> recipeEntry, MinecraftServer server) {
-        return Items.FIREWORK_ROCKET.getDefaultStack();
+    private ItemStack getFireworkRocketResult(RecipeHolder<?> recipe, MinecraftServer server) {
+        return Items.FIREWORK_ROCKET.getDefaultInstance();
     }
 
-    private ItemStack getShieldDecorationResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        return Items.SHIELD.getDefaultStack();
+    private ItemStack getShieldDecorationResult(RecipeHolder<?> recipe, MinecraftServer server) {
+        return Items.SHIELD.getDefaultInstance();
     }
 
-    private ItemStack getTippedArrowResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        List<RegistryEntry<Potion>> list = Registries.POTION
-                .streamEntries()
+    private ItemStack getImbueResult(RecipeHolder<?> recipe, MinecraftServer server) {
+        List<Holder<Potion>> list = BuiltInRegistries.POTION
+                .listElements()
                 .filter(entry -> !entry.value().getEffects().isEmpty())
                 .collect(Collectors.toList());
-        RegistryEntry<Potion> registryEntry = list.get(random.nextInt(list.size()));
-        ItemStack arrow = Items.TIPPED_ARROW.getDefaultStack();
+        Holder<Potion> registryEntry = list.get(random.nextInt(list.size()));
+        ItemStack arrow = Items.TIPPED_ARROW.getDefaultInstance();
         arrow.setCount(8);
-        arrow.set(DataComponentTypes.POTION_CONTENTS, new PotionContentsComponent(registryEntry));
+        arrow.set(DataComponents.POTION_CONTENTS, new PotionContents(registryEntry));
         return arrow;
     }
 
-    private ItemStack getArmorDyeResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        List<Item> dyeableItems = Registries.ITEM.streamEntries().filter(ref -> ref.isIn(ItemTags.DYEABLE)).map(RegistryEntry.Reference::value).toList();
+    private ItemStack getDyeResult(RecipeHolder<?> recipe, MinecraftServer server) {
+        List<Item> dyeableItems = BuiltInRegistries.ITEM.stream()
+                .filter(item -> item.components().has(DataComponents.DYE))
+                .toList();
         Item item = dyeableItems.get(random.nextInt(dyeableItems.size()));
-        return item.getDefaultStack();
+        return item.getDefaultInstance();
     }
 
-    private ItemStack getMapCloningResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        return Items.MAP.getDefaultStack();
+    private ItemStack getMapCloningResult(RecipeHolder<?> recipe, MinecraftServer server) {
+        return Items.MAP.getDefaultInstance();
     }
 
-    private ItemStack getDecoratedPotResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        return Items.DECORATED_POT.getDefaultStack();
+    private ItemStack getDecoratedPotResult(RecipeHolder<?> recipe, MinecraftServer server) {
+        return Items.DECORATED_POT.getDefaultInstance();
     }
 
-    private ItemStack getRepairItemResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        List<Item> damageables = Registries.ITEM.stream().filter(item -> item.getComponents().contains(DataComponentTypes.MAX_DAMAGE)).toList();
+    private ItemStack getRepairItemResult(RecipeHolder<?> recipe, MinecraftServer server) {
+        List<Item> damageables = BuiltInRegistries.ITEM.stream()
+                .filter(item -> item.components().has(DataComponents.MAX_DAMAGE))
+                .toList();
         Item item = damageables.get(random.nextInt(damageables.size()));
-        return item.getDefaultStack();
+        return item.getDefaultInstance();
     }
 
-    private ItemStack getTransmuteResult(RecipeEntry<?> recipe, MinecraftServer server) {
-        List<Item> transmutableItems = Registries.ITEM.streamEntries().filter(ref -> ref.isIn(ItemTags.SHULKER_BOXES) || ref.isIn(ItemTags.BUNDLES)).map(RegistryEntry.Reference::value).toList();
+    private ItemStack getTransmuteResult(RecipeHolder<?> recipe, MinecraftServer server) {
+        List<Item> transmutableItems = BuiltInRegistries.ITEM.listElements()
+                .filter(ref -> ref.is(ItemTags.SHULKER_BOXES) || ref.is(ItemTags.BUNDLES))
+                .map(Holder.Reference::value).toList();
         Item item = transmutableItems.get(random.nextInt(transmutableItems.size()));
-        return item.getDefaultStack();
+        return item.getDefaultInstance();
     }
 
     private class SmithingTrimResultGetter implements ResultGetter {
         private List<ItemStack> bases;
         private List<ItemStack> additions;
 
-        public ItemStack getResult(RecipeEntry<?> recipe, MinecraftServer server) {
-            ItemStack defaultTrimmed = Items.IRON_CHESTPLATE.getDefaultStack();
-            Optional<RegistryEntry<ArmorTrimMaterial>> defaultMat = ArmorTrimMaterials.get(server.getRegistryManager(), Items.REDSTONE.getDefaultStack());
-            Optional<RegistryEntry.Reference<ArmorTrimPattern>> defaultPat = server.getRegistryManager()
-                    .getOrThrow(RegistryKeys.TRIM_PATTERN)
-                    .getEntry(ArmorTrimPatterns.COAST.getValue());
-            defaultTrimmed.set(DataComponentTypes.TRIM, new ArmorTrim(defaultMat.orElseThrow(), defaultPat.orElseThrow()));
+        public ItemStack getResult(RecipeHolder<?> recipe, MinecraftServer server) {
+            ItemStack defaultTrimmed = Items.IRON_CHESTPLATE.getDefaultInstance();
+
+            Optional<Holder.Reference<TrimMaterial>> defaultMat = server.registries()
+                    .getLayer(RegistryLayer.RELOADABLE)
+                    .getOrThrow(Registries.TRIM_MATERIAL)
+                    .value()
+                    .get(TrimMaterials.REDSTONE);
+            Optional<Holder.Reference<TrimPattern>> defaultPat = server.registries()
+                    .getLayer(RegistryLayer.RELOADABLE)
+                    .getOrThrow(Registries.TRIM_PATTERN)
+                    .value()
+                    .get(TrimPatterns.COAST);
+
+            defaultTrimmed.set(DataComponents.TRIM, new ArmorTrim(defaultMat.orElseThrow(), defaultPat.orElseThrow()));
 
             SmithingTrimRecipeAccessor accessor = (SmithingTrimRecipeAccessor) recipe.value();
-            ContextParameterMap context = new ContextParameterMap.Builder().build(LootContextTypes.EMPTY);
+            ContextMap context = new ContextMap.Builder().create(LootContextParamSets.EMPTY);
             ItemStack template = accessor.getTemplate().toDisplay().getFirst(context);
             if (bases == null || bases.isEmpty()) {
                 Ingredient base = accessor.getBase();
-                bases = new ArrayList<>(base.getMatchingItems().map(ItemStack::new).toList());
+                bases = new ArrayList<>(base.items().map(ItemStack::new).toList());
             }
             if (additions == null || additions.isEmpty()) {
                 Ingredient addition = accessor.getAddition();
-                additions = new ArrayList<>(addition.getMatchingItems().map(ItemStack::new).toList());
+                additions = new ArrayList<>(addition.items().map(ItemStack::new).toList());
             }
             ItemStack base = bases.remove(random.nextInt(bases.size()));
             ItemStack addition = additions.remove(random.nextInt(additions.size()));
             SmithingRecipeInput input = new SmithingRecipeInput(template, base, addition);
-            return ((SmithingTrimRecipe) recipe.value()).craft(input, server.getRegistryManager());
+            return ((SmithingTrimRecipe) recipe.value()).assemble(input);
         }
     }
 
     @FunctionalInterface
     private interface ResultGetter {
-        ItemStack getResult(RecipeEntry<?> recipe, MinecraftServer server);
+        ItemStack getResult(RecipeHolder<?> recipe, MinecraftServer server);
     }
 }

@@ -5,59 +5,60 @@ import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableReader;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.item.Item;
-import net.minecraft.loot.LootTable;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.storage.loot.LootTable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class LootTableDrops {
-    public static final Map<RegistryKey<LootTable>, LootTableDrops> ALL_DROPS = new HashMap<>();
+    public static final Map<ResourceKey<LootTable>, LootTableDrops> ALL_DROPS = new HashMap<>();
 
     public static final Codec<LootTableDrops> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            RegistryKey.createCodec(RegistryKeys.LOOT_TABLE)
+            ResourceKey.codec(Registries.LOOT_TABLE)
                     .fieldOf("key")
                     .forGetter(info -> info.lootTableKey),
-            Codec.list(Identifier.CODEC.xmap(Registries.ITEM::get, Registries.ITEM::getId))
+            Codec.list(Identifier.CODEC.xmap(BuiltInRegistries.ITEM::getValue, BuiltInRegistries.ITEM::getKey))
                     .fieldOf("drops").
                     forGetter(info -> info.drops)
     ).apply(instance, LootTableDrops::new));
 
-    public static final PacketCodec<RegistryByteBuf, LootTableDrops> PACKET_CODEC = PacketCodec.tuple(
-            RegistryKey.createPacketCodec(RegistryKeys.LOOT_TABLE), info -> info.lootTableKey,
-            PacketCodecs.collection(ArrayList::new, PacketCodecs.registryValue(RegistryKeys.ITEM)), info -> info.drops,
+    public static final StreamCodec<RegistryFriendlyByteBuf, LootTableDrops> STREAM_CODEC = StreamCodec.composite(
+            ResourceKey.streamCodec(Registries.LOOT_TABLE), info -> info.lootTableKey,
+            ByteBufCodecs.collection(ArrayList::new, ByteBufCodecs.registry(Registries.ITEM)), info -> info.drops,
             LootTableDrops::new
     );
 
-    private final RegistryKey<LootTable> lootTableKey;
+    private final ResourceKey<LootTable> lootTableKey;
     private final LootTableIdentifier lootTableId;
     private final List<Item> drops;
     private final DropType dropType;
 
-    private LootTableDrops(RegistryKey<LootTable> key, List<Item> drops) {
+    private LootTableDrops(ResourceKey<LootTable> key, List<Item> drops) {
         this.lootTableKey = key;
-        this.lootTableId = LootTableIdentifier.from(key.getValue());
+        this.lootTableId = LootTableIdentifier.from(key.identifier());
         this.drops = drops;
-        this.dropType = GraphTypes.getDropType(LootTableIdentifier.from(key.getValue()));
+        this.dropType = GraphTypes.getDropType(LootTableIdentifier.from(key.identifier()));
     }
 
     public static void populate(Registry<LootTable> lootTableRegistry) {
         long start = System.currentTimeMillis();
-        lootTableRegistry.streamEntries().forEach(ref -> ref.getKey().ifPresent(key -> ALL_DROPS.put(key, new LootTableDrops(key, LootTableReader.read(lootTableRegistry, ref.value())))));
+        lootTableRegistry.listElements().forEach(ref -> ref.unwrapKey().ifPresent(key -> ALL_DROPS.put(key, new LootTableDrops(key, LootTableReader.read(lootTableRegistry, ref.value())))));
         long end = System.currentTimeMillis();
         TrulyRandom.LOGGER.info("Populated {} loot table drops in {}ms", ALL_DROPS.size(), end - start);
     }
 
-    public RegistryKey<LootTable> getKey() {
+    public ResourceKey<LootTable> getKey() {
         return lootTableKey;
     }
 

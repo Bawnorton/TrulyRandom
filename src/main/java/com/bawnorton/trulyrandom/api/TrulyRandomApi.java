@@ -1,49 +1,49 @@
 package com.bawnorton.trulyrandom.api;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.network.packet.s2c.SetClientRandomiserS2CPacket;
+import com.bawnorton.trulyrandom.network.packet.clientbound.ClientboundSetClientRandomiserPacket;
 import com.bawnorton.trulyrandom.random.Randomiser;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 @SuppressWarnings("unused")
 public final class TrulyRandomApi {
-    public static void randomiseBlockModels(ServerPlayerEntity player, boolean randomSeed) {
-        Randomiser randomiser = TrulyRandom.getClientRandomiser(player.getServer(), player.getUuid());
+    public static void randomiseBlockModels(ServerPlayer player, boolean randomSeed) {
+        Randomiser randomiser = TrulyRandom.getClientRandomiser(player.level().getServer(), player.getUUID());
         Modules modules = randomiser.getCopiedModules();
         if(randomSeed) modules.randomSeed(Module.BLOCK_MODELS);
         modules.setEnabled(Module.BLOCK_MODELS);
         updateClient(player, modules);
     }
 
-    public static void resetBlockModels(ServerPlayerEntity player) {
-        Randomiser randomiser = TrulyRandom.getClientRandomiser(player.getServer(), player.getUuid());
+    public static void resetBlockModels(ServerPlayer player) {
+        Randomiser randomiser = TrulyRandom.getClientRandomiser(player.level().getServer(), player.getUUID());
         Modules modules = randomiser.getCopiedModules();
         modules.setDisabled(Module.BLOCK_MODELS);
         updateClient(player, modules);
     }
 
-    public static void randomiseItemModels(ServerPlayerEntity player, boolean randomSeed) {
-        Randomiser randomiser = TrulyRandom.getClientRandomiser(player.getServer(), player.getUuid());
+    public static void randomiseItemModels(ServerPlayer player, boolean randomSeed) {
+        Randomiser randomiser = TrulyRandom.getClientRandomiser(player.level().getServer(), player.getUUID());
         Modules modules = randomiser.getCopiedModules();
         if(randomSeed) modules.randomSeed(Module.ITEM_MODELS);
         modules.setEnabled(Module.ITEM_MODELS);
         updateClient(player, modules);
     }
 
-    public static void resetItemModels(ServerPlayerEntity player) {
-        Randomiser randomiser = TrulyRandom.getClientRandomiser(player.getServer(), player.getUuid());
+    public static void resetItemModels(ServerPlayer player) {
+        Randomiser randomiser = TrulyRandom.getClientRandomiser(player.level().getServer(), player.getUUID());
         Modules modules = randomiser.getCopiedModules();
         modules.setDisabled(Module.ITEM_MODELS);
         updateClient(player, modules);
     }
 
-    public static void randomiseAllModels(ServerPlayerEntity player, boolean randomSeed) {
-        Randomiser randomiser = TrulyRandom.getClientRandomiser(player.getServer(), player.getUuid());
+    public static void randomiseAllModels(ServerPlayer player, boolean randomSeed) {
+        Randomiser randomiser = TrulyRandom.getClientRandomiser(player.level().getServer(), player.getUUID());
         Modules modules = randomiser.getCopiedModules();
         if(randomSeed) {
             modules.randomSeed(Module.BLOCK_MODELS);
@@ -54,8 +54,8 @@ public final class TrulyRandomApi {
         updateClient(player, modules);
     }
 
-    public static void resetAllModels(ServerPlayerEntity player) {
-        Randomiser randomiser = TrulyRandom.getClientRandomiser(player.getServer(), player.getUuid());
+    public static void resetAllModels(ServerPlayer player) {
+        Randomiser randomiser = TrulyRandom.getClientRandomiser(player.level().getServer(), player.getUUID());
         Modules modules = randomiser.getCopiedModules();
         modules.setDisabled(Module.BLOCK_MODELS);
         modules.setDisabled(Module.ITEM_MODELS);
@@ -164,8 +164,8 @@ public final class TrulyRandomApi {
         randomiser.updateTrades(server, false);
     }
 
-    private static void updateClient(ServerPlayerEntity player, Modules modules) {
-        TrulyRandom.setClientRandomiser(player.getServer(), player.getUuid(), modules);
-        ServerPlayNetworking.send(player, new SetClientRandomiserS2CPacket(modules));
+    private static void updateClient(ServerPlayer player, Modules modules) {
+        TrulyRandom.setClientRandomiser(player.level().getServer(), player.getUUID(), modules);
+        ServerPlayNetworking.send(player, new ClientboundSetClientRandomiserPacket(modules));
     }
 }

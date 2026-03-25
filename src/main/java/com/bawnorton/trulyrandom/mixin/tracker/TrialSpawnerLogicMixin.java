@@ -8,7 +8,7 @@ import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import net.minecraft.block.spawner.TrialSpawnerData;
 import net.minecraft.block.spawner.TrialSpawnerLogic;
 import net.minecraft.loot.LootTable;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.ResourceKey;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,8 +24,8 @@ public abstract class TrialSpawnerLogicMixin {
 
     @Shadow public abstract TrialSpawnerData getData();
 
-    @Inject(method = "ejectLootTable", at = @At(value = "INVOKE", target = "Lnet/minecraft/registry/ReloadableRegistries$Lookup;getLootTable(Lnet/minecraft/registry/RegistryKey;)Lnet/minecraft/loot/LootTable;"))
-    private void trackCause(ServerWorld world, BlockPos pos, RegistryKey<LootTable> lootTable, CallbackInfo ci) {
+    @Inject(method = "ejectLootTable", at = @At(value = "INVOKE", target = "Lnet/minecraft/registry/ReloadableRegistries$Lookup;getLootTable(Lnet/minecraft/registry/ResourceKey;)Lnet/minecraft/loot/LootTable;"))
+    private void trackCause(ServerWorld world, BlockPos pos, ResourceKey<LootTable> lootTable, CallbackInfo ci) {
         if(!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
 
         LootTableTracker.LOOT_CAUSERS.set(((TrialSpawnerDataAccessor) getData()).getPlayers()

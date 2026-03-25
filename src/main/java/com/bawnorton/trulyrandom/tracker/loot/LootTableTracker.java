@@ -11,19 +11,21 @@ import com.bawnorton.trulyrandom.util.collection.UnaryBiMap;
 import com.bawnorton.trulyrandom.util.collection.UnaryHashBiMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.Block;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.loot.LootTable;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryEntryLookup;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.storage.loot.LootTable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,11 +35,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
 
-public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKey<LootTable>> {
+public class LootTableTracker extends Tracker<ResourceKey<LootTable>, ResourceKey<LootTable>> {
     public static final Codec<LootTableTracker> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.unboundedMap(
-                    RegistryKey.createCodec(RegistryKeys.LOOT_TABLE),
-                    RegistryKey.createCodec(RegistryKeys.LOOT_TABLE))
+                    ResourceKey.codec(Registries.LOOT_TABLE),
+                    ResourceKey.codec(Registries.LOOT_TABLE))
                     .fieldOf("known_loot_tables")
                     .forGetter(tracker -> tracker.knownLootTables),
             ItemLootMap.CODEC
@@ -53,32 +55,32 @@ public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKe
                     .forGetter(tracker -> tracker.team)
             ).apply(instance, (lootTables, itemLootMap, infoMap, team) -> new LootTableTracker(new UnaryHashBiMap<>(lootTables), itemLootMap, new HashMap<>(infoMap), team)));
 
-    public static final PacketCodec<RegistryByteBuf, LootTableTracker> PACKET_CODEC = PacketCodec.tuple(
-            PacketCodecs.map(
+    public static final StreamCodec<RegistryFriendlyByteBuf, LootTableTracker> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.map(
                     UnaryHashBiMap::new,
-                    RegistryKey.createPacketCodec(RegistryKeys.LOOT_TABLE),
-                    RegistryKey.createPacketCodec(RegistryKeys.LOOT_TABLE)
+                    ResourceKey.streamCodec(Registries.LOOT_TABLE),
+                    ResourceKey.streamCodec(Registries.LOOT_TABLE)
             ), tracker -> tracker.knownLootTables,
-            ItemLootMap.PACKET_CODEC, tracker -> tracker.itemLootMap,
-            PacketCodecs.map(
+            ItemLootMap.STREAM_CODEC, tracker -> tracker.itemLootMap,
+            ByteBufCodecs.map(
                     HashMap::new,
-                    Identifier.PACKET_CODEC,
-                    PacketCodecs.collection(HashSet::new, LootTableDrops.PACKET_CODEC)
+                    Identifier.STREAM_CODEC,
+                    ByteBufCodecs.collection(HashSet::new, LootTableDrops.STREAM_CODEC)
             ), tracker -> tracker.sourceMap,
-            Team.PACKET_CODEC, tracker -> tracker.team,
+            Team.STREAM_CODEC, tracker -> tracker.team,
             LootTableTracker::new
     );
 
     public static final ThreadLocal<Boolean> BROKEN_WITH_SILK = ThreadLocal.withInitial(() -> false);
     public static final ThreadLocal<List<Team>> LOOT_CAUSERS = ThreadLocal.withInitial(List::of);
 
-    private final UnaryBiMap<RegistryKey<LootTable>> knownLootTables;
+    private final UnaryBiMap<ResourceKey<LootTable>> knownLootTables;
     private final ItemLootMap itemLootMap;
     private final Map<Identifier, Set<LootTableDrops>> sourceMap;
 
-    private RegistryEntryLookup<LootTable> lootTableRegistry;
+    private HolderGetter<LootTable> lootTableRegistry;
 
-    public LootTableTracker(UnaryBiMap<RegistryKey<LootTable>> map, ItemLootMap itemLootMap, Map<Identifier, Set<LootTableDrops>> sourceMap, Team team) {
+    public LootTableTracker(UnaryBiMap<ResourceKey<LootTable>> map, ItemLootMap itemLootMap, Map<Identifier, Set<LootTableDrops>> sourceMap, Team team) {
         super(team);
         this.knownLootTables = map;
         this.itemLootMap = itemLootMap;
@@ -99,7 +101,7 @@ public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKe
         return result;
     }
 
-    public void setLootTableRegistry(RegistryEntryLookup<LootTable> registry) {
+    public void setLootTableRegistry(HolderGetter<LootTable> registry) {
         this.lootTableRegistry = registry;
     }
 
@@ -135,13 +137,13 @@ public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKe
     }
 
     @Override
-    public void track(RegistryKey<LootTable> from, RegistryKey<LootTable> to) {
+    public void track(ResourceKey<LootTable> from, ResourceKey<LootTable> to) {
         if (!knownLootTables.containsKey(from)) {
             knownLootTables.put(from, to);
             this.markDirty();
         }
 
-        LootTable table = ((LookupExtender) TrulyRandom.getServer().getReloadableRegistries()).trulyrandom$getUnalteredLootTable(to);
+        LootTable table = ((LookupExtender) TrulyRandom.getServer().reloadableRegistries()).trulyrandom$getUnalteredLootTable(to);
         SilkQuery silkQuery = LootTableReader.queryForSilk(lootTableRegistry, table);
         recordSource(from, silkQuery);
         if (to == null) return;
@@ -150,17 +152,17 @@ public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKe
         drops.getItems().forEach(item -> {
             if(silkQuery.needsSilk(item) && !BROKEN_WITH_SILK.get()) return;
 
-            Identifier itemId = Registries.ITEM.getId(item);
-            if(sourceMap.computeIfAbsent(itemId, k -> new HashSet<>()).add(drops)) {
+            Identifier itemId = BuiltInRegistries.ITEM.getKey(item);
+            if(sourceMap.computeIfAbsent(itemId, _ -> new HashSet<>()).add(drops)) {
                 markDirty();
             }
         });
     }
 
-    private void recordSource(RegistryKey<LootTable> lootTable, SilkQuery silkQuery) {
-        LootTableIdentifier lootTableId = LootTableIdentifier.from(lootTable.getValue());
+    private void recordSource(ResourceKey<LootTable> lootTable, SilkQuery silkQuery) {
+        LootTableIdentifier lootTableId = LootTableIdentifier.from(lootTable.identifier());
         if (lootTableId.isFromBlock()) {
-            Block sourceBlock = Registries.BLOCK.get(lootTableId.getSourceId());
+            Block sourceBlock = BuiltInRegistries.BLOCK.getValue(lootTableId.getSourceId());
             Item associatedItem = sourceBlock.asItem();
             recordBlockToItem(sourceBlock, associatedItem, silkQuery);
         }
@@ -184,32 +186,32 @@ public class LootTableTracker extends Tracker<RegistryKey<LootTable>, RegistryKe
     }
 
     @Override
-    public UnaryBiMap<RegistryKey<LootTable>> known() {
+    public UnaryBiMap<ResourceKey<LootTable>> known() {
         return knownLootTables;
     }
 
-    public Optional<RegistryKey<LootTable>> getFrom(RegistryKey<LootTable> to) {
+    public Optional<ResourceKey<LootTable>> getFrom(ResourceKey<LootTable> to) {
         return Optional.ofNullable(knownLootTables.inverse().get(to));
     }
 
-    public Optional<RegistryKey<LootTable>> getTo(RegistryKey<LootTable> from) {
+    public Optional<ResourceKey<LootTable>> getTo(ResourceKey<LootTable> from) {
         return Optional.ofNullable(knownLootTables.get(from));
     }
 
-    public LootTableDrops getDrops(RegistryKey<LootTable> key) {
+    public LootTableDrops getDrops(ResourceKey<LootTable> key) {
         return LootTableDrops.ALL_DROPS.get(key);
     }
 
     public List<Item> getAllDrops() {
-        return sourceMap.keySet().stream().map(Registries.ITEM::get).toList();
+        return sourceMap.keySet().stream().map(BuiltInRegistries.ITEM::getValue).toList();
     }
 
     public Set<LootTableDrops> getSources(Item item) {
-        return sourceMap.getOrDefault(Registries.ITEM.getId(item), Set.of());
+        return sourceMap.getOrDefault(BuiltInRegistries.ITEM.getKey(item), Set.of());
     }
 
     public boolean knowsSource(Item item) {
-        return sourceMap.containsKey(Registries.ITEM.getId(item));
+        return sourceMap.containsKey(BuiltInRegistries.ITEM.getKey(item));
     }
 
     @Override

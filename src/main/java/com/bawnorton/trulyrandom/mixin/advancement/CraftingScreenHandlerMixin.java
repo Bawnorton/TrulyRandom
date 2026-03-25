@@ -6,7 +6,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.recipe.input.CraftingRecipeInput;
 import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.network.ServerPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -20,7 +20,7 @@ public abstract class CraftingScreenHandlerMixin {
             )
     )
     private static CraftingRecipeInput checkInput(CraftingRecipeInput original, @Local(argsOnly = true) PlayerEntity player) {
-        TrulyRandomCriteria.CRAFTING.trigger((ServerPlayerEntity) player, original);
+        TrulyRandomCriteria.CRAFTING.trigger((ServerPlayer) player, original);
         return original;
     }
 }

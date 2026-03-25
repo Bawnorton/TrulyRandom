@@ -13,21 +13,13 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
-import net.minecraft.recipe.PreparedRecipes;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.recipe.RecipePropertySet;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.recipe.ServerRecipeManager;
-import net.minecraft.recipe.StonecuttingRecipe;
-import net.minecraft.recipe.display.CuttingRecipeDisplay;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.PersistentState;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.*;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,9 +32,9 @@ import java.util.function.Function;
 public class RecipeRandomiser extends ServerRandomiserModule {
     private final Map<Team, RecipeTracker> trackers = new HashMap<>();
     private final ResultManager resultManager = new ResultManager();
-    private final Map<RegistryKey<Recipe<?>>, ItemStack> originalOutputs = new HashMap<>();
-    private final Function<RegistryKey<Recipe<?>>, RecipeEntry<?>> recipeRegistry;
-    private final Map<Item, List<RegistryKey<Recipe<?>>>> outputToRecipes = new HashMap<>();
+    private final Map<ResourceKey<Recipe<?>>, ItemStack> originalOutputs = new HashMap<>();
+    private final Function<ResourceKey<Recipe<?>>, RecipeHolder<?>> recipeRegistry;
+    private final Map<Item, List<ResourceKey<Recipe<?>>>> outputToRecipes = new HashMap<>();
 
     public RecipeRandomiser(MinecraftServer server) {
         recipeRegistry = key -> getRecipes(server).get(key);
@@ -56,9 +48,7 @@ public class RecipeRandomiser extends ServerRandomiserModule {
         });
     }
 
-    public static Codec<RecipeRandomiser> codec(PersistentState.Context context) {
-        ServerWorld world = context.getWorldOrThrow();
-        MinecraftServer server = world.getServer();
+    public static Codec<RecipeRandomiser> codec(MinecraftServer server) {
         return RecordCodecBuilder.create(instance -> instance.group(
                 RecipeTracker.CODEC.listOf().fieldOf("trackers").forGetter(RecipeRandomiser::getTrackerList)
         ).apply(instance, (trackers) -> {
@@ -72,7 +62,7 @@ public class RecipeRandomiser extends ServerRandomiserModule {
         }));
     }
 
-    public void trackRecipeOutput(Team team, RegistryKey<Recipe<?>> recipe, ItemStack result) {
+    public void trackRecipeOutput(Team team, ResourceKey<Recipe<?>> recipe, ItemStack result) {
         trackers.computeIfAbsent(team, k -> {
             RecipeTracker tracker = new RecipeTracker();
             tracker.setRecipeRegistry(recipeRegistry);
@@ -81,7 +71,7 @@ public class RecipeRandomiser extends ServerRandomiserModule {
         }).track(recipe, result);
     }
 
-    private Map<RegistryKey<Recipe<?>>, RecipeEntry<?>> getRecipes(MinecraftServer server) {
+    private Map<ResourceKey<Recipe<?>>, RecipeHolder<?>> getRecipes(MinecraftServer server) {
         return ((PreparedRecipesAccessor) ((ServerRecipeManagerAccessor) server.getRecipeManager()).getPreparedRecipes()).getByKey();
     }
 
@@ -101,7 +91,7 @@ public class RecipeRandomiser extends ServerRandomiserModule {
         resultManager.setRandom(seed);
         resetRecipeManager(server);
 
-        List<Map.Entry<RegistryKey<Recipe<?>>, RecipeEntry<?>>> recipeEntries = new ArrayList<>(getRecipes(server).entrySet());
+        List<Map.Entry<ResourceKey<Recipe<?>>, RecipeHolder<?>>> recipeEntries = new ArrayList<>(getRecipes(server).entrySet());
         RecipeModuleState moduleState = TrulyRandom.getRandomiser(server).getModules().getState(Module.RECIPES, RecipeModuleState.class);
         List<RecipeMetadata> newRecipes = new ArrayList<>();
         recipeEntries = recipeEntries.stream()
@@ -114,11 +104,11 @@ public class RecipeRandomiser extends ServerRandomiserModule {
                 })
                 .sorted(Comparator.comparing(entry -> entry.getKey().getValue()))
                 .toList();
-        Map<RegistryKey<Recipe<?>>, RecipeEntry<?>> recipes = new HashMap<>();
+        Map<ResourceKey<Recipe<?>>, RecipeHolder<?>> recipes = new HashMap<>();
         List<ItemStack> outputs = new ArrayList<>();
-        for (Map.Entry<RegistryKey<Recipe<?>>, RecipeEntry<?>> recipeEntry : recipeEntries) {
-            RegistryKey<Recipe<?>> key = recipeEntry.getKey();
-            RecipeEntry<?> recipe = recipeEntry.getValue();
+        for (Map.Entry<ResourceKey<Recipe<?>>, RecipeHolder<?>> recipeEntry : recipeEntries) {
+            ResourceKey<Recipe<?>> key = recipeEntry.getKey();
+            RecipeHolder<?> recipe = recipeEntry.getValue();
             ItemStack result = resultManager.getResult(recipe, server);
             recipes.put(key, recipe);
             outputs.add(result);
@@ -127,10 +117,10 @@ public class RecipeRandomiser extends ServerRandomiserModule {
         outputToRecipes.clear();
         for (int i = 0; i < outputs.size(); i++) {
             ItemStack output = outputs.get(i);
-            RegistryKey<Recipe<?>> key = recipeEntries.get(i).getKey();
+            ResourceKey<Recipe<?>> key = recipeEntries.get(i).getKey();
             outputToRecipes.computeIfAbsent(output.getItem(), k -> new ArrayList<>()).add(key);
-            RecipeEntry<?> recipe = recipes.get(key);
-            RecipeEntry<?> newRecipe = resultManager.setResult(recipe, output);
+            RecipeHolder<?> recipe = recipes.get(key);
+            RecipeHolder<?> newRecipe = resultManager.setResult(recipe, output);
             newRecipes.add(new RecipeMetadata(newRecipe));
         }
 
@@ -138,13 +128,13 @@ public class RecipeRandomiser extends ServerRandomiserModule {
     }
 
     private void resetRecipeManager(MinecraftServer server) {
-        List<Map.Entry<RegistryKey<Recipe<?>>, RecipeEntry<?>>> recipeEntries = new ArrayList<>(getRecipes(server).entrySet());
+        List<Map.Entry<ResourceKey<Recipe<?>>, RecipeHolder<?>>> recipeEntries = new ArrayList<>(getRecipes(server).entrySet());
         List<RecipeMetadata> newRecipes = new ArrayList<>();
         outputToRecipes.clear();
-        for (Map.Entry<RegistryKey<Recipe<?>>, RecipeEntry<?>> recipeEntry : recipeEntries) {
-            RecipeEntry<?> recipe = recipeEntry.getValue();
+        for (Map.Entry<ResourceKey<Recipe<?>>, RecipeHolder<?>> recipeEntry : recipeEntries) {
+            RecipeHolder<?> recipe = recipeEntry.getValue();
             ItemStack result = originalOutputs.get(recipeEntry.getKey());
-            RecipeEntry<?> newRecipe = resultManager.clearOrSetResult(recipe, result);
+            RecipeHolder<?> newRecipe = resultManager.clearOrSetResult(recipe, result);
             outputToRecipes.computeIfAbsent(result.getItem(), k -> new ArrayList<>()).add(recipeEntry.getKey());
             newRecipes.add(new RecipeMetadata(newRecipe));
         }
@@ -152,19 +142,19 @@ public class RecipeRandomiser extends ServerRandomiserModule {
     }
 
     private void updateRecipes(MinecraftServer server, List<RecipeMetadata> recipes) {
-        ServerRecipeManager manager = server.getRecipeManager();
-        PreparedRecipes preparedRecipes = ((ServerRecipeManagerAccessor) manager).getPreparedRecipes();
-        PreparedRecipesAccessor accessor = (PreparedRecipesAccessor) preparedRecipes;
-        Map<RegistryKey<Recipe<?>>, RecipeEntry<?>> newByKey = new HashMap<>();
-        Multimap<RecipeType<?>, RecipeEntry<?>> newByType = HashMultimap.create();
+        RecipeManager manager = server.getRecipeManager();
+        RecipeMap recipeMap = ((ServerRecipeManagerAccessor) manager).getPreparedRecipes();
+        PreparedRecipesAccessor accessor = (PreparedRecipesAccessor) recipeMap;
+        Map<ResourceKey<Recipe<?>>, RecipeHolder<?>> newByKey = new HashMap<>();
+        Multimap<RecipeType<?>, RecipeHolder<?>> newByType = HashMultimap.create();
         for(RecipeMetadata metadata : recipes) {
-            RecipeEntry<?> entry = metadata.entry();
+            RecipeHolder<?> entry = metadata.entry();
             newByKey.put(metadata.key(), entry);
             newByType.put(metadata.type(), entry);
         }
         accessor.setByKey(newByKey);
         accessor.setByType(newByType);
-        manager.initialize(server.getSaveProperties().getEnabledFeatures());
+        manager.finalizeRecipeLoading(server.getSaveProperties().getEnabledFeatures());
     }
 
     @Override
@@ -182,18 +172,18 @@ public class RecipeRandomiser extends ServerRandomiserModule {
         return new ArrayList<>(trackers.values());
     }
 
-    public List<RegistryKey<Recipe<?>>> getRecipesForOutput(Item item) {
+    public List<ResourceKey<Recipe<?>>> getRecipesForOutput(Item item) {
         return outputToRecipes.getOrDefault(item, List.of());
     }
 
     private void resyncPlayerRecipes(MinecraftServer server) {
-        ServerRecipeManager manager = server.getRecipeManager();
-        Map<RegistryKey<RecipePropertySet>, RecipePropertySet> propertySets = manager.getPropertySets();
-        CuttingRecipeDisplay.Grouping<StonecuttingRecipe> stonecutterRecipes = manager.getStonecutterRecipeForSync();
-        server.getPlayerManager().getPlayerList().forEach(player -> {
-            player.networkHandler.sendPacket(new SynchronizeRecipesS2CPacket(propertySets, stonecutterRecipes));
+        RecipeManager manager = server.getRecipeManager();
+        Map<ResourceKey<RecipePropertySet>, RecipePropertySet> propertySets = manager.getSynchronizedItemProperties();
+        SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes = manager.getSynchronizedStonecutterRecipes();
+        server.getPlayerList().getPlayers().forEach(player -> {
+            player.connection.send(new ClientboundUpdateRecipesPacket(propertySets, stonecutterRecipes));
             // refreshes the client recipe book
-            player.getRecipeBook().sendInitRecipesPacket(player);
+            player.getRecipeBook().sendInitialRecipeBook(player);
         });
     }
 

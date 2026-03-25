@@ -1,32 +1,34 @@
 package com.bawnorton.trulyrandom.tracker.loot.drop;
 
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.Item;
+
 import java.util.HashSet;
 import java.util.Set;
 
 public class SilkQuery {
-    private final Set<RegistryEntry<Item>> needsSilk = new HashSet<>();
-    private final Set<RegistryEntry<Item>> doesNotNeedSilk = new HashSet<>();
+    private final Set<String> needsSilk = new HashSet<>();
+    private final Set<String> doesNotNeedSilk = new HashSet<>();
 
-    public void addNeedsSilk(RegistryEntry<Item> item) {
-        needsSilk.add(item);
+    public void addNeedsSilk(Holder<Item> item) {
+        needsSilk.add(item.getRegisteredName());
     }
 
-    public void addDoesNotNeedSilk(RegistryEntry<Item> item) {
-        doesNotNeedSilk.add(item);
+    public void addDoesNotNeedSilk(Holder<Item> item) {
+        doesNotNeedSilk.add(item.getRegisteredName());
     }
 
     public boolean hasAnyThatNeedSilk() {
         return !needsSilk.isEmpty();
     }
 
-    public Set<RegistryEntry<Item>> getNeedsSilk() {
+    public Set<String> getNeedsSilk() {
         return needsSilk;
     }
 
-    public Set<RegistryEntry<Item>> getDoesNotNeedSilk() {
+    public Set<String> getDoesNotNeedSilk() {
         return doesNotNeedSilk;
     }
 
@@ -36,10 +38,10 @@ public class SilkQuery {
     }
 
     public boolean needsSilk(Item item) {
-        return needsSilk.contains(Registries.ITEM.getEntry(item)) && !doesNotNeedSilk(item);
+        return needsSilk.contains(BuiltInRegistries.ITEM.getKey(item).toString()) && !doesNotNeedSilk(item);
     }
 
     public boolean doesNotNeedSilk(Item item) {
-        return doesNotNeedSilk.contains(Registries.ITEM.getEntry(item));
+        return doesNotNeedSilk.contains(BuiltInRegistries.ITEM.getKey(item).toString());
     }
 }

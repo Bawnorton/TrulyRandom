@@ -3,14 +3,15 @@ package com.bawnorton.trulyrandom.tracker.loot;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.Block;
-import net.minecraft.item.Item;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,15 +21,15 @@ import java.util.function.Function;
 
 public class ItemLootMap extends HashMap<Item, ItemLootMap.Result> {
     public static final MapCodec<ItemLootMap> CODEC = Codec.unboundedMap(
-            Identifier.CODEC.xmap(Registries.ITEM::get, Registries.ITEM::getId),
+            Identifier.CODEC.xmap(BuiltInRegistries.ITEM::getValue, BuiltInRegistries.ITEM::getKey),
             ItemLootMap.Result.CODEC)
             .xmap(ItemLootMap::new, Function.identity())
             .fieldOf("item_loot_map");
 
-    public static final PacketCodec<RegistryByteBuf, ItemLootMap> PACKET_CODEC = PacketCodecs.map(
+    public static final StreamCodec<RegistryFriendlyByteBuf, ItemLootMap> STREAM_CODEC = ByteBufCodecs.map(
             ItemLootMap::new,
-            PacketCodecs.registryValue(RegistryKeys.ITEM),
-            ItemLootMap.Result.PACKET_CODEC
+            ByteBufCodecs.registry(Registries.ITEM),
+            ItemLootMap.Result.STREAM_CODEC
     );
 
     public ItemLootMap() {
@@ -60,15 +61,15 @@ public class ItemLootMap extends HashMap<Item, ItemLootMap.Result> {
     public static final class Result {
             public static final Codec<Result> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                     Codec.BOOL.fieldOf("withSilk").forGetter(result -> result.withSilk),
-                    Identifier.CODEC.xmap(Registries.BLOCK::get, Registries.BLOCK::getId)
+                    Identifier.CODEC.xmap(BuiltInRegistries.BLOCK::getValue, BuiltInRegistries.BLOCK::getKey)
                             .listOf()
                             .fieldOf("associatedBlocks")
                             .forGetter(Result::associatedBlocks)
             ).apply(instance, Result::new));
 
-            public static final PacketCodec<RegistryByteBuf, Result> PACKET_CODEC = PacketCodec.tuple(
-                    PacketCodecs.BOOLEAN, result -> result.withSilk,
-                    PacketCodecs.registryValue(RegistryKeys.BLOCK).collect(PacketCodecs.toList()), Result::associatedBlocks,
+            public static final StreamCodec<RegistryFriendlyByteBuf, Result> STREAM_CODEC = StreamCodec.composite(
+                    ByteBufCodecs.BOOL, result -> result.withSilk,
+                    ByteBufCodecs.registry(Registries.BLOCK).apply(ByteBufCodecs.list()), Result::associatedBlocks,
                     Result::new
             );
         private final List<Block> associatedBlocks;

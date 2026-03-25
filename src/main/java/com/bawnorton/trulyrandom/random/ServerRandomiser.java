@@ -1,7 +1,7 @@
 package com.bawnorton.trulyrandom.random;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.network.packet.s2c.SetClientRandomiserS2CPacket;
+import com.bawnorton.trulyrandom.network.packet.clientbound.ClientboundSetClientRandomiserPacket;
 import com.bawnorton.trulyrandom.random.loot.LootRandomiser;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
@@ -13,7 +13,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.PersistentState;
 import org.jetbrains.annotations.NotNull;
 
 public class ServerRandomiser extends Randomiser {
@@ -37,12 +36,12 @@ public class ServerRandomiser extends Randomiser {
         this.recipeRandomiser.setOriginalOutputs(server, modules.getSeed(Module.RECIPES));
     }
 
-    public static Codec<ServerRandomiser> codec(PersistentState.Context context) {
+    public static Codec<ServerRandomiser> codec(MinecraftServer server) {
         return RecordCodecBuilder.create(instance -> instance.group(
                 Modules.CODEC.fieldOf("modules").forGetter(Randomiser::getModules),
-                LootRandomiser.codec(context).fieldOf("loot_randomiser").forGetter(ServerRandomiser::getLootRandomiser),
-                RecipeRandomiser.codec(context).fieldOf("recipe_randomiser").forGetter(ServerRandomiser::getRecipeRandomiser)
-        ).apply(instance, (modules, lootRandomiser, recipeRandomiser) -> new ServerRandomiser(modules, context.getWorldOrThrow().getServer(), lootRandomiser, recipeRandomiser)));
+                LootRandomiser.codec(server).fieldOf("loot_randomiser").forGetter(ServerRandomiser::getLootRandomiser),
+                RecipeRandomiser.codec(server).fieldOf("recipe_randomiser").forGetter(ServerRandomiser::getRecipeRandomiser)
+        ).apply(instance, (modules, lootRandomiser, recipeRandomiser) -> new ServerRandomiser(modules, server, lootRandomiser, recipeRandomiser)));
     }
 
     public LootRandomiser getLootRandomiser() {
@@ -74,11 +73,11 @@ public class ServerRandomiser extends Randomiser {
     }
 
     public void updateClients(MinecraftServer server) {
-        server.getPlayerManager()
-                .getPlayerList()
+        server.getPlayerList()
+                .getPlayers()
                 .forEach(player -> {
-                    TrulyRandom.setClientRandomiser(player.getServer(), player.getUuid(), modules);
-                    ServerPlayNetworking.send(player, new SetClientRandomiserS2CPacket(modules));
+                    TrulyRandom.setClientRandomiser(player.level().getServer(), player.getUUID(), modules);
+                    ServerPlayNetworking.send(player, new ClientboundSetClientRandomiserPacket(modules));
                 });
     }
 

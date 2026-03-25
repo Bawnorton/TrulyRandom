@@ -6,9 +6,9 @@ import java.util.Map;
 
 public abstract class Tracker<F, T> {
     private boolean dirty = false;
-    protected @Nullable Team team;
+    protected Team team;
 
-    protected Tracker(@Nullable Team team) {
+    protected Tracker(Team team) {
         this.team = team;
     }
 
@@ -16,7 +16,7 @@ public abstract class Tracker<F, T> {
         this.team = team;
     }
 
-    public @Nullable Team getTeam() {
+    public Team getTeam() {
         return team;
     }
 
@@ -26,9 +26,6 @@ public abstract class Tracker<F, T> {
 
     public void markDirty() {
         dirty = true;
-        if(this.team == null) {
-            throw new IllegalStateException("Team is not set, encoding will fail");
-        }
     }
 
     public void setDirty(boolean dirty) {

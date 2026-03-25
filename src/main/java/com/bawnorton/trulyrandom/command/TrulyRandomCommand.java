@@ -3,8 +3,8 @@ package com.bawnorton.trulyrandom.command;
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.command.argument.SetStringArgumentType;
 import com.bawnorton.trulyrandom.event.PostExecuteCallback;
-import com.bawnorton.trulyrandom.network.packet.s2c.OpenRandomiserScreenS2CPacket;
-import com.bawnorton.trulyrandom.network.packet.s2c.RequestOtherClientRandomiserS2CPacket;
+import com.bawnorton.trulyrandom.network.packet.clientbound.ClientboundOpenRandomiserScreenPacket;
+import com.bawnorton.trulyrandom.network.packet.clientbound.ClientboundRequestOtherClientRandomiserPacket;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -21,14 +21,14 @@ import net.minecraft.entity.SpawnReason;
 import net.minecraft.item.Item;
 import net.minecraft.loot.LootTable;
 import net.minecraft.recipe.Recipe;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.BuiltInRegistries;
+import net.minecraft.registry.ResourceKey;
+import net.minecraft.registry.entry.Holder;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.LootCommand;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.network.ServerPlayer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.text.Texts;
@@ -46,13 +46,13 @@ public class TrulyRandomCommand {
 
     private static void executeOpenRandomiserScreen(CommandContext<ServerCommandSource> context, Selection selection) throws CommandSyntaxException {
         ServerCommandSource source = context.getSource();
-        ServerPlayerEntity executor = source.getPlayer();
+        ServerPlayer executor = source.getPlayer();
         if (executor == null) {
             source.sendFeedback(() -> Text.literal("You must be a player to use this command"), true);
             return;
         }
 
-        ServerPlayerEntity target = null;
+        ServerPlayer target = null;
         if (selection == Selection.PLAYER) {
             target = EntityArgumentType.getPlayer(context, "player");
         } else if (selection == Selection.SELF) {
@@ -61,9 +61,9 @@ public class TrulyRandomCommand {
 
         if (target == null) {
             ServerRandomiser randomiser = TrulyRandom.getRandomiser(source.getServer());
-            ServerPlayNetworking.send(executor, new OpenRandomiserScreenS2CPacket(randomiser.getModules()));
+            ServerPlayNetworking.send(executor, new ClientboundOpenRandomiserScreenPacket(randomiser.getModules()));
         } else {
-            ServerPlayNetworking.send(target, new RequestOtherClientRandomiserS2CPacket(executor.getUuid()));
+            ServerPlayNetworking.send(target, new ClientboundRequestOtherClientRandomiserPacket(executor.getUUID()));
         }
     }
 
@@ -83,8 +83,8 @@ public class TrulyRandomCommand {
                                 .executes(context -> {
                                     ServerCommandSource source = context.getSource();
                                     ServerRandomiser randomiser = TrulyRandom.getRandomiser(source.getServer());
-                                    RegistryEntry<LootTable> lootTable = RegistryEntryArgumentType.LootTableArgumentType.getLootTable(context, "loot_table");
-                                    Optional<RegistryKey<LootTable>> keyOptional = lootTable.getKey();
+                                    Holder<LootTable> lootTable = RegistryEntryArgumentType.LootTableArgumentType.getLootTable(context, "loot_table");
+                                    Optional<ResourceKey<LootTable>> keyOptional = lootTable.getKey();
                                     if (keyOptional.isEmpty()) {
                                         context.getSource().sendError(Text.of("Could not find loot table key for \"%s\"".formatted(lootTable.getIdAsString())));
                                         return 0;
@@ -110,13 +110,13 @@ public class TrulyRandomCommand {
                                     ServerRandomiser randomiser = TrulyRandom.getRandomiser(source.getServer());
                                     ItemStackArgument itemStackArgument = ItemStackArgumentType.getItemStackArgument(context, "recipe");
                                     Item item = itemStackArgument.getItem();
-                                    List<RegistryKey<Recipe<?>>> recipes = randomiser.getRecipeRandomiser().getRecipesForOutput(item);
+                                    List<ResourceKey<Recipe<?>>> recipes = randomiser.getRecipeRandomiser().getRecipesForOutput(item);
                                     if (recipes.isEmpty()) {
                                         context.getSource().sendError(Text.of("No recipes found for %s".formatted(item.getTranslationKey())));
                                         return 0;
                                     }
                                     List<Text> texts = recipes.stream()
-                                            .map(RegistryKey::getValue)
+                                            .map(ResourceKey::getValue)
                                             .map(identifier -> Text.of(identifier.toString()))
                                             .toList();
                                     context.getSource().sendFeedback(
@@ -136,17 +136,17 @@ public class TrulyRandomCommand {
                                 .executes(context -> {
                                     context.getSource()
                                             .sendFeedback(() -> Text.of("Triggering all loot tables, world will lag for a bit"), true);
-                                    ServerPlayerEntity player = context.getSource()
+                                    ServerPlayer player = context.getSource()
                                             .getPlayer();
                                     assert player != null;
                                     ServerWorld world = player.getWorld();
                                     BlockPos up = player.getBlockPos()
                                             .add(0, 20, 0);
-                                    Registries.BLOCK.forEach((block -> {
+                                    BuiltInRegistries.BLOCK.forEach((block -> {
                                         world.setBlockState(up, block.getDefaultState(), 0);
                                         world.breakBlock(up, true, player);
                                     }));
-                                    Registries.ENTITY_TYPE.forEach((entityType -> {
+                                    BuiltInRegistries.ENTITY_TYPE.forEach((entityType -> {
                                         Entity entity = entityType.create(world, SpawnReason.COMMAND);
                                         if (!(entity instanceof LivingEntity)) {
                                             return;

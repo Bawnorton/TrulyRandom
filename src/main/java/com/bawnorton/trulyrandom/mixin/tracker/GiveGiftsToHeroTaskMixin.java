@@ -16,7 +16,7 @@ import java.util.List;
 
 @Mixin(GiveGiftsToHeroTask.class)
 public abstract class GiveGiftsToHeroTaskMixin {
-    @Inject(method = "giveGifts", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ai/brain/task/GiveGiftsToHeroTask;getGiftLootTable(Lnet/minecraft/entity/passive/VillagerEntity;)Lnet/minecraft/registry/RegistryKey;"))
+    @Inject(method = "giveGifts", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ai/brain/task/GiveGiftsToHeroTask;getGiftLootTable(Lnet/minecraft/entity/passive/VillagerEntity;)Lnet/minecraft/registry/ResourceKey;"))
     private void trackCause(ServerWorld world, VillagerEntity villager, LivingEntity recipient, CallbackInfo ci) {
         if(!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if(recipient.getWorld().isClient()) return;

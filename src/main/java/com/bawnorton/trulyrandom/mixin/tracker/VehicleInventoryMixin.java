@@ -13,7 +13,7 @@ import java.util.List;
 
 @Mixin(VehicleInventory.class)
 public interface VehicleInventoryMixin {
-    @Inject(method = "generateInventoryLoot", at = @At(value = "INVOKE", target = "Lnet/minecraft/registry/ReloadableRegistries$Lookup;getLootTable(Lnet/minecraft/registry/RegistryKey;)Lnet/minecraft/loot/LootTable;"))
+    @Inject(method = "generateInventoryLoot", at = @At(value = "INVOKE", target = "Lnet/minecraft/registry/ReloadableRegistries$Lookup;getLootTable(Lnet/minecraft/registry/ResourceKey;)Lnet/minecraft/loot/LootTable;"))
     default void trackCause(PlayerEntity player, CallbackInfo ci) {
         if(!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if(player == null) return;

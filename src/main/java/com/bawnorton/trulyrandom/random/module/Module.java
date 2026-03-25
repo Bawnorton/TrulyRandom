@@ -2,8 +2,8 @@ package com.bawnorton.trulyrandom.random.module;
 
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
 
 public enum Module {
     BLOCK_MODELS(true, false, true),
@@ -15,7 +15,7 @@ public enum Module {
     FEATURES(false, true, false);
 
     public static final Codec<Module> CODEC = Codec.STRING.xmap(Module::valueOf, Module::name);
-    public static final PacketCodec<ByteBuf, Module> PACKET_CODEC = PacketCodecs.STRING.xmap(Module::valueOf, Module::name);
+    public static final StreamCodec<ByteBuf, Module> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(Module::valueOf, Module::name);
 
     private final boolean implemented;
     private final boolean mutable;

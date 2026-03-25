@@ -4,21 +4,18 @@ import com.bawnorton.trulyrandom.TrulyRandom;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.netty.buffer.ByteBuf;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.SimpleRegistry;
-import java.util.Random;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceKey;
 
 public interface ModuleState {
-    Codec<ModuleState> CODEC = Type.REGISTRY.getCodec()
+    Codec<ModuleState> CODEC = Type.REGISTRY.byNameCodec()
             .dispatch("type", ModuleState::getType, Type::codec);
 
-    PacketCodec<RegistryByteBuf, ModuleState> PACKET_CODEC = PacketCodecs.registryCodec(Type.REGISTRY.getCodec())
+    StreamCodec<RegistryFriendlyByteBuf, ModuleState> STREAM_CODEC = ByteBufCodecs.registry(Type.REGISTRY.key())
             .dispatch(ModuleState::getType, Type::packetCodec);
 
     Type<?> getType();
@@ -43,8 +40,9 @@ public interface ModuleState {
 
     ModuleState copy();
 
-    record Type<T extends ModuleState>(MapCodec<T> codec, PacketCodec<RegistryByteBuf, T> packetCodec) {
-        public static final Registry<Type<?>> REGISTRY = new SimpleRegistry<>(
-                RegistryKey.ofRegistry(TrulyRandom.id("module_types")), Lifecycle.stable());
+    record Type<T extends ModuleState>(MapCodec<T> codec, StreamCodec<RegistryFriendlyByteBuf, T> packetCodec) {
+        public static final Registry<Type<?>> REGISTRY = new MappedRegistry<>(
+                ResourceKey.createRegistryKey(TrulyRandom.id("module_types")), Lifecycle.stable()
+        );
     }
 }

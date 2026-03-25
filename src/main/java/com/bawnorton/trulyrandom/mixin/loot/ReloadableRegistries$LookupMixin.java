@@ -6,11 +6,11 @@ import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import net.minecraft.loot.LootTable;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.ResourceKey;
+import net.minecraft.registry.BuiltInRegistries;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.ReloadableRegistries;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.entry.Holder;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,12 +20,12 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(ReloadableRegistries.Lookup.class)
 public abstract class ReloadableRegistries$LookupMixin implements LookupExtender {
-    @Shadow public abstract LootTable getLootTable(RegistryKey<LootTable> key);
+    @Shadow public abstract LootTable getLootTable(ResourceKey<LootTable> key);
 
     @Shadow @Final private RegistryWrapper.WrapperLookup registries;
 
     @ModifyVariable(method = "getLootTable", at = @At("HEAD"), argsOnly = true)
-    private @Nullable RegistryKey<LootTable> getRandomisedLootTable(@Nullable RegistryKey<LootTable> original) {
+    private @Nullable ResourceKey<LootTable> getRandomisedLootTable(@Nullable ResourceKey<LootTable> original) {
         ServerRandomiser randomiser = TrulyRandom.getCachedRandomiser();
         if(!randomiser.getModules().isEnabled(Module.LOOT_TABLES)) return original;
 
@@ -33,11 +33,11 @@ public abstract class ReloadableRegistries$LookupMixin implements LookupExtender
     }
 
     @Override
-    public LootTable trulyrandom$getUnalteredLootTable(RegistryKey<LootTable> key) {
+    public LootTable trulyrandom$getUnalteredLootTable(ResourceKey<LootTable> key) {
         return registries
-                .getOptional(RegistryKeys.LOOT_TABLE)
+                .getOptional(BuiltInRegistries.LOOT_TABLE)
                 .flatMap(registryEntryLookup -> registryEntryLookup.getOptional(key))
-                .map(RegistryEntry::value)
+                .map(Holder::value)
                 .orElse(LootTable.EMPTY);
     }
 }

@@ -4,23 +4,24 @@ import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.Tracker;
 import com.bawnorton.trulyrandom.util.collection.UnaryHashMap;
 import com.bawnorton.trulyrandom.util.collection.UnaryMap;
-import net.minecraft.item.Item;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public class TradeTracker extends Tracker<Item, Item> {
-    public static final PacketCodec<RegistryByteBuf, TradeTracker> PACKET_CODEC = PacketCodec.tuple(
-            PacketCodecs.map(
+    public static final StreamCodec<RegistryFriendlyByteBuf, TradeTracker> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.map(
                     HashMap::new,
-                    Identifier.PACKET_CODEC.xmap(Registries.ITEM::get, Registries.ITEM::getId),
-                    Identifier.PACKET_CODEC.xmap(Registries.ITEM::get, Registries.ITEM::getId)
+                    Identifier.STREAM_CODEC.map(BuiltInRegistries.ITEM::getValue, BuiltInRegistries.ITEM::getKey),
+                    Identifier.STREAM_CODEC.map(BuiltInRegistries.ITEM::getValue, BuiltInRegistries.ITEM::getKey)
             ), tracker -> tracker.knownTrades,
-            Team.PACKET_CODEC, tracker -> tracker.team,
+            Team.STREAM_CODEC, tracker -> tracker.team,
             TradeTracker::new
     );
 

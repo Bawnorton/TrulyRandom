@@ -3,9 +3,9 @@ package com.bawnorton.trulyrandom.random.module;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
 import java.util.Random;
 
 public class StandardModuleState implements ModuleState {
@@ -15,9 +15,9 @@ public class StandardModuleState implements ModuleState {
             Codec.LONG.optionalFieldOf("seed", new Random().nextLong()).forGetter(StandardModuleState::getSeed)
     ).apply(instance, StandardModuleState::new));
 
-    public static final PacketCodec<RegistryByteBuf, StandardModuleState> PACKET_CODEC = PacketCodec.tuple(
-            PacketCodecs.BOOLEAN, StandardModuleState::isEnabled,
-            PacketCodecs.VAR_LONG, StandardModuleState::getSeed,
+    public static final StreamCodec<RegistryFriendlyByteBuf, StandardModuleState> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.BOOL, StandardModuleState::isEnabled,
+            ByteBufCodecs.VAR_LONG, StandardModuleState::getSeed,
             StandardModuleState::new
     );
 

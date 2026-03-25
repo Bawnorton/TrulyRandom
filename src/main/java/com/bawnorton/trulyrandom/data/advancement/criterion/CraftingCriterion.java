@@ -10,7 +10,7 @@ import net.minecraft.predicate.entity.LootContextPredicate;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.recipe.RawShapedRecipe;
 import net.minecraft.recipe.input.CraftingRecipeInput;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.network.ServerPlayer;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,7 +21,7 @@ public final class CraftingCriterion extends AbstractCriterion<CraftingCriterion
         return Conditions.CODEC;
     }
 
-    public void trigger(ServerPlayerEntity player, CraftingRecipeInput input) {
+    public void trigger(ServerPlayer player, CraftingRecipeInput input) {
         trigger(player, conditions -> conditions.recipe().matches(input));
     }
 

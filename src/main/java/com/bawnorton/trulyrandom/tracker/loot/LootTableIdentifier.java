@@ -1,7 +1,7 @@
 package com.bawnorton.trulyrandom.tracker.loot;
 
 import joptsimple.internal.Strings;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 public class LootTableIdentifier {
     private final String namespace;
@@ -122,7 +122,7 @@ public class LootTableIdentifier {
 
     public Identifier getSourceId() {
         if(isFromBlock() || isFromEntity()) {
-            return Identifier.of(namespace, segments[1]);
+            return Identifier.fromNamespaceAndPath(namespace, segments[1]);
         }
         return null;
     }

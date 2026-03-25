@@ -3,22 +3,23 @@ package com.bawnorton.trulyrandom.tracker;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.util.Uuids;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public final class Team {
     public static final Codec<Team> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-            Uuids.CODEC.fieldOf("owner").forGetter(Team::getOwner),
-            Codec.list(Uuids.CODEC).fieldOf("players").forGetter(Team::getPlayers)
+            UUIDUtil.CODEC.fieldOf("owner").forGetter(Team::getOwner),
+            Codec.list(UUIDUtil.CODEC).fieldOf("players").forGetter(Team::getPlayers)
     ).apply(instance, Team::new));
 
-    public static final PacketCodec<ByteBuf, Team> PACKET_CODEC = PacketCodec.tuple(
-            Uuids.PACKET_CODEC, Team::getOwner,
-            Uuids.PACKET_CODEC.collect(PacketCodecs.toList()), Team::getPlayers,
+    public static final StreamCodec<ByteBuf, Team> STREAM_CODEC = StreamCodec.composite(
+            UUIDUtil.STREAM_CODEC, Team::getOwner,
+            UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs.list()), Team::getPlayers,
             Team::new
     );
 

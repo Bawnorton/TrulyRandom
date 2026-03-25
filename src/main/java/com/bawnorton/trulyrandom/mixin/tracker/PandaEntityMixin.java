@@ -24,7 +24,7 @@ public abstract class PandaEntityMixin extends AnimalEntity {
             method = "sneeze",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/passive/PandaEntity;forEachGiftedItem(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/registry/RegistryKey;Ljava/util/function/BiConsumer;)Z"
+                    target = "Lnet/minecraft/entity/passive/PandaEntity;forEachGiftedItem(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/registry/ResourceKey;Ljava/util/function/BiConsumer;)Z"
             )
     )
     private void trackCause(CallbackInfo ci) {

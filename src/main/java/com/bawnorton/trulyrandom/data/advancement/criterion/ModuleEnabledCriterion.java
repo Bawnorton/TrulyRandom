@@ -9,7 +9,7 @@ import net.minecraft.advancement.AdvancementCriterion;
 import net.minecraft.advancement.criterion.AbstractCriterion;
 import net.minecraft.predicate.entity.EntityPredicate;
 import net.minecraft.predicate.entity.LootContextPredicate;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.network.ServerPlayer;
 import java.util.Optional;
 
 public final class ModuleEnabledCriterion extends AbstractCriterion<ModuleEnabledCriterion.Conditions> {
@@ -18,8 +18,8 @@ public final class ModuleEnabledCriterion extends AbstractCriterion<ModuleEnable
         return ModuleEnabledCriterion.Conditions.CODEC;
     }
 
-    public void trigger(ServerPlayerEntity player) {
-        trigger(player, conditions -> TrulyRandom.getRandomiser(player.getServer()).getModules().isEnabled(conditions.module));
+    public void trigger(ServerPlayer player) {
+        trigger(player, conditions -> TrulyRandom.getRandomiser(player.level().getServer()).getModules().isEnabled(conditions.module));
     }
 
     public record Conditions(Optional<LootContextPredicate> player, Module module) implements AbstractCriterion.Conditions {

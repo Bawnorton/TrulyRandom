@@ -6,58 +6,57 @@ import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Uuids;
-import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
-import net.minecraft.world.PersistentStateType;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
+import net.minecraft.world.level.storage.SavedDataStorage;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-public class RandomiserSaveLoader extends PersistentState {
+public class RandomiserSaveLoader extends SavedData {
     private static ServerRandomiser lastSetRandomiser;
     private static Modules worldGenModules;
 
-    public static final PersistentStateType<RandomiserSaveLoader> TYPE = new PersistentStateType<>(
-            TrulyRandom.MOD_ID,
-            RandomiserSaveLoader::new,
-            RandomiserSaveLoader::codec,
-            null
-    );
+    public static SavedDataType<RandomiserSaveLoader> TYPE;
 
     private ServerRandomiser serverRandomiser;
     private Map<UUID, Modules> clientRandomisers;
 
-    private RandomiserSaveLoader(Context context) {
-        this.serverRandomiser = new ServerRandomiser(Objects.requireNonNullElseGet(worldGenModules, Modules::new), context.getWorldOrThrow().getServer());
+    public RandomiserSaveLoader(MinecraftServer server) {
+        this.serverRandomiser = new ServerRandomiser(Objects.requireNonNullElseGet(worldGenModules, Modules::new), server);
         this.clientRandomisers = new HashMap<>();
-        markDirty();
+        setDirty();
     }
 
     private RandomiserSaveLoader(ServerRandomiser serverRandomiser, Map<UUID, Modules> clientRandomisers) {
         this.serverRandomiser = serverRandomiser;
         this.clientRandomisers = clientRandomisers;
-        markDirty();
+        setDirty();
     }
 
-    public static Codec<RandomiserSaveLoader> codec(Context context) {
+    public static Codec<RandomiserSaveLoader> codec(MinecraftServer server) {
         return RecordCodecBuilder.create(instance -> instance.group(
-                ServerRandomiser.codec(context).fieldOf("randomiser").forGetter(RandomiserSaveLoader::getServerRandomiser),
-                Codec.unboundedMap(Uuids.CODEC, Modules.CODEC).fieldOf("client_randomisers").forGetter(RandomiserSaveLoader::getClientRandomisers)
+                ServerRandomiser.codec(server)
+                        .fieldOf("randomiser")
+                        .forGetter(RandomiserSaveLoader::getServerRandomiser),
+                Codec.unboundedMap(UUIDUtil.CODEC, Modules.CODEC)
+                        .fieldOf("client_randomisers")
+                        .forGetter(RandomiserSaveLoader::getClientRandomisers)
         ).apply(instance, RandomiserSaveLoader::new));
     }
 
     public static RandomiserSaveLoader getServerState(MinecraftServer server) {
-        ServerWorld world = server.getOverworld();
-        if (world == null) throw new IllegalStateException("Tried to get randomiser state before world was loaded");
+        ServerLevel level = server.getLevel(ServerLevel.OVERWORLD);
+        if (level == null) throw new IllegalStateException("Tried to get randomiser state before world was loaded");
 
-        PersistentStateManager manager = world.getPersistentStateManager();
-        RandomiserSaveLoader state = manager.getOrCreate(TYPE);
-        state.markDirty();
+        SavedDataStorage storage = level.getDataStorage();
+        RandomiserSaveLoader state = storage.computeIfAbsent(TYPE);
+        state.setDirty();
         if(state.getServerRandomiser() == null) {
             state.serverRandomiser = new ServerRandomiser(Objects.requireNonNullElseGet(worldGenModules, Modules::new), server);
         }

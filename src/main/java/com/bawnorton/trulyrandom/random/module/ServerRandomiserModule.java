@@ -3,8 +3,9 @@ package com.bawnorton.trulyrandom.random.module;
 import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.Tracker;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.player.Player;
+
 import java.util.List;
 import java.util.Map;
 
@@ -19,10 +20,10 @@ public abstract class ServerRandomiserModule extends RandomiserModule {
 
     public abstract List<? extends Tracker<?, ?>> getTrackerList();
 
-    public void initTracker(PlayerEntity player) {
+    public void initTracker(Player player) {
         getTrackerList().stream()
                 .map(Tracker::getTeam)
-                .filter(team -> team != null && team.getOwnerAndPlayers().contains(player.getUuid()))
+                .filter(team -> team != null && team.getOwnerAndPlayers().contains(player.getUUID()))
                 .findFirst()
                 .ifPresent(player::trulyrandom$joinTeam);
     }

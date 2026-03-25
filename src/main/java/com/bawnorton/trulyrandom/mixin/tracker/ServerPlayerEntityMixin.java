@@ -5,8 +5,8 @@ import com.bawnorton.trulyrandom.extend.ResultHolder;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.RecipeEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.recipe.RecipeHolder;
+import net.minecraft.server.network.ServerPlayer;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 import static com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker.LAST_RECIPE_OUTPUT;
 
-@Mixin(ServerPlayerEntity.class)
+@Mixin(ServerPlayer.class)
 public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin {
     protected ServerPlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
@@ -25,7 +25,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntityMixin {
             method = "onRecipeCrafted",
             at = @At("HEAD")
     )
-    private void trackRecipe(RecipeEntry<?> recipe, List<ItemStack> ingredients, CallbackInfo ci) {
+    private void trackRecipe(RecipeHolder<?> recipe, List<ItemStack> ingredients, CallbackInfo ci) {
         ItemStack result = LAST_RECIPE_OUTPUT.get();
         if(result.isEmpty()) {
             if(recipe.value() instanceof ResultHolder resultHolder) {

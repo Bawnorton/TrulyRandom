@@ -3,11 +3,12 @@ package com.bawnorton.trulyrandom.random.module;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.registry.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.world.item.crafting.RecipeType;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,13 +17,13 @@ public class RecipeModuleState extends StandardModuleState {
 
     public static final MapCodec<RecipeModuleState> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             StandardModuleState.CODEC.fieldOf("standard").forGetter(recipeModule -> recipeModule),
-            Codec.unboundedMap(Registries.RECIPE_TYPE.getCodec(), Codec.BOOL).fieldOf("enabled_recipe_types").forGetter(moduleState -> moduleState.enabledRecipeTypes)
+            Codec.unboundedMap(BuiltInRegistries.RECIPE_TYPE.byNameCodec(), Codec.BOOL).fieldOf("enabled_recipe_types").forGetter(moduleState -> moduleState.enabledRecipeTypes)
     ).apply(instance, RecipeModuleState::new));
 
-    public static final PacketCodec<RegistryByteBuf, RecipeModuleState> PACKET_CODEC = PacketCodec.tuple(
-            StandardModuleState.PACKET_CODEC,
+    public static final StreamCodec<RegistryFriendlyByteBuf, RecipeModuleState> STREAM_CODEC = StreamCodec.composite(
+            StandardModuleState.STREAM_CODEC,
             recipeModule -> recipeModule,
-            PacketCodecs.map(HashMap::new, PacketCodecs.registryCodec(Registries.RECIPE_TYPE.getCodec()), PacketCodecs.BOOLEAN),
+            ByteBufCodecs.map(HashMap::new, ByteBufCodecs.registry(BuiltInRegistries.RECIPE_TYPE.key()), ByteBufCodecs.BOOL),
             moduleState -> moduleState.enabledRecipeTypes,
             RecipeModuleState::new
     );
@@ -35,7 +36,7 @@ public class RecipeModuleState extends StandardModuleState {
     public RecipeModuleState() {
         super();
         enabledRecipeTypes = new HashMap<>();
-        Registries.RECIPE_TYPE.stream().forEach(recipeType -> enabledRecipeTypes.put(recipeType, true));
+        BuiltInRegistries.RECIPE_TYPE.stream().forEach(recipeType -> enabledRecipeTypes.put(recipeType, true));
     }
 
     @Override

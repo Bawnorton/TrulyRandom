@@ -17,9 +17,9 @@ import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.recipe.Ingredient;
-import net.minecraft.registry.Registries;
+import net.minecraft.registry.BuiltInRegistries;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.BuiltInRegistries;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.text.Text;
@@ -38,7 +38,7 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
 
     @Override
     public void generateAdvancement(RegistryWrapper.WrapperLookup lookup, Consumer<AdvancementEntry> exporter) {
-        RegistryWrapper<Item> itemRegistry = lookup.getOrThrow(RegistryKeys.ITEM);
+        RegistryWrapper<Item> itemRegistry = lookup.getOrThrow(BuiltInRegistries.ITEM);
         AdvancementEntry root = Advancement.Builder.create()
                 .display(
                         Items.DIAMOND,
@@ -141,7 +141,7 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                         Items.GREEN_CANDLE,
                         Items.RED_CANDLE,
                         Items.BLACK_CANDLE
-                ).collect(HashMap::new, (map, item) -> map.put(Registries.ITEM.getId(item).getPath(), InventoryChangedCriterion.Conditions.items(item)), HashMap::putAll),
+                ).collect(HashMap::new, (map, item) -> map.put(BuiltInRegistries.ITEM.getId(item).getPath(), InventoryChangedCriterion.Conditions.items(item)), HashMap::putAll),
                 exporter
         );
         createChallengeEntry(
@@ -165,7 +165,7 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                         Items.GREEN_WOOL,
                         Items.RED_WOOL,
                         Items.BLACK_WOOL
-                ).collect(HashMap::new, (map, item) -> map.put(Registries.ITEM.getId(item).getPath(), InventoryChangedCriterion.Conditions.items(item)), HashMap::putAll),
+                ).collect(HashMap::new, (map, item) -> map.put(BuiltInRegistries.ITEM.getId(item).getPath(), InventoryChangedCriterion.Conditions.items(item)), HashMap::putAll),
                 exporter
         );
     }

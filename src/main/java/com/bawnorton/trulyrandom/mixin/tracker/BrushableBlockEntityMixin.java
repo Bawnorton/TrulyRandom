@@ -16,7 +16,7 @@ import java.util.List;
 
 @Mixin(BrushableBlockEntity.class)
 public abstract class BrushableBlockEntityMixin {
-    @Inject(method = "generateItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/registry/ReloadableRegistries$Lookup;getLootTable(Lnet/minecraft/registry/RegistryKey;)Lnet/minecraft/loot/LootTable;"))
+    @Inject(method = "generateItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/registry/ReloadableRegistries$Lookup;getLootTable(Lnet/minecraft/registry/ResourceKey;)Lnet/minecraft/loot/LootTable;"))
     private void trackCause(ServerWorld world, LivingEntity brusher, ItemStack brush, CallbackInfo ci) {
         if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if (brusher == null) return;

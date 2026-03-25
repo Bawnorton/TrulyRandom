@@ -31,8 +31,8 @@ public abstract class PlayerEntityMixin extends LivingEntity implements TeamMemb
     @Override
     public void trulyrandom$joinTeam(@NotNull Team team) {
         trulyrandom$team = team;
-        if(!team.getOwner().equals(getUuid())) {
-            trulyrandom$team.addPlayer(getUuid());
+        if(!team.getOwner().equals(getUUID())) {
+            trulyrandom$team.addPlayer(getUUID());
         }
     }
 
@@ -40,13 +40,13 @@ public abstract class PlayerEntityMixin extends LivingEntity implements TeamMemb
     public void trulyrandom$leaveTeam() {
         if (trulyrandom$team == null) return;
 
-        trulyrandom$team.removePlayer(getUuid());
-        trulyrandom$team = Team.create(getUuid());
+        trulyrandom$team.removePlayer(getUUID());
+        trulyrandom$team = Team.create(getUUID());
     }
 
     @Override
     public @NotNull Team trulyrandom$getTeam() {
-        trulyrandom$team = trulyrandom$team == null ? Team.create(getUuid()) : trulyrandom$team;
+        trulyrandom$team = trulyrandom$team == null ? Team.create(getUUID()) : trulyrandom$team;
         return trulyrandom$team;
     }
 
