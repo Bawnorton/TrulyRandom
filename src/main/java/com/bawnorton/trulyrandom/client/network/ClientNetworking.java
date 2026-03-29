@@ -14,36 +14,37 @@ import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.world.entity.player.Player;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class ClientNetworking {
-    private static final Map<CustomPayload.Id<?>, RunOnce> recievedCallback = new HashMap<>();
+    private static final Map<CustomPacketPayload.Type<?>, RunOnce> recievedCallback = new HashMap<>();
 
     public static void init() {
-        ClientPlayNetworking.registerGlobalReceiver(ClientboundHandshakePacket.PACKET_ID, ClientNetworking::handleHandshake);
-        ClientPlayNetworking.registerGlobalReceiver(ClientboundOpenRandomiserScreenPacket.PACKET_ID, ClientNetworking::handleOpenRandomiserScreen);
-        ClientPlayNetworking.registerGlobalReceiver(ClientboundOpenTargetedRandomiserScreenPacket.PACKET_ID, ClientNetworking::handleOpenTargetedRandomiserScreen);
-        ClientPlayNetworking.registerGlobalReceiver(ClientboundRequestOtherClientRandomiserPacket.PACKET_ID, ClientNetworking::handleRequestRandomiser);
-        ClientPlayNetworking.registerGlobalReceiver(ClientboundSetClientRandomiserPacket.PACKET_ID, ClientNetworking::handleSetClientRandomiser);
-        ClientPlayNetworking.registerGlobalReceiver(ClientboundSyncLootTableTrackerPacket.PACKET_ID, ClientNetworking::handleSyncLootTableTracker);
-        ClientPlayNetworking.registerGlobalReceiver(ClientboundSyncRecipeTrackerPacket.PACKET_ID, ClientNetworking::handleSyncRecipeTracker);
-        ClientPlayNetworking.registerGlobalReceiver(ClientboundSyncLootDropsPacket.PACKET_ID, ClientNetworking::handleSyncLootDrops);
+        ClientPlayNetworking.registerGlobalReceiver(ClientboundHandshakePacket.TYPE, ClientNetworking::handleHandshake);
+        ClientPlayNetworking.registerGlobalReceiver(ClientboundOpenRandomiserScreenPacket.TYPE, ClientNetworking::handleOpenRandomiserScreen);
+        ClientPlayNetworking.registerGlobalReceiver(ClientboundOpenTargetedRandomiserScreenPacket.TYPE, ClientNetworking::handleOpenTargetedRandomiserScreen);
+        ClientPlayNetworking.registerGlobalReceiver(ClientboundRequestOtherClientRandomiserPacket.TYPE, ClientNetworking::handleRequestRandomiser);
+        ClientPlayNetworking.registerGlobalReceiver(ClientboundSetClientRandomiserPacket.TYPE, ClientNetworking::handleSetClientRandomiser);
+        ClientPlayNetworking.registerGlobalReceiver(ClientboundSyncLootTableTrackerPacket.TYPE, ClientNetworking::handleSyncLootTableTracker);
+        ClientPlayNetworking.registerGlobalReceiver(ClientboundSyncRecipeTrackerPacket.TYPE, ClientNetworking::handleSyncRecipeTracker);
+        ClientPlayNetworking.registerGlobalReceiver(ClientboundSyncLootDropsPacket.TYPE, ClientNetworking::handleSyncLootDrops);
     }
 
-    public static void registerRecievedCallback(CustomPayload.Id<?> packetId, Runnable callback) {
+    public static void registerRecievedCallback(CustomPacketPayload.Type<?> packetId, Runnable callback) {
         recievedCallback.put(packetId, () -> {
             callback.run();
             recievedCallback.remove(packetId);
         });
     }
 
-    private static void runCallback(CustomPayload.Id<?> packetId) {
+    private static void runCallback(CustomPacketPayload.Type<?> packetId) {
         RunOnce callback = recievedCallback.get(packetId);
         if (callback != null) {
             callback.run();
@@ -52,40 +53,39 @@ public class ClientNetworking {
 
     private static void handleHandshake(ClientboundHandshakePacket packet, ClientPlayNetworking.Context context) {
         if (TrulyRandom.VERSION.compareTo(packet.version()) != 0) {
-            context.player().sendMessage(Text.translatable("trulyrandom.version_mismatch", packet.version()
-                    .getFriendlyString(), TrulyRandom.VERSION.getFriendlyString()), false);
+            context.player().sendSystemMessage(Component.translatable("trulyrandom.version_mismatch", packet.version().getFriendlyString(), TrulyRandom.VERSION.getFriendlyString()));
         }
-        runCallback(ClientboundHandshakePacket.PACKET_ID);
+        runCallback(ClientboundHandshakePacket.TYPE);
     }
 
     private static void handleOpenRandomiserScreen(ClientboundOpenRandomiserScreenPacket packet, ClientPlayNetworking.Context context) {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft minecraft = Minecraft.getInstance();
 
-        client.setScreen(new TrulyRandomSettingsScreen(client.currentScreen, packet.modules(), (modules) -> context.responseSender().sendPacket(new ServerboundSetServerRandomiserPacket(modules))));
-        runCallback(ClientboundOpenRandomiserScreenPacket.PACKET_ID);
+        minecraft.setScreen(new TrulyRandomSettingsScreen(minecraft.screen, packet.modules(), (modules) -> context.responseSender().sendPacket(new ServerboundSetServerRandomiserPacket(modules))));
+        runCallback(ClientboundOpenRandomiserScreenPacket.TYPE);
     }
 
     private static void handleOpenTargetedRandomiserScreen(ClientboundOpenTargetedRandomiserScreenPacket packet, ClientPlayNetworking.Context context) {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft minecraft = Minecraft.getInstance();
 
         UUID targetUUID = packet.target();
-        PlayerEntity target;
-        if (client.world == null) throw new IllegalStateException("Client world is null");
+        Player target;
+        if (minecraft.level == null) throw new IllegalStateException("Client world is null");
 
-        target = client.world.getPlayerByUuid(targetUUID);
-        client.setScreen(new TargetedTrulyRandomSettingsScreen(client.currentScreen, target, packet.modules(), (modules) -> context.responseSender().sendPacket(new ServerboundSetTargetClientRandomiserPacket(modules, targetUUID))));
-        runCallback(ClientboundOpenTargetedRandomiserScreenPacket.PACKET_ID);
+        target = minecraft.level.getPlayerByUUID(targetUUID);
+        minecraft.setScreen(new TargetedTrulyRandomSettingsScreen(minecraft.screen, target, packet.modules(), (modules) -> context.responseSender().sendPacket(new ServerboundSetTargetClientRandomiserPacket(modules, targetUUID))));
+        runCallback(ClientboundOpenTargetedRandomiserScreenPacket.TYPE);
     }
 
     private static void handleRequestRandomiser(ClientboundRequestOtherClientRandomiserPacket packet, ClientPlayNetworking.Context context) {
         ClientRandomiser randomiser = TrulyRandomClient.getRandomiser();
         Modules modules = randomiser.getModules();
         context.responseSender().sendPacket(new ServerboundProvidedRandomiserPacket(modules, packet.requestee()));
-        runCallback(ClientboundRequestOtherClientRandomiserPacket.PACKET_ID);
+        runCallback(ClientboundRequestOtherClientRandomiserPacket.TYPE);
     }
 
     private static void handleSetClientRandomiser(ClientboundSetClientRandomiserPacket packet, ClientPlayNetworking.Context context) {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft minecraft = Minecraft.getInstance();
 
         ClientRandomiser randomiser = TrulyRandomClient.getRandomiser();
 
@@ -93,28 +93,28 @@ public class ClientNetworking {
         boolean itemModelSeedChanged = randomiser.getModules().getSeed(Module.ITEM_MODELS) != packet.modules().getSeed(Module.ITEM_MODELS);
 
         randomiser.setModules(packet.modules());
-        randomiser.updateBlockModels(client, blockModelSeedChanged);
-        randomiser.updateItemModels(client, itemModelSeedChanged);
-        runCallback(ClientboundSetClientRandomiserPacket.PACKET_ID);
+        randomiser.updateBlockModels(minecraft, blockModelSeedChanged);
+        randomiser.updateItemModels(minecraft, itemModelSeedChanged);
+        runCallback(ClientboundSetClientRandomiserPacket.TYPE);
     }
 
     private static void handleSyncLootTableTracker(ClientboundSyncLootTableTrackerPacket packet, ClientPlayNetworking.Context context) {
         TrulyRandomClient.getRandomiser().setLootTableTracker(packet.tracker());
-        runCallback(ClientboundSyncLootTableTrackerPacket.PACKET_ID);
+        runCallback(ClientboundSyncLootTableTrackerPacket.TYPE);
     }
 
     private static void handleSyncRecipeTracker(ClientboundSyncRecipeTrackerPacket packet, ClientPlayNetworking.Context context) {
         TrulyRandomClient.getRandomiser().setRecipeTracker(packet.tracker());
-        if(context.client().currentScreen instanceof RecipeBookScreenExtender extender) {
+        if(context.client().screen instanceof RecipeBookScreenExtender extender) {
             extender.trulyrandom$refreshResults();
         }
-        runCallback(ClientboundSyncRecipeTrackerPacket.PACKET_ID);
+        runCallback(ClientboundSyncRecipeTrackerPacket.TYPE);
     }
 
     private static void handleSyncLootDrops(ClientboundSyncLootDropsPacket packet, ClientPlayNetworking.Context context) {
         LootTableDrops.ALL_DROPS.clear();
         LootTableDrops.ALL_DROPS.putAll(packet.dropsMap());
-        runCallback(ClientboundSyncLootDropsPacket.PACKET_ID);
+        runCallback(ClientboundSyncLootDropsPacket.TYPE);
     }
 
     interface RunOnce {

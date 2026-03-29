@@ -13,14 +13,14 @@ public interface TrackerHintDrawer {
     Identifier UNBROKEN = TrulyRandom.id("loot_tracker/unbroken");
     Identifier NOT_SILKED = TrulyRandom.id("loot_tracker/not_silked");
 
-    default void drawHints(DrawContext context, int x, int y, Item item) {
+    default void drawHints(GuiGraphicsExtractor graphics, int x, int y, Item item) {
         LootTableTracker tracker = TrulyRandomClient.getRandomiser().getLootTableTracker();
         boolean knowsLootTable = tracker.knowsItemLootTable(item);
         boolean brokeWithSilk = tracker.brokeWithSilk(item);
         if(knowsLootTable && !brokeWithSilk) {
-            context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, NOT_SILKED, x, y, 16, 16);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, NOT_SILKED, x, y, 16, 16);
         } else if (!knowsLootTable) {
-            context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, UNBROKEN, x, y, 16, 16);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, UNBROKEN, x, y, 16, 16);
         }
     }
 }

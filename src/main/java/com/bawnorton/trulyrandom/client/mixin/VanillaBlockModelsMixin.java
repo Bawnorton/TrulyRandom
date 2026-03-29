@@ -11,7 +11,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.block.BlockModels;
 import net.minecraft.client.render.model.BlockStateModel;
-import net.minecraft.client.world.ClientWorld;
+import net.minecraft.minecraft.level.ClientWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -45,7 +45,7 @@ public abstract class VanillaBlockModelsMixin implements ModelShuffler.BlockStat
     public void trulyrandom$shuffleModels(long seed) {
         if (models == null) return;
 
-        ClientWorld world = MinecraftClient.getInstance().world;
+        ClientWorld world = Minecraft.getInstance().world;
         if (world == null) return;
 
         trulyrandom$resetModels();

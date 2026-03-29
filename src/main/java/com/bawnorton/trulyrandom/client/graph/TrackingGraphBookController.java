@@ -10,8 +10,8 @@ import com.bawnorton.trulyrandom.tracker.loot.drop.TrackingConnection;
 import com.bawnorton.trulyrandom.tracker.loot.drop.GraphTypes;
 import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
 import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
-import net.minecraft.item.Item;
-import net.minecraft.recipe.RecipeHolder;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class TrackingGraphBookController {
     private boolean lootBookOpen;

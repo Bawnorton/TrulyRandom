@@ -1,14 +1,14 @@
 package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.client.screen.LivingEntityGuiRenderer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.registry.BuiltInRegistries;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 
 public class EntityGraphElement extends GraphElement implements LivingEntityGuiRenderer {
     private final EntityType<?> entityType;
@@ -18,16 +18,16 @@ public class EntityGraphElement extends GraphElement implements LivingEntityGuiR
     }
 
     @Override
-    public void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale) {
-        Entity entity = entityType.create(client.world, SpawnReason.COMMAND);
+    public void extractRenderState(GuiGraphicsExtractor graphics, Minecraft minecraft, int mouseX, int mouseY, int x, int y, float scale) {
+        Entity entity = entityType.create(minecraft.level, EntitySpawnReason.COMMAND);
         if(!(entity instanceof LivingEntity livingEntity)) return;
 
-        render(context, mouseX, mouseY, livingEntity, x, y, scale);
+        extractRenderState(graphics, mouseX, mouseY, livingEntity, x, y, scale);
     }
 
     @Override
-    protected Text getTooltip() {
-        return entityType.getName();
+    protected Component getTooltip() {
+        return entityType.getDescription();
     }
 
     @Override
@@ -45,6 +45,6 @@ public class EntityGraphElement extends GraphElement implements LivingEntityGuiR
 
     @Override
     public String toString() {
-        return "EntityGraphElement[%s]".formatted(BuiltInRegistries.ENTITY_TYPE.getId(entityType));
+        return "EntityGraphElement[%s]".formatted(BuiltInRegistries.ENTITY_TYPE.getKey(entityType));
     }
 }

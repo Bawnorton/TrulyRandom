@@ -6,7 +6,7 @@ import com.bawnorton.trulyrandom.client.screen.render.BlockStateGuiRenderer;
 import com.bawnorton.trulyrandom.network.packet.serverbound.ServerboundHandshakePacket;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.SpecialGuiElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.PictureInPictureRendererRegistry;
 
 public class ClientEventHandler {
     public static void init() {
@@ -19,11 +19,11 @@ public class ClientEventHandler {
     }
 
     private static void registerWorldJoinEvent() {
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+        ClientPlayConnectionEvents.JOIN.register((_, sender, _) -> {
             sender.sendPacket(new ServerboundHandshakePacket());
             TrulyRandomClient.getLootBookController().reset();
         });
 
-        SpecialGuiElementRegistry.register(ctx -> new BlockStateGuiRenderer(ctx.vertexConsumers()));
+        PictureInPictureRendererRegistry.register(ctx -> new BlockStateGuiRenderer(ctx.bufferSource()));
     }
 }

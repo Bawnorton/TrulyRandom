@@ -1,13 +1,13 @@
 package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.RecipeHolder;
-import net.minecraft.recipe.StonecuttingRecipe;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.StonecutterRecipe;
+import org.joml.Matrix3x2fStack;
 
 public class StonecutterGraphElement extends CraftingStationGraphElement {
     private static final Identifier STONECUTTER = TrulyRandom.id("loot_book/stonecutter");
@@ -17,8 +17,8 @@ public class StonecutterGraphElement extends CraftingStationGraphElement {
     }
 
     @Override
-    protected void renderRecipeTooltip(DrawContext context, RecipeHolder<?> recipe, int mouseX, int mouseY) {
-        context.drawGuiTexture(
+    protected void extractRecipeTooltip(GuiGraphicsExtractor graphics, RecipeHolder<?> recipe, int mouseX, int mouseY) {
+        graphics.blitSprite(
                 RenderPipelines.GUI_TEXTURED,
                 STONECUTTER,
                 mouseX + (BACKGROUND_WIDTH - 41) / 2,
@@ -26,14 +26,15 @@ public class StonecutterGraphElement extends CraftingStationGraphElement {
                 41,
                 13
         );
-        if(recipe.value() instanceof StonecuttingRecipe stonecuttingRecipe) {
-            context.getMatrices().pushMatrix();
-            context.getMatrices().scale(0.5f, 0.5f);
+        if(recipe.value() instanceof StonecutterRecipe stonecutterRecipe) {
+            Matrix3x2fStack matrices = graphics.pose();
+            matrices.pushMatrix();
+            matrices.scale(0.5f, 0.5f);
             int x = mouseX * 2;
             int y = mouseY * 2;
-            renderIngredient(context, stonecuttingRecipe.ingredient(), x + 38, y + 25, true);
-            renderOutput(context, x + 94, y + 25);
-            context.getMatrices().popMatrix();
+            extractIngredient(graphics, stonecutterRecipe.input(), x + 38, y + 25, true);
+            extractOutput(graphics, x + 94, y + 25);
+            matrices.popMatrix();
         }
     }
 }

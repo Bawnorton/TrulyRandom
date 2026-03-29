@@ -1,18 +1,19 @@
 package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.tracker.loot.drop.TrackingConnection;
-import net.minecraft.advancement.AdvancementFrame;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.advancement.AdvancementObtainedStatus;
-import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
-import net.minecraft.util.Identifier;
+import net.minecraft.advancements.AdvancementType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.advancements.AdvancementWidgetType;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.CommonColors;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.graph.builder.GraphBuilder;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,29 +56,29 @@ public abstract class GraphElement {
         return connections.getOrDefault(element, TrackingConnection.NONE);
     }
 
-    public void renderBackground(DrawContext context, int x, int y, int width, int height) {
+    public void extractBackground(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
         Identifier texture;
         int color = -1;
         if (getTo().isEmpty()) {
-            texture = AdvancementObtainedStatus.OBTAINED.getFrameTexture(AdvancementFrame.CHALLENGE);
+            texture = AdvancementWidgetType.OBTAINED.frameSprite(AdvancementType.CHALLENGE);
         } else {
             if (isHovered()) {
-                color = Colors.GREEN;
+                color = CommonColors.GREEN;
             }
-            texture = AdvancementObtainedStatus.UNOBTAINED.getFrameTexture(AdvancementFrame.TASK);
+            texture = AdvancementWidgetType.UNOBTAINED.frameSprite(AdvancementType.TASK);
         }
-        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, texture, x, y, width, height, color);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, texture, x, y, width, height, color);
     }
 
-    public abstract void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale);
+    public abstract void extractRenderState(GuiGraphicsExtractor graphics, Minecraft minecraft, int mouseX, int mouseY, int x, int y, float scale);
 
-    protected abstract Text getTooltip();
+    protected abstract Component getTooltip();
 
-    public void drawTooltip(DrawContext context, int mouseX, int mouseY) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        TextRenderer textRenderer = client.textRenderer;
-        Text tooltip = getTooltip();
-        context.drawTooltip(textRenderer, tooltip, mouseX - textRenderer.getWidth(tooltip) - 15, mouseY);
+    public void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        Minecraft minecraft = Minecraft.getInstance();
+        Font font = minecraft.font;
+        Component tooltip = getTooltip();
+        graphics.setTooltipForNextFrame(font, tooltip, mouseX - font.width(tooltip) - 15, mouseY);
     }
 
     public void onHovered() {

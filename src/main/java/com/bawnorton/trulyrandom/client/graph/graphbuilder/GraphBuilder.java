@@ -3,9 +3,10 @@ package com.bawnorton.trulyrandom.client.graph.graphbuilder;
 import com.bawnorton.trulyrandom.client.graph.element.GraphElement;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
-import net.minecraft.loot.LootTable;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.registry.ResourceKey;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.level.storage.loot.LootTable;
+
 import java.util.HashSet;
 import java.util.Set;
 

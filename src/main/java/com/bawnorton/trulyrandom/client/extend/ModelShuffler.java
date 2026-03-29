@@ -1,12 +1,11 @@
 package com.bawnorton.trulyrandom.client.extend;
 
-import com.bawnorton.trulyrandom.client.mixin.accessor.StateAccessor;
 import com.bawnorton.trulyrandom.util.collection.UnaryMap;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.Item;
-import net.minecraft.registry.BuiltInRegistries;
-import net.minecraft.state.property.Property;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -34,14 +33,14 @@ public interface ModelShuffler<T> {
             Map<String, List<BlockState>> propertyMap = new HashMap<>();
             for (BlockState state : trulyrandom$getBlockStates()) {
                 StringBuilder variant = new StringBuilder();
-                for (Map.Entry<Property<?>, Comparable<?>> entry : state.getEntries().entrySet()) {
-                    variant.append(StateAccessor.getPropertyMapPrinter().apply(entry));
+                for (Property<?> entry : state.getProperties()) {
+                    variant.append(entry);
                 }
-                variant.append(state.isOpaque());
-                variant.append(state.getCullingShape());
-                propertyMap.computeIfAbsent(variant.toString(), k -> new ArrayList<>()).add(state);
+                variant.append(state.canOcclude());
+                variant.append(state.getOcclusionShape());
+                propertyMap.computeIfAbsent(variant.toString(), _ -> new ArrayList<>()).add(state);
             }
-            propertyMap.forEach((k, v) -> v.sort(Comparator.comparingInt(state -> BuiltInRegistries.BLOCK.getRawId(state.getBlock()))));
+            propertyMap.forEach((_, v) -> v.sort(Comparator.comparingInt(state -> BuiltInRegistries.BLOCK.getId(state.getBlock()))));
             return propertyMap;
         }
     }

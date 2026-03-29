@@ -1,13 +1,13 @@
 package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.RecipeHolder;
-import net.minecraft.recipe.SmithingRecipe;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.SmithingRecipe;
+import net.minecraft.resources.Identifier;
+import org.joml.Matrix3x2fStack;
 
 public class SmithingGraphElement extends CraftingStationGraphElement {
     private static final Identifier SMITHING = TrulyRandom.id("loot_book/smithing");
@@ -17,8 +17,8 @@ public class SmithingGraphElement extends CraftingStationGraphElement {
     }
 
     @Override
-    protected void renderRecipeTooltip(DrawContext context, RecipeHolder<?> recipe, int mouseX, int mouseY) {
-        context.drawGuiTexture(
+    protected void extractRecipeTooltip(GuiGraphicsExtractor graphics, RecipeHolder<?> recipe, int mouseX, int mouseY) {
+        graphics.blitSprite(
                 RenderPipelines.GUI_TEXTURED,
                 SMITHING,
                 mouseX + (BACKGROUND_WIDTH - 54) / 2,
@@ -27,15 +27,16 @@ public class SmithingGraphElement extends CraftingStationGraphElement {
                 9
         );
         if(recipe.value() instanceof SmithingRecipe smithingRecipe) {
-            context.getMatrices().pushMatrix();
-            context.getMatrices().scale(0.5f, 0.5f);
+            Matrix3x2fStack matrices = graphics.pose();
+            matrices.pushMatrix();
+            matrices.scale(0.5f, 0.5f);
             int x = mouseX * 2;
             int y = mouseY * 2;
-            smithingRecipe.template().ifPresent(ingredient -> renderIngredient(context, ingredient, x + 20, y + 25, true));
-            renderIngredient(context, smithingRecipe.base(), x + 39, y + 25, true);
-            smithingRecipe.addition().ifPresent(ingredient -> renderIngredient(context, ingredient, x + 57, y + 25, true));
-            renderOutput(context, x + 111, y + 25);
-            context.getMatrices().popMatrix();
+            smithingRecipe.templateIngredient().ifPresent(ingredient -> extractIngredient(graphics, ingredient, x + 20, y + 25, true));
+            extractIngredient(graphics, smithingRecipe.baseIngredient(), x + 39, y + 25, true);
+            smithingRecipe.additionIngredient().ifPresent(ingredient -> extractIngredient(graphics, ingredient, x + 57, y + 25, true));
+            extractOutput(graphics, x + 111, y + 25);
+            matrices.popMatrix();
         }
     }
 }

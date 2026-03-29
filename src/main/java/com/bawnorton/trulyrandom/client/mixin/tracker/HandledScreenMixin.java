@@ -8,8 +8,8 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.ingame.HandledScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
@@ -50,7 +50,7 @@ public abstract class HandledScreenMixin extends Screen implements TrackerHintDr
             at = @At("HEAD"),
             cancellable = true
     )
-    protected void mouseDragInInvScreen(double mouseX, double mouseY, int button, double deltaX, double deltaY, CallbackInfoReturnable<Boolean> cir) {
+    protected void mouseDragInInvScreen(MouseButtonEvent event, boolean doubleClick, double deltaX, double deltaY, CallbackInfoReturnable<Boolean> cir) {
     }
 
     @SuppressWarnings("CancellableInjectionUsage")

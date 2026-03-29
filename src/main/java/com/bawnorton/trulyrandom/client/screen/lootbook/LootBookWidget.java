@@ -5,28 +5,30 @@ import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
 import com.bawnorton.trulyrandom.client.graph.TrackingGraphBookController;
 import com.bawnorton.trulyrandom.client.mixin.accessor.RecipeBookWidgetAccessor;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.ButtonTextures;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.item.Item;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
 import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
-public class LootBookWidget implements Drawable, Element, Selectable {
-    public static final ButtonTextures BUTTON_TEXTURES = new ButtonTextures(
+public class LootBookWidget implements Renderable, GuiEventListener, NarratableEntry {
+    public static final WidgetSprites BUTTON_TEXTURES = new WidgetSprites(
             TrulyRandom.id("loot_book/button"),
             TrulyRandom.id("loot_book/button_focused")
     );
@@ -37,8 +39,8 @@ public class LootBookWidget implements Drawable, Element, Selectable {
     private int parentWidth;
     private int parentHeight;
 
-    private MinecraftClient client;
-    private TextFieldWidget searchField;
+    private Minecraft minecraft;
+    private EditBox searchField;
 
     private final LootBookResults lootArea = new LootBookResults();
     private final LootBookGraph graph = new LootBookGraph();
@@ -52,8 +54,8 @@ public class LootBookWidget implements Drawable, Element, Selectable {
     private boolean isShort;
     private String searchedText;
 
-    public void initialize(int parentWidth, int parentHeight, MinecraftClient client, boolean narrow, boolean isShort) {
-        this.client = client;
+    public void initialize(int parentWidth, int parentHeight, Minecraft minecraft, boolean narrow, boolean isShort) {
+        this.minecraft = minecraft;
         this.parentWidth = parentWidth;
         this.parentHeight = parentHeight;
         this.narrow = narrow;
@@ -75,17 +77,17 @@ public class LootBookWidget implements Drawable, Element, Selectable {
         }
         int x = (parentWidth - 147) / 2 + rightOffset;
         int y = (parentHeight - 166) / 2;
-        String search = searchField == null ? "" : searchField.getText();
-        searchField = new TextFieldWidget(client.textRenderer, x + 25, y + 13 + topOffset, 81, client.textRenderer.fontHeight + 5, Text.translatable("itemGroup.trulyrandom.search"));
+        String search = searchField == null ? "" : searchField.getValue();
+        searchField = new EditBox(minecraft.font, x + 25, y + 13 + topOffset, 81, minecraft.font.lineHeight + 5, Component.translatable("itemGroup.trulyrandom.search"));
         searchField.setMaxLength(50);
         searchField.setVisible(true);
-        searchField.setEditableColor(16777215);
-        searchField.setText(search);
-        searchField.setPlaceholder(Text.translatable("gui.recipebook.search_hint").formatted(Formatting.ITALIC).formatted(Formatting.GRAY));
-        lootArea.initalize(client, x, y + topOffset);
-        graph.initalize(client, controller, this, x - LootBookGraph.WIDTH / 2 - 16, y - topOffset);
+        searchField.setTextColor(16777215);
+        searchField.setValue(search);
+        searchField.setHint(Component.translatable("gui.recipebook.search_hint").withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.GRAY));
+        lootArea.initalize(minecraft, x, y + topOffset);
+        graph.initalize(minecraft, controller, this, x - LootBookGraph.WIDTH / 2 - 16, y - topOffset);
         graph.show(controller.getGraphItem());
-        if(((MinecraftClientExtender) client).trulyrandom$isResizing()) {
+        if(((MinecraftClientExtender) minecraft).trulyrandom$isResizing()) {
             graph.moveToRoot();
         }
         refreshResults();
@@ -123,7 +125,7 @@ public class LootBookWidget implements Drawable, Element, Selectable {
     }
 
     private void refreshSearchResults() {
-        String searched = searchField.getText().toLowerCase(Locale.ENGLISH);
+        String searched = searchField.getValue().toLowerCase(Locale.ENGLISH);
         if(!searched.equals(searchedText)) {
             refreshResults();
             searchedText = searched;
@@ -133,11 +135,11 @@ public class LootBookWidget implements Drawable, Element, Selectable {
     public void refreshResults() {
         lootArea.refreshTrackers();
         List<Item> items = new ArrayList<>(lootArea.getAllItems());
-        String search = searchField.getText();
+        String search = searchField.getValue();
         if(!search.isEmpty()) {
             items = items.stream()
                     .filter(drop -> {
-                        String name = drop.getName().getString();
+                        String name = drop.getDefaultInstance().getDisplayName().getString();
                         String transformed = name.toLowerCase();
                         return transformed.contains(search.toLowerCase());
                     })
@@ -178,48 +180,48 @@ public class LootBookWidget implements Drawable, Element, Selectable {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         if(!open) return;
 
         if(!(isShort && isGraphOpen())) {
             int x = (parentWidth - 147) / 2 + rightOffset;
             int y = (parentHeight - 166) / 2 + topOffset;
-            context.drawTexture(RenderPipelines.GUI_TEXTURED, BACKGROUND_TEXTURE, x, y, 1f, 1f, 147, 166, 256, 256);
-            searchField.render(context, mouseX, mouseY, delta);
-            lootArea.draw(context, x, y, mouseX, mouseY, delta);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_TEXTURE, x, y, 0, 0, 147, 166, 256, 256);
+            searchField.extractRenderState(graphics, mouseX, mouseY, a);
+            lootArea.extractRenderState(graphics, x, y, mouseX, mouseY, a);
         }
-        renderGraph(context, mouseX, mouseY, delta);
+        extractGraphRenderState(graphics, mouseX, mouseY, a);
     }
 
-    public void renderGraph(DrawContext context, int mouseX, int mouseY, float delta) {
-        graph.render(context, mouseX, mouseY, delta);
+    public void extractGraphRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
+        graph.extractRenderState(graphics, mouseX, mouseY, delta);
     }
 
-    public void drawTooltip(DrawContext context, int mouseX, int mouseY) {
+    public void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if(!isOpen()) return;
 
         try {
-            graph.drawTooltip(context, mouseX, mouseY);
-            lootArea.drawTooltip(context, mouseX, mouseY);
+            graph.extractTooltip(graphics, mouseX, mouseY);
+            lootArea.extractTooltip(graphics, mouseX, mouseY);
         } catch(RuntimeException ignored) {}
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (!isOpen() || client.player.isSpectator()) return false;
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (!isOpen() || minecraft.player.isSpectator()) return false;
 
-        if(graph.mouseClicked(mouseX, mouseY, button)) {
+        if(graph.mouseClicked(event, doubleClick)) {
             return true;
         }
 
-        if(lootArea.mouseClicked(mouseX, mouseY, button)) {
+        if(lootArea.mouseClicked(event, doubleClick)) {
             if(lootArea.getLastClickedItem() != null) {
                 openGraph(lootArea.getLastClickedItem());
             }
             return true;
         }
 
-        if(searchField.mouseClicked(mouseX, mouseY, button)) {
+        if(searchField.mouseClicked(event, doubleClick)) {
             searchField.setFocused(true);
             return true;
         }
@@ -229,8 +231,8 @@ public class LootBookWidget implements Drawable, Element, Selectable {
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        return graph.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+        return graph.mouseDragged(event, dx, dy);
     }
 
     @Override
@@ -244,10 +246,11 @@ public class LootBookWidget implements Drawable, Element, Selectable {
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyEvent keyEvent) {
         searching = false;
-        if (!isOpen() || client.player.isSpectator()) return false;
+        if (!isOpen() || minecraft.player.isSpectator()) return false;
 
+        int keyCode = keyEvent.key();
         if(keyCode == GLFW.GLFW_KEY_ESCAPE) {
             if(narrow) {
                 setOpen(false);
@@ -258,7 +261,7 @@ public class LootBookWidget implements Drawable, Element, Selectable {
             }
         }
 
-        if(searchField.keyPressed(keyCode, scanCode, modifiers)) {
+        if(searchField.keyPressed(keyEvent)) {
             refreshSearchResults();
             return true;
         }
@@ -267,7 +270,7 @@ public class LootBookWidget implements Drawable, Element, Selectable {
             return true;
         }
 
-        if(client.options.chatKey.matchesKey(keyCode, scanCode) && searchField.isFocused()) {
+        if(minecraft.options.keyChat.matches(keyEvent) && searchField.isFocused()) {
             searching = true;
             searchField.setFocused(true);
             return true;
@@ -285,21 +288,21 @@ public class LootBookWidget implements Drawable, Element, Selectable {
     }
 
     @Override
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+    public boolean keyReleased(KeyEvent event) {
         searching = false;
-        return Element.super.keyReleased(keyCode, scanCode, modifiers);
+        return GuiEventListener.super.keyReleased(event);
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharacterEvent event) {
         if(searching) return false;
-        if(!isOpen() || client.player.isSpectator()) return false;
-        if(searchField.charTyped(chr, modifiers)) {
+        if(!isOpen() || minecraft.player.isSpectator()) return false;
+        if(searchField.charTyped(event)) {
             refreshSearchResults();
             return true;
         }
 
-        return Element.super.charTyped(chr, modifiers);
+        return GuiEventListener.super.charTyped(event);
     }
 
     @Override
@@ -312,11 +315,11 @@ public class LootBookWidget implements Drawable, Element, Selectable {
     }
 
     @Override
-    public SelectionType getType() {
-        return SelectionType.NONE;
+    public NarrationPriority narrationPriority() {
+        return NarrationPriority.NONE;
     }
 
     @Override
-    public void appendNarrations(NarrationMessageBuilder builder) {
+    public void updateNarration(NarrationElementOutput output) {
     }
 }

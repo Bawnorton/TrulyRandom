@@ -1,7 +1,7 @@
 package com.bawnorton.trulyrandom.client.screen;
 
 import com.bawnorton.trulyrandom.random.module.Modules;
-import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screens.Screen;
 
 import java.util.function.Consumer;
 

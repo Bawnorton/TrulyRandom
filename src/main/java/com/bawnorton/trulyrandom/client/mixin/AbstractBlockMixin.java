@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.At;
 public abstract class AbstractBlockMixin {
     @ModifyReturnValue(method = "getSoundGroup", at = @At("RETURN"))
     private BlockSoundGroup useRandomisedBlockSound(BlockSoundGroup original) {
-        UnaryMap<BlockState> originalToRandomMap = ((ModelShuffler.BlockStates) MinecraftClient.getInstance()
+        UnaryMap<BlockState> originalToRandomMap = ((ModelShuffler.BlockStates) Minecraft.getInstance()
                 .getBlockRenderManager()
                 .getModels()).trulyrandom$getRedirectMap();
         BlockState defaultState;

@@ -1,2 +1,5 @@
 classTweaker v1 official
+
 inject-interface net/minecraft/world/entity/player/Player com/bawnorton/trulyrandom/extend/TeamMember
+
+accessible method net/minecraft/client/gui/components/MultiLineEditBox <init> (Lnet/minecraft/client/gui/Font;IIIILnet/minecraft/network/chat/Component;Lnet/minecraft/network/chat/Component;IZIZZ)V

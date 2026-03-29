@@ -8,10 +8,9 @@ import com.bawnorton.trulyrandom.random.Randomiser;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.Item;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 
 public class ClientRandomiser extends Randomiser {
@@ -46,35 +45,35 @@ public class ClientRandomiser extends Randomiser {
         recipeTracker = tracker;
     }
 
-    public void updateBlockModels(MinecraftClient client, boolean seedChanged) {
-        update(blockModelRandomiser, client, modules.isEnabled(blockModelRandomiser.getModule()), seedChanged);
+    public void updateBlockModels(Minecraft minecraft, boolean seedChanged) {
+        update(blockModelRandomiser, minecraft, modules.isEnabled(blockModelRandomiser.getModule()), seedChanged);
     }
 
-    public void updateItemModels(MinecraftClient client, boolean seedChanged) {
-        update(itemModelRandomiser, client, modules.isEnabled(itemModelRandomiser.getModule()), seedChanged);
+    public void updateItemModels(Minecraft minecraft, boolean seedChanged) {
+        update(itemModelRandomiser, minecraft, modules.isEnabled(itemModelRandomiser.getModule()), seedChanged);
     }
 
     public void updateBlockModels(UnaryMap<BlockState> redirectMap) {
         blockModelRandomiser.updateBlockModels(redirectMap);
-        blockModelRandomiser.reloadModels(MinecraftClient.getInstance());
+        blockModelRandomiser.reloadModels(Minecraft.getInstance());
     }
 
     public void updateItemModels(UnaryMap<Identifier> redirectMap) {
         itemModelRandomiser.updateItemModels(redirectMap);
-        itemModelRandomiser.reloadModels(MinecraftClient.getInstance());
+        itemModelRandomiser.reloadModels(Minecraft.getInstance());
     }
 
-    private void update(ModelRandomiser randomiser, MinecraftClient client, boolean randomise, boolean forceRandomise) {
+    private void update(ModelRandomiser randomiser, Minecraft minecraft, boolean randomise, boolean forceRandomise) {
         boolean isRandomised = randomiser.isRandomised();
 
         if (!randomise && isRandomised) {
-            randomiser.reset(client);
+            randomiser.reset(minecraft);
             randomiser.setRandomised(false);
         } else if (randomise && (!isRandomised || forceRandomise)) {
-            randomiser.randomise(client, modules.getSeed(randomiser.getModule()));
+            randomiser.randomise(minecraft, modules.getSeed(randomiser.getModule()));
             randomiser.setRandomised(true);
         } else {
-            randomiser.reloadModels(client);
+            randomiser.reloadModels(minecraft);
         }
     }
 }

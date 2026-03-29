@@ -2,18 +2,18 @@ package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.util.Cycler;
-import net.minecraft.advancement.AdvancementFrame;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.advancement.AdvancementObtainedStatus;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.item.Item;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.RecipeHolder;
-import net.minecraft.registry.entry.Holder;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.advancements.AdvancementType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.advancements.AdvancementWidgetType;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -44,27 +44,27 @@ public abstract class CraftingStationGraphElement extends GraphElement {
     }
 
     @Override
-    protected Text getTooltip() {
-        return Text.translatable("container.crafting");
+    protected Component getTooltip() {
+        return Component.translatable("container.crafting");
     }
 
     @Override
-    public void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale) {
-        context.drawItemWithoutEntity(station.getDefaultInstance(), x - 8, y - 8);
+    public void extractRenderState(GuiGraphicsExtractor graphics, Minecraft minecraft, int mouseX, int mouseY, int x, int y, float scale) {
+        graphics.fakeItem(station.getDefaultInstance(), x - 8, y - 8);
     }
 
     @Override
-    public void renderBackground(DrawContext context, int x, int y, int width, int height) {
-        Identifier texture = AdvancementObtainedStatus.UNOBTAINED.getFrameTexture(AdvancementFrame.GOAL);
-        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, texture, x, y, width, height, isHovered() ? 0xFF6666FF : 0xFFAAAAFF);
+    public void extractBackground(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
+        Identifier texture = AdvancementWidgetType.UNOBTAINED.frameSprite(AdvancementType.GOAL);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, texture, x, y, width, height, isHovered() ? 0xFF6666FF : 0xFFAAAAFF);
     }
-
-    protected abstract void renderRecipeTooltip(DrawContext context, RecipeHolder<?> recipe, int mouseX, int mouseY);
+    
+    protected abstract void extractRecipeTooltip(GuiGraphicsExtractor graphics, RecipeHolder<?> recipe, int mouseX, int mouseY);
 
     @Override
-    public void drawTooltip(DrawContext context, int mouseX, int mouseY) {
-        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, RECIPE_BACKGROUND, mouseX, mouseY, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
-        renderRecipeTooltip(context, recipe, mouseX, mouseY);
+    public void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, RECIPE_BACKGROUND, mouseX, mouseY, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
+        extractRecipeTooltip(graphics, recipe, mouseX, mouseY);
     }
 
     protected boolean hasEncountered(Item item) {
@@ -78,22 +78,22 @@ public abstract class CraftingStationGraphElement extends GraphElement {
         return false;
     }
 
-    protected void renderIngredient(DrawContext context, Ingredient ingredient, int x, int y, boolean filter) {
-        List<Item> slotItems = ingredient.getMatchingItems()
-                .sorted(Comparator.comparing(entry -> entry.getKey().orElseThrow().getValue()))
+    protected void extractIngredient(GuiGraphicsExtractor graphics, Ingredient ingredient, int x, int y, boolean filter) {
+        List<Item> slotItems = ingredient.items()
+                .sorted(Comparator.comparing(entry -> entry.unwrapKey().orElseThrow().identifier()))
                 .map(Holder::value)
                 .filter(item -> !filter || hasEncountered(item))
                 .toList();
         Item item = Cycler.one(slotItems);
         if (item == null) return;
 
-        context.drawItem(item.getDefaultInstance(), x, y);
+        graphics.fakeItem(item.getDefaultInstance(), x, y);
     }
 
-    protected void renderOutput(DrawContext context, int x, int y) {
+    protected void extractOutput(GuiGraphicsExtractor graphics, int x, int y) {
         for(GraphElement element : getTo()) {
             if(element instanceof ItemElement itemElement) {
-                context.drawItem(itemElement.item.getDefaultInstance(), x, y);
+                graphics.fakeItem(itemElement.item.getDefaultInstance(), x, y);
                 return;
             }
         }

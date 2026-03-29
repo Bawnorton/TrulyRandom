@@ -1,7 +1,7 @@
 package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 
 public abstract class IdBasedGraphElement extends GraphElement {
     protected final LootTableIdentifier lootTableId;
@@ -11,8 +11,8 @@ public abstract class IdBasedGraphElement extends GraphElement {
     }
 
     @Override
-    protected Text getTooltip() {
-        return Text.of(lootTableId.toString());
+    protected Component getTooltip() {
+        return Component.literal(lootTableId.toString());
     }
 
     @Override

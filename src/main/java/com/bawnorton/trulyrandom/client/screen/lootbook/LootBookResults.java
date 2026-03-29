@@ -4,14 +4,16 @@ import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.random.ClientRandomiser;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ButtonTextures;
-import net.minecraft.client.gui.widget.ToggleButtonWidget;
-import net.minecraft.item.Item;
-import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.CommonColors;
+import net.minecraft.world.item.Item;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -19,16 +21,19 @@ import java.util.List;
 import java.util.Set;
 
 public class LootBookResults {
-    private static final ButtonTextures PAGE_FORWARD_TEXTURES = new ButtonTextures(
-            Identifier.ofVanilla("recipe_book/page_forward"),
-            Identifier.ofVanilla("recipe_book/page_forward_highlighted")
+    private static final WidgetSprites PAGE_FORWARD_TEXTURES = new WidgetSprites(
+            Identifier.withDefaultNamespace("recipe_book/page_forward"),
+            Identifier.withDefaultNamespace("recipe_book/page_forward_highlighted")
     );
-    private static final ButtonTextures PAGE_BACKWARD_TEXTURES = new ButtonTextures(
-            Identifier.ofVanilla("recipe_book/page_backward"),
-            Identifier.ofVanilla("recipe_book/page_backward_highlighted")
+    private static final WidgetSprites PAGE_BACKWARD_TEXTURES = new WidgetSprites(
+            Identifier.withDefaultNamespace("recipe_book/page_backward"),
+            Identifier.withDefaultNamespace("recipe_book/page_backward_highlighted")
     );
 
-    private MinecraftClient client;
+    private static final Component NEXT_PAGE_TEXT = Component.translatable("gui.recipebook.next_page");
+    private static final Component PREVIOUS_PAGE_TEXT = Component.translatable("gui.recipebook.previous_page");
+
+    private Minecraft minecraft;
 
     private List<Item> items;
     private final List<LootResultButton> resultButtons = new ArrayList<>(20);
@@ -38,8 +43,8 @@ public class LootBookResults {
     private int currentPage;
     private int y;
 
-    private ToggleButtonWidget nextPageButton;
-    private ToggleButtonWidget prevPageButton;
+    private ImageButton nextPageButton;
+    private ImageButton prevPageButton;
 
     private LootTableTracker lootTracker;
     private RecipeTracker recipeTracker;
@@ -50,8 +55,8 @@ public class LootBookResults {
         }
     }
 
-    public void initalize(MinecraftClient client, int parentRight, int parentTop) {
-        this.client = client;
+    public void initalize(Minecraft minecraft, int parentRight, int parentTop) {
+        this.minecraft = minecraft;
         y = parentTop;
         refreshTrackers();
         items = getAllItems();
@@ -64,10 +69,8 @@ public class LootBookResults {
             );
         }
 
-        nextPageButton = new ToggleButtonWidget(parentRight + 93, y + 137, 12, 17, false);
-        nextPageButton.setTextures(PAGE_FORWARD_TEXTURES);
-        prevPageButton = new ToggleButtonWidget(parentRight + 38, y + 137, 12, 17, true);
-        prevPageButton.setTextures(PAGE_BACKWARD_TEXTURES);
+        nextPageButton = new ImageButton(parentRight + 93, y + 137, 12, 17, PAGE_FORWARD_TEXTURES, _ -> updateArrowButons(), NEXT_PAGE_TEXT);
+        prevPageButton = new ImageButton(parentRight + 38, y + 137, 12, 17, PAGE_BACKWARD_TEXTURES, _ -> updateArrowButons(), PREVIOUS_PAGE_TEXT);
     }
 
     public void refreshTrackers() {
@@ -102,10 +105,10 @@ public class LootBookResults {
                 resultButton.visible = false;
             }
         }
-        hideShowPageButtons();
+        updateArrowButons();
     }
 
-    private void hideShowPageButtons() {
+    private void updateArrowButons() {
         nextPageButton.visible = pageCount > 1 && currentPage < pageCount - 1;
         prevPageButton.visible = pageCount > 1 && currentPage > 0;
     }
@@ -126,49 +129,49 @@ public class LootBookResults {
         return y;
     }
 
-    public void draw(DrawContext context, int x, int y, int mouseX, int mouseY, float delta) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, int x, int y, int mouseX, int mouseY, float a) {
         if(pageCount > 1) {
-            Text text = Text.translatable("gui.recipebook.page", currentPage + 1, pageCount);
-            int textWidth = client.textRenderer.getWidth(text);
-            context.drawText(client.textRenderer, text, x - textWidth / 2 + 73, y + 141, Colors.WHITE, false);
+            Component text = Component.translatable("gui.recipebook.page", currentPage + 1, pageCount);
+            int textWidth = minecraft.font.width(text);
+            graphics.text(minecraft.font, text, x - textWidth / 2 + 73, y + 141, CommonColors.WHITE, false);
         }
 
         hoveredResultButton = null;
 
         for(LootResultButton resultButton : resultButtons) {
-            resultButton.render(context, mouseX, mouseY, delta);
-            if(resultButton.visible && resultButton.isSelected()) {
+            resultButton.extractRenderState(graphics, mouseX, mouseY, a);
+            if(resultButton.visible && resultButton.isFocused()) {
                 hoveredResultButton = resultButton;
             }
         }
 
-        prevPageButton.render(context, mouseX, mouseY, delta);
-        nextPageButton.render(context, mouseX, mouseY, delta);
+        prevPageButton.extractRenderState(graphics, mouseX, mouseY, a);
+        nextPageButton.extractRenderState(graphics, mouseX, mouseY, a);
     }
 
-    public void drawTooltip(DrawContext context, int x, int y) {
-        if(client.currentScreen != null && hoveredResultButton != null) {
-            context.drawOrderedTooltip(client.textRenderer, hoveredResultButton.getTooltip().getLines(client), x, y);
+    public void extractTooltip(GuiGraphicsExtractor extractor, int x, int y) {
+        if(minecraft.screen != null && hoveredResultButton != null) {
+            extractor.setTooltipForNextFrame(minecraft.font, hoveredResultButton.getTooltip().toCharSequence(minecraft), x, y);
         }
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         lastClickedItem = null;
-        if(nextPageButton.mouseClicked(mouseX, mouseY, button)) {
+        if(nextPageButton.mouseClicked(event, doubleClick)) {
             currentPage++;
             refreshResultButtons();
             return true;
         }
 
-        if(prevPageButton.mouseClicked(mouseX, mouseY, button)) {
+        if(prevPageButton.mouseClicked(event, doubleClick)) {
             currentPage--;
             refreshResultButtons();
             return true;
         }
 
         for(LootResultButton resultButton : resultButtons) {
-            if(resultButton.mouseClicked(mouseX, mouseY, button)) {
-                if(button == 0) {
+            if(resultButton.mouseClicked(event, doubleClick)) {
+                if(event.isLeft()) {
                     lastClickedItem = resultButton.getDrop();
                     return true;
                 }
@@ -185,7 +188,7 @@ public class LootBookResults {
         Set<Item> allItems = new HashSet<>(lootTracker.getAllDrops());
         allItems.addAll(recipeTracker.getAllOutputs());
         return allItems.stream()
-                .sorted(Comparator.comparing(item -> item.getName().getString()))
+                .sorted(Comparator.comparing(item -> item.getDefaultInstance().getDisplayName().getString()))
                 .toList();
     }
 }

@@ -3,17 +3,18 @@ package com.bawnorton.trulyrandom.client.graph.element;
 import com.bawnorton.trulyrandom.client.mixin.accessor.CatEntityAccessor;
 import com.bawnorton.trulyrandom.client.screen.LivingEntityGuiRenderer;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.mob.PiglinEntity;
-import net.minecraft.entity.passive.CatEntity;
-import net.minecraft.entity.passive.PandaEntity;
-import net.minecraft.entity.passive.SnifferEntity;
-import net.minecraft.item.Items;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.animal.feline.Cat;
+import net.minecraft.world.entity.animal.panda.Panda;
+import net.minecraft.world.entity.animal.sniffer.Sniffer;
+import net.minecraft.world.entity.monster.piglin.Piglin;
+import net.minecraft.world.item.Items;
+import org.joml.Matrix3x2fStack;
 
 public class GameplayGraphElement extends IdBasedGraphElement implements LivingEntityGuiRenderer {
     public GameplayGraphElement(LootTableIdentifier lootTableId) {
@@ -21,59 +22,59 @@ public class GameplayGraphElement extends IdBasedGraphElement implements LivingE
     }
 
     @Override
-    public void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, Minecraft minecraft, int mouseX, int mouseY, int x, int y, float scale) {
         if(lootTableId.isFishing()) {
-            context.drawItemWithoutEntity(Items.FISHING_ROD.getDefaultInstance(), x - 8, y - 8);
+            graphics.fakeItem(Items.FISHING_ROD.getDefaultInstance(), x - 8, y - 8);
         } else if (lootTableId.isPandaSneeze()) {
-            PandaEntity panda = EntityType.PANDA.create(client.world, SpawnReason.COMMAND);
+            Panda panda = EntityType.PANDA.create(minecraft.level, EntitySpawnReason.COMMAND);
             if(panda == null) return;
 
-            panda.setSneezing(true);
-            render(context, mouseX, mouseY, panda, x - 3, y, scale);
-            context.getMatrices().pushMatrix();
-            context.getMatrices().translate(0, 0);
-            context.getMatrices().scale(0.5F, 0.5F);
+            panda.sneeze(true);
+            extractRenderState(graphics, mouseX, mouseY, panda, x - 3, y, scale);
+            Matrix3x2fStack matrices = graphics.pose();
+            matrices.pushMatrix();
+            matrices.scale(0.5F, 0.5F);
             x = (int) (x / 0.5);
             y = (int) (y / 0.5);
             x += 8;
             y += 8;
-            context.drawItemWithoutEntity(Items.SLIME_BALL.getDefaultInstance(), x, y);
-            context.getMatrices().popMatrix();
+            graphics.fakeItem(Items.SLIME_BALL.getDefaultInstance(), x, y);
+            matrices.popMatrix();
         } else if (lootTableId.isCatMorningGift()) {
-            CatEntity cat = EntityType.CAT.create(client.world, SpawnReason.COMMAND);
+            Cat cat = EntityType.CAT.create(minecraft.level, EntitySpawnReason.COMMAND);
             if(cat == null) return;
 
-            cat.setInSleepingPose(true);
+            cat.setLying(true);
             ((CatEntityAccessor) cat).setSleepAnimation(1);
-            render(context, mouseX, mouseY, cat, x - 3, y, scale);
+            extractRenderState(graphics, mouseX, mouseY, cat, x - 3, y, scale);
         } else if (lootTableId.isSnifferDigging()) {
-            SnifferEntity sniffer = EntityType.SNIFFER.create(client.world, SpawnReason.COMMAND);
+            Sniffer sniffer = EntityType.SNIFFER.create(minecraft.level, EntitySpawnReason.COMMAND);
             if(sniffer == null) return;
 
-            sniffer.startState(SnifferEntity.State.DIGGING);
-            sniffer.age += 60;
-            render(context, mouseX, mouseY, sniffer, x, y, scale);
+            sniffer.transitionTo(Sniffer.State.DIGGING);
+            sniffer.ageUp(60);
+            extractRenderState(graphics, mouseX, mouseY, sniffer, x, y, scale);
         } else if (lootTableId.isPiglinBartering()) {
-            PiglinEntity piglin = EntityType.PIGLIN.create(client.world, SpawnReason.COMMAND);
+            Piglin piglin = EntityType.PIGLIN.create(minecraft.level, EntitySpawnReason.COMMAND);
             if(piglin == null) return;
 
-            piglin.equipStack(EquipmentSlot.OFFHAND, Items.GOLD_INGOT.getDefaultInstance());
-            render(context, mouseX, mouseY, piglin, x, y, scale);
+            piglin.setItemSlot(EquipmentSlot.OFFHAND, Items.GOLD_INGOT.getDefaultInstance());
+            extractRenderState(graphics, mouseX, mouseY, piglin, x, y, scale);
         }
     }
 
     @Override
-    protected Text getTooltip() {
+    protected Component getTooltip() {
         if(lootTableId.isFishing()) {
-            return Text.of("Fishing");
+            return Component.literal("Fishing");
         } else if (lootTableId.isCatMorningGift()) {
-            return Text.of("Cat Morning Gift");
+            return Component.literal("Cat Morning Gift");
         } else if (lootTableId.isPandaSneeze()) {
-            return Text.of("Panda Sneeze");
+            return Component.literal("Panda Sneeze");
         } else if (lootTableId.isPiglinBartering()) {
-            return Text.of("Piglin Bartering");
+            return Component.literal("Piglin Bartering");
         } else if (lootTableId.isSnifferDigging()) {
-            return Text.of("Sniffer Digging");
+            return Component.literal("Sniffer Digging");
         }
         return super.getTooltip();
     }

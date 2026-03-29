@@ -1,36 +1,34 @@
 package com.bawnorton.trulyrandom.client.screen;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.client.TrulyRandomClient;
-import com.bawnorton.trulyrandom.client.network.ClientNetworking;
 import com.bawnorton.trulyrandom.client.screen.module.ModuleWidgetSettings;
 import com.bawnorton.trulyrandom.client.screen.module.adapter.DefaultModuleWidgetAdapter;
 import com.bawnorton.trulyrandom.client.screen.module.adapter.RecipeModuleWidgetAdapter;
 import com.bawnorton.trulyrandom.client.screen.module.adapter.StructureModuleWidgetAdapter;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
-import com.bawnorton.trulyrandom.registry.TrulyRandomCriteria;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.GridWidget;
-import net.minecraft.client.gui.widget.MultilineTextWidget;
-import net.minecraft.client.gui.widget.ThreePartsLayoutWidget;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.MultiLineTextWidget;
+import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
 public abstract class AbstractTrulyRandomSettingsScreen extends Screen {
-    private final ThreePartsLayoutWidget layout = new ThreePartsLayoutWidget(this, 15, 36);
+    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 15, 36);
     private final Screen parent;
     private final Consumer<Modules> applier;
 
     protected AbstractTrulyRandomSettingsScreen(Screen parent, Consumer<Modules> applier) {
-        super(Text.translatable("selectWorld.trulyrandom"));
+        super(Component.translatable("selectWorld.trulyrandom"));
         this.parent = parent;
         this.applier = applier;
     }
@@ -40,79 +38,79 @@ public abstract class AbstractTrulyRandomSettingsScreen extends Screen {
         addHeader();
         addModules();
         addFooter();
-        layout.forEachChild(this::addDrawableChild);
-        refreshWidgetPositions();
+        layout.visitWidgets(this::addRenderableWidget);
+        repositionElements();
     }
 
     protected void addHeader() {
-        layout.addHeader(new MultilineTextWidget(getContentText(), textRenderer), positioner -> positioner.marginTop(15));
+        layout.addToHeader(new MultiLineTextWidget(getContentText(), font), positioner -> positioner.paddingTop(15));
     }
 
     protected void addModules() {
-        GridWidget columns = layout.addBody(new GridWidget());
-        columns.setRowSpacing(10);
-        GridWidget.Adder columnsAdder = columns.createAdder(1);
+        GridLayout columns = layout.addToContents(new GridLayout());
+        columns.rowSpacing(10);
+        GridLayout.RowHelper rowHelper = columns.createRowHelper(1);
         List<Module> modules = getModules().asList();
         modules.removeIf(module -> !getModules().isVisible(module));
         modules.sort(Comparator.comparingInt(Module::ordinal));
-        ModuleWidgetSettings moduleSettings = new ModuleWidgetSettings(client, getModules());
+        ModuleWidgetSettings moduleSettings = new ModuleWidgetSettings(minecraft, getModules());
         moduleSettings.registerAdapters(Set.of(Module.STRUCTURES, Module.FEATURES), new StructureModuleWidgetAdapter());
         moduleSettings.registerAdapters(Set.of(Module.RECIPES), new RecipeModuleWidgetAdapter());
         moduleSettings.setDefaultAdapter(new DefaultModuleWidgetAdapter());
-        GridWidget.Adder rowAdder = null;
+        GridLayout.RowHelper subRowHelper = null;
         for (int i = 0; i < modules.size(); i++) {
             if(i % 2 == 0) {
-                GridWidget row = columnsAdder.add(new GridWidget());
-                row.setColumnSpacing(10);
-                rowAdder = row.createAdder(2);
+                GridLayout row = rowHelper.addChild(new GridLayout());
+                row.columnSpacing(10);
+                subRowHelper = row.createRowHelper(2);
             }
             Module module = modules.get(i);
-            rowAdder.add(moduleSettings.getWidget(module));
+            subRowHelper.addChild(moduleSettings.getWidget(module));
         }
     }
 
     protected void addFooter() {
-        GridWidget.Adder adder = layout.addFooter(new GridWidget().setColumnSpacing(10)).createAdder(2);
-        adder.add(ButtonWidget.builder(ScreenTexts.DONE, button -> applyAndClose()).build());
-        adder.add(ButtonWidget.builder(ScreenTexts.CANCEL, button -> forgetAndClose()).build());
+        GridLayout.RowHelper rowHelper = layout.addToFooter(new GridLayout().columnSpacing(10)).createRowHelper(2);
+        rowHelper.addChild(Button.builder(CommonComponents.GUI_DONE, _ -> applyAndClose()).build());
+        rowHelper.addChild(Button.builder(CommonComponents.GUI_CANCEL, _ -> forgetAndClose()).build());
     }
 
-    protected Text getContentText() {
-        return Text.translatable("selectWorld.trulyrandom.info");
+    protected Component getContentText() {
+        return Component.translatable("selectWorld.trulyrandom.info");
     }
 
     protected abstract Modules getModules();
 
     @Override
-    public void close() {
-        client.setScreen(parent);
+    public void onClose() {
+        minecraft.setScreen(parent);
     }
 
     private void applyAndClose() {
         getModules().confirm();
         applier.accept(getModules());
-        close();
+        onClose();
     }
 
     private void forgetAndClose() {
         getModules().cancel();
-        close();
+        onClose();
     }
 
     @Override
-    protected void refreshWidgetPositions() {
-        layout.refreshPositions();
+    protected void repositionElements() {
+        layout.arrangeElements();
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
-        context.drawText(
-                client.textRenderer,
-                Text.literal(TrulyRandom.VERSION.getFriendlyString()),
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        super.extractRenderState(graphics, mouseX, mouseY, a);
+        graphics.text(
+                minecraft.font,
+                Component.literal(TrulyRandom.VERSION.getFriendlyString()),
                 5,
                 5,
-                Colors.LIGHT_GRAY,
+                CommonColors.LIGHT_GRAY,
                 false
         );
     }

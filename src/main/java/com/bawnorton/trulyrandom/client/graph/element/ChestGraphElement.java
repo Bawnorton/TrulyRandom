@@ -1,27 +1,24 @@
 package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.client.mixin.accessor.ChestModelRendererAccessor;
-import com.bawnorton.trulyrandom.client.mixin.accessor.LoadedBlockEntityModelsAccessor;
 import com.bawnorton.trulyrandom.client.screen.render.BlockStateElementRenderState;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ChestBlock;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.block.entity.LoadedBlockEntityModels;
-import net.minecraft.client.render.item.model.special.ChestModelRenderer;
-import net.minecraft.client.render.item.model.special.SpecialModelRenderer;
-import net.minecraft.item.Item;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.blockentity.state.ChestRenderState;
+import net.minecraft.client.renderer.special.ChestSpecialRenderer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Blocks;
 import org.apache.commons.lang3.StringUtils;
+import org.joml.Matrix3x2fStack;
+
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ChestGraphElement extends IdBasedGraphElement {
+    private final ChestRenderState chestRenderState;
     private int counter = 0;
     private int offset = 0;
     private final List<Item> chestContent;
@@ -29,47 +26,46 @@ public class ChestGraphElement extends IdBasedGraphElement {
     public ChestGraphElement(LootTableIdentifier lootTableId, List<Item> chestContent) {
         super(lootTableId);
         this.chestContent = chestContent;
+        this.chestRenderState = new ChestRenderState();
     }
 
     @Override
-    public void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale) {
+    public void extractRenderState(GuiGraphicsExtractor graphics, Minecraft minecraft, int mouseX, int mouseY, int x, int y, float scale) {
         counter++;
-        if(counter >= client.getCurrentFps()) {
+        if(counter >= minecraft.getFps()) {
             counter = 0;
             offset++;
             if(offset >= chestContent.size()) {
                 offset = 0;
             }
         }
-        ChestBlock chest = (ChestBlock) Blocks.CHEST;
-        BlockState state = chest.getDefaultState();
-        LoadedBlockEntityModels models = client.getBakedModelManager().getBlockEntityModelsSupplier().get();
-        Map<Block, SpecialModelRenderer<?>> renderers = ((LoadedBlockEntityModelsAccessor) models).getRenderers();
-        ChestModelRenderer modelRenderer = (ChestModelRenderer) renderers.get(chest);
+        ChestSpecialRenderer modelRenderer = (ChestSpecialRenderer) minecraft.getBlockEntityRenderDispatcher()
+                .getRenderer(chestRenderState);
         ((ChestModelRendererAccessor) modelRenderer).setOpenness(0.7f);
-        context.state.addSpecialElement(new BlockStateElementRenderState(
-                state, x, y, scale, 45, context.scissorStack.peekLast()
+        graphics.guiRenderState.addPicturesInPictureState(new BlockStateElementRenderState(
+                Blocks.CHEST.defaultBlockState(), x, y, scale, 45, graphics.scissorStack.peek()
         ));
-        context.getMatrices().pushMatrix();
-        context.getMatrices().scale(0.5F, 0.5F);
+        Matrix3x2fStack matrices = graphics.pose();
+        matrices.pushMatrix();
+        matrices.scale(0.5F, 0.5F);
 
         x = (int) (x / 0.5);
         y = (int) (y / 0.5);
         x -= 8;
         y -= 9;
 
-        context.drawItemWithoutEntity(chestContent.get(offset).getDefaultInstance(), x, y);
-        context.getMatrices().popMatrix();
+        graphics.fakeItem(chestContent.get(offset).getDefaultInstance(), x, y);
+        matrices.popMatrix();
     }
 
     @Override
-    protected Text getTooltip() {
+    protected Component getTooltip() {
         String[] segments = lootTableId.getSegments();
         String name = segments[segments.length - 1];
         name = Arrays.stream(name.split("_")).map(StringUtils::capitalize).collect(Collectors.joining(" "));
         if(name.endsWith("Chest")) {
-            return Text.of(name);
+            return Component.literal(name);
         }
-        return Text.of("%s Chest".formatted(name));
+        return Component.literal("%s Chest".formatted(name));
     }
 }

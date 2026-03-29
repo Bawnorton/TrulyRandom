@@ -1,47 +1,50 @@
 package com.bawnorton.trulyrandom.client.screen.widget;
 
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.widget.EditBoxWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.components.MultiLineEditBox;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.network.chat.Component;
 
-public class LongEditBoxWidget extends EditBoxWidget {
-    public LongEditBoxWidget(int x, int y, int width, int height, Text placeholder, long message, TextRenderer textRenderer) {
-        super(textRenderer, x, y, width, height, placeholder, Text.of(Long.toString(message)), 0xffe0e0e0, true, 0xffd0d0d0, true, true);
+public class LongEditBoxWidget extends MultiLineEditBox {
+    public LongEditBoxWidget(int x, int y, int width, int height, Component placeholder, long message, Font font) {
+        super(font, x, y, width, height, placeholder, Component.literal(Long.toString(message)), 0xffe0e0e0, true, 0xffd0d0d0, true, true);
     }
 
     public long getLong() {
         try {
-            return Long.parseLong(getText());
+            return Long.parseLong(getValue());
         } catch (NumberFormatException e) {
             return 0;
         }
     }
 
     public void setLong(long value) {
-        setText(Long.toString(value));
+        setValue(Long.toString(value));
     }
 
     @Override
-    public void setText(String text) {
-        String original = getText();
+    public void setValue(String text) {
+        String original = getValue();
         try {
             Long.parseLong(text);
-            super.setText(text);
+            super.setValue(text);
         } catch (NumberFormatException e) {
-            super.setText(original);
+            super.setValue(original);
         }
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharacterEvent characterEvent) {
+        int chr = characterEvent.codepoint();
         if (chr >= '0' && chr <= '9' || chr == '-') {
-            String original = getText();
-            boolean success = super.charTyped(chr, modifiers);
+            String original = getValue();
+            boolean success = super.charTyped(characterEvent);
             if (success) {
                 try {
-                    Long.parseLong(getText());
+                    Long.parseLong(getValue());
                 } catch (NumberFormatException e) {
-                    setText(original);
+                    setValue(original);
                 }
             }
         }
@@ -49,8 +52,8 @@ public class LongEditBoxWidget extends EditBoxWidget {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if(active && visible) return super.mouseClicked(mouseX, mouseY, button);
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if(active && visible) return super.mouseClicked(event, doubleClick);
         return false;
     }
 

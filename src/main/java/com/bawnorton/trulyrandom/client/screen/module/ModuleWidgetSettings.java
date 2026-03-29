@@ -5,27 +5,28 @@ import com.bawnorton.trulyrandom.client.screen.widget.LongEditBoxWidget;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.util.ModuleAdpatable;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.CyclingButtonWidget;
-import net.minecraft.client.gui.widget.GridWidget;
-import net.minecraft.client.gui.widget.TextWidget;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.LayoutElement;
+import net.minecraft.network.chat.Component;
+
 import java.util.Random;
 
 public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
-    private final MinecraftClient client;
+    private final Minecraft minecraft;
     private final Modules modules;
 
-    public ModuleWidgetSettings(MinecraftClient client, Modules modules) {
-        this.client = client;
+    public ModuleWidgetSettings(Minecraft minecraft, Modules modules) {
+        this.minecraft = minecraft;
         this.modules = modules;
     }
 
-    public Widget getWidget(Module module) {
+    public LayoutElement getWidget(Module module) {
         return getAdapter(module).create(this, module);
     }
 
@@ -33,29 +34,29 @@ public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
         return new Builder<>(this, module, factory);
     }
 
-    public abstract static class ModuleElement extends GridWidget {
-        protected final MinecraftClient client;
+    public abstract static class ModuleElement extends GridLayout {
+        protected final Minecraft minecraft;
         protected final Modules modules;
         protected final Module module;
         private final int columns;
 
         protected ModuleElement(ModuleWidgetSettings settings, Module module, int columns) {
-            this.client = settings.client;
+            this.minecraft = settings.minecraft;
             this.modules = settings.modules;
             this.module = module;
             this.columns = columns;
         }
 
         public void init() {
-            addElements(createAdder(columns));
+            addElements(createRowHelper(columns));
         }
 
-        protected abstract void addElements(GridWidget.Adder adder);
+        protected abstract void addElements(GridLayout.RowHelper adder);
     }
 
     public static class Title extends ModuleElement {
-        protected TextWidget title;
-        protected CyclingButtonWidget<Boolean> toggleButton;
+        protected StringWidget title;
+        protected CycleButton<Boolean> toggleButton;
 
         public Title(ModuleWidgetSettings settings, Module module, int x, int y, int width, int height, int columns) {
             super(settings, module, columns);
@@ -64,39 +65,37 @@ public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
         }
 
         protected void addTitle(int x, int y, int width, int height) {
-            title = new TextWidget(x, y, width, height, Text.translatable("selectWorld.trulyrandom.%s".formatted(module.name().toLowerCase())), client.textRenderer);
-            title.setTooltip(Tooltip.of(getTooltipText()));
-            title.alignLeft();
+            title = new StringWidget(x, y, width, height, Component.translatable("selectWorld.trulyrandom.%s".formatted(module.name().toLowerCase())), minecraft.font);
+            title.setTooltip(Tooltip.create(getTooltipText()));
         }
 
         protected void addToggle(int x, int y, int width, int height) {
-            toggleButton = CyclingButtonWidget.onOffBuilder()
-                    .initially(modules.getEnabledMemento(module))
-                    .omitKeyText()
-                    .build(x, y, 44, height, Text.empty(), (button, value) -> modules.setEnabledMemento(module, value));
-            toggleButton.active = module.isImplemented() && (client.world == null || module.isMutable());
+            toggleButton = CycleButton.onOffBuilder(modules.getEnabledMemento(module))
+                    .displayOnlyValue()
+                    .create(x, y, 44, height, Component.empty(), (_, value) -> modules.setEnabledMemento(module, value));
+            toggleButton.active = module.isImplemented() && (minecraft.level == null || module.isMutable());
         }
 
-        private Text getTooltipText() {
+        private Component getTooltipText() {
             if (module.isImplemented()) {
-                return Text.translatable("selectWorld.trulyrandom.%s.tooltip".formatted(module.name().toLowerCase()));
+                return Component.translatable("selectWorld.trulyrandom.%s.tooltip".formatted(module.name().toLowerCase()));
             } else {
-                return Text.translatable("selectWorld.trulyrandom.not_implemented")
-                        .formatted(Formatting.DARK_GRAY)
-                        .formatted(Formatting.ITALIC);
+                return Component.translatable("selectWorld.trulyrandom.not_implemented")
+                        .withStyle(ChatFormatting.DARK_GRAY)
+                        .withStyle(ChatFormatting.ITALIC);
             }
         }
 
         @Override
-        protected void addElements(Adder adder) {
-            adder.add(title);
-            adder.add(toggleButton);
+        protected void addElements(RowHelper rowHelper) {
+            rowHelper.addChild(title);
+            rowHelper.addChild(toggleButton);
         }
     }
 
     public static class SeedBox extends ModuleElement {
         protected LongEditBoxWidget seedEditBox;
-        protected ButtonWidget newSeedButton;
+        protected Button newSeedButton;
 
         public SeedBox(ModuleWidgetSettings settings, Module module, int x, int y, int width, int height, int columns) {
             super(settings, module, columns);
@@ -105,47 +104,47 @@ public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
         }
 
         protected void addSeedBox(Module module, int x, int y, int width, int height) {
-            seedEditBox = new LongEditBoxWidget(x, y, width, height, Text.translatable("selectWorld.trulyrandom.seed.title"), modules.getSeedMemento(module), client.textRenderer);
+            seedEditBox = new LongEditBoxWidget(x, y, width, height, Component.translatable("selectWorld.trulyrandom.seed.title"), modules.getSeedMemento(module), minecraft.font);
             seedEditBox.setLong(modules.getSeedMemento(module));
-            seedEditBox.setChangeListener(value -> modules.setSeedMemento(module, seedEditBox.getLong()));
-            seedEditBox.setTooltip(Tooltip.of(getSeedTooltipText()));
+            seedEditBox.setValueListener(value -> modules.setSeedMemento(module, seedEditBox.getLong()));
+            seedEditBox.setTooltip(Tooltip.create(getSeedTooltipText()));
             seedEditBox.active = module.isImplemented();
         }
 
         protected void addNewSeedButton(Module module, int height) {
-            newSeedButton = ButtonWidget.builder(Text.translatable("selectWorld.trulyrandom.new_seed"), button -> seedEditBox.setLong(new Random().nextLong()))
-                    .dimensions(0, 0, 44, height)
+            newSeedButton = Button.builder(Component.translatable("selectWorld.trulyrandom.new_seed"), _ -> seedEditBox.setLong(new Random().nextLong()))
+                    .bounds(0, 0, 44, height)
                     .build();
-            newSeedButton.setTooltip(Tooltip.of(getNewSeedTooltipText()));
+            newSeedButton.setTooltip(Tooltip.create(getNewSeedTooltipText()));
             newSeedButton.active = module.isImplemented();
         }
 
-        private Text getNewSeedTooltipText() {
+        private Component getNewSeedTooltipText() {
             if(module.isImplemented()) {
-                return Text.translatable("selectWorld.trulyrandom.new_seed.tooltip");
+                return Component.translatable("selectWorld.trulyrandom.new_seed.tooltip");
             } else {
-                return Text.translatable("selectWorld.trulyrandom.not_implemented")
-                        .formatted(Formatting.DARK_GRAY)
-                        .formatted(Formatting.ITALIC);
+                return Component.translatable("selectWorld.trulyrandom.not_implemented")
+                        .withStyle(ChatFormatting.DARK_GRAY)
+                        .withStyle(ChatFormatting.ITALIC);
             }
         }
 
-        private Text getSeedTooltipText() {
+        private Component getSeedTooltipText() {
             if (module.isImplemented() && module.isMutable()) {
-                return Text.translatable("selectWorld.trulyrandom.seed_tooltip");
+                return Component.translatable("selectWorld.trulyrandom.seed_tooltip");
             } else if (!module.isMutable()) {
-                return Text.translatable("selectWorld.trulyrandom.seed_tooltip_immutable");
+                return Component.translatable("selectWorld.trulyrandom.seed_tooltip_immutable");
             } else {
-                return Text.translatable("selectWorld.trulyrandom.not_implemented")
-                        .formatted(Formatting.DARK_GRAY)
-                        .formatted(Formatting.ITALIC);
+                return Component.translatable("selectWorld.trulyrandom.not_implemented")
+                        .withStyle(ChatFormatting.DARK_GRAY)
+                        .withStyle(ChatFormatting.ITALIC);
             }
         }
 
         @Override
-        protected void addElements(Adder adder) {
-            adder.add(seedEditBox);
-            adder.add(newSeedButton);
+        protected void addElements(RowHelper rowHelper) {
+            rowHelper.addChild(seedEditBox);
+            rowHelper.addChild(newSeedButton);
         }
     }
 
@@ -175,7 +174,7 @@ public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
         public T build() {
             T moduleElement = factory.create(settings, module, x, y, width, height, 2);
             moduleElement.init();
-            moduleElement.setColumnSpacing(2);
+            moduleElement.columnSpacing(2);
             return moduleElement;
         }
     }

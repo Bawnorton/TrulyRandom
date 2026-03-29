@@ -1,32 +1,27 @@
 package com.bawnorton.trulyrandom.client.graph.graphbuilder.recipetype;
 
-import com.bawnorton.trulyrandom.client.graph.element.CraftingStationGraphElement;
-import com.bawnorton.trulyrandom.client.graph.element.CraftingTableGraphElement;
-import com.bawnorton.trulyrandom.client.graph.element.FurnaceGraphElement;
-import com.bawnorton.trulyrandom.client.graph.element.GraphElement;
-import com.bawnorton.trulyrandom.client.graph.element.ItemElement;
-import com.bawnorton.trulyrandom.client.graph.element.SmithingGraphElement;
-import com.bawnorton.trulyrandom.client.graph.element.StonecutterGraphElement;
+import com.bawnorton.trulyrandom.client.graph.element.*;
 import com.bawnorton.trulyrandom.client.graph.graphbuilder.GraphBuilder;
 import com.bawnorton.trulyrandom.client.graph.graphbuilder.droptype.DropTypeGraphBuilders;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
 import com.bawnorton.trulyrandom.tracker.loot.drop.TrackingConnection;
 import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.loot.LootTable;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeHolder;
-import net.minecraft.recipe.RecipeType;
-import net.minecraft.registry.ResourceKey;
-import net.minecraft.registry.entry.Holder;
-import net.minecraft.stat.StatHandler;
-import net.minecraft.stat.Stats;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.stats.Stats;
+import net.minecraft.stats.StatsCounter;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.storage.loot.LootTable;
 import org.jetbrains.annotations.NotNull;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +46,7 @@ public class RecipeTypeGraphBuilders {
     }
 
     public static GraphBuilder<RecipeHolder<?>> getBuilder(RecipeType<?> recipeType) {
-        return GRAPH_BUILDERS.getOrDefault(recipeType, (ForwardingRecipeTypeGraphBuilder) (recipe, inspectedRecipes) -> null);
+        return GRAPH_BUILDERS.getOrDefault(recipeType, (ForwardingRecipeTypeGraphBuilder) (_, _) -> null);
     }
 
     public static void addDirect(LootTableTracker lootTracker, RecipeTracker recipeTracker, Set<ResourceKey<LootTable>> inspectedTables, Set<ResourceKey<Recipe<?>>> inspectedRecipes, RecipeHolder<?> recipe, GraphElement root) {
@@ -62,9 +57,9 @@ public class RecipeTypeGraphBuilders {
     }
 
     private static GraphElement addIngredients(RecipeHolder<?> recipeEntry, LootTableTracker lootTracker, RecipeTracker recipeTracker, Set<ResourceKey<LootTable>> inspectedTables, Set<ResourceKey<Recipe<?>>> inspectedRecipes, CraftingStationGraphElement root) {
-        List<Ingredient> ingredients = recipeEntry.value().getIngredientPlacement().getIngredients();
+        List<Ingredient> ingredients = recipeEntry.value().placementInfo().ingredients();
         List<Item> items = ingredients.stream()
-                .flatMap(Ingredient::getMatchingItems)
+                .flatMap(Ingredient::items)
                 .map(Holder::value)
                 .distinct()
                 .toList();
@@ -82,11 +77,11 @@ public class RecipeTypeGraphBuilders {
                 addDirect(lootTracker, recipeTracker, inspectedTables, inspectedRecipes, recipe, ingredient);
             }
             if(!known) {
-                ClientPlayerEntity player = MinecraftClient.getInstance().player;
-                StatHandler statHandler = player.getStatHandler();
-                boolean hadItem = statHandler.getStat(Stats.PICKED_UP, item) > 0;
-                hadItem |= statHandler.getStat(Stats.CRAFTED, item) > 0;
-                hadItem |= statHandler.getStat(Stats.USED, item) > 0;
+                LocalPlayer player = Minecraft.getInstance().player;
+                StatsCounter statsCounter = player.getStats();
+                boolean hadItem = statsCounter.getValue(Stats.ITEM_PICKED_UP, item) > 0;
+                hadItem |= statsCounter.getValue(Stats.ITEM_CRAFTED, item) > 0;
+                hadItem |= statsCounter.getValue(Stats.ITEM_USED, item) > 0;
                 if(hadItem) {
                     root.addFrom(ingredient, TrackingConnection.INGREDIENT);
                 }

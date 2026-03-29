@@ -2,15 +2,16 @@ package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.IngredientPlacement;
-import net.minecraft.recipe.RecipeHolder;
-import net.minecraft.recipe.ShapedRecipe;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.PlacementInfo;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import org.joml.Matrix3x2fStack;
+
 import java.util.List;
 
 public class CraftingTableGraphElement extends CraftingStationGraphElement {
@@ -21,8 +22,8 @@ public class CraftingTableGraphElement extends CraftingStationGraphElement {
     }
 
     @Override
-    protected void renderRecipeTooltip(DrawContext context, RecipeHolder<?> recipe, int mouseX, int mouseY) {
-        context.drawGuiTexture(
+    protected void extractRecipeTooltip(GuiGraphicsExtractor graphics, RecipeHolder<?> recipe, int mouseX, int mouseY) {
+        graphics.blitSprite(
                 RenderPipelines.GUI_TEXTURED,
                 CRAFTING,
                 mouseX + (BACKGROUND_WIDTH - 58) / 2,
@@ -30,12 +31,13 @@ public class CraftingTableGraphElement extends CraftingStationGraphElement {
                 58,
                 27
         );
-        IngredientPlacement placement = recipe.value().getIngredientPlacement();
-        List<Ingredient> ingredients = placement.getIngredients();
-        IntList slots = placement.getPlacementSlots();
+        PlacementInfo placement = recipe.value().placementInfo();
+        List<Ingredient> ingredients = placement.ingredients();
+        IntList slots = placement.slotsToIngredientIndex();
 
-        context.getMatrices().pushMatrix();
-        context.getMatrices().scale(0.5f, 0.5f);
+        Matrix3x2fStack matrices = graphics.pose();
+        matrices.pushMatrix();
+        matrices.scale(0.5f, 0.5f);
         mouseX *= 2;
         mouseY *= 2;
         int skipCount = 0;
@@ -52,9 +54,9 @@ public class CraftingTableGraphElement extends CraftingStationGraphElement {
 
             int x = mouseX + 17 + ((slot + skipCount) % width) * 18;
             int y = mouseY + 7 + ((slot + skipCount) / width) * 18;
-            renderIngredient(context, ingredients.get(slot), x, y, true);
+            extractIngredient(graphics, ingredients.get(slot), x, y, true);
         }
-        renderOutput(context, mouseX + 111, mouseY + 25);
-        context.getMatrices().popMatrix();
+        extractOutput(graphics, mouseX + 111, mouseY + 25);
+        matrices.popMatrix();
     }
 }

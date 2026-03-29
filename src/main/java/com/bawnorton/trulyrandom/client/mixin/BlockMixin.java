@@ -18,7 +18,7 @@ public abstract class BlockMixin extends AbstractBlockMixin {
 
     @ModifyReturnValue(method = "getSlipperiness", at = @At("RETURN"))
     private float useRandomisedSlipperiness(float original) {
-        UnaryMap<BlockState> originalToRandomMap = ((ModelShuffler.BlockStates) MinecraftClient.getInstance()
+        UnaryMap<BlockState> originalToRandomMap = ((ModelShuffler.BlockStates) Minecraft.getInstance()
                 .getBlockRenderManager()
                 .getModels()).trulyrandom$getRedirectMap();
         return ((AbstractBlockAccessor) originalToRandomMap.getOrDefault(getDefaultState(), getDefaultState()).getBlock()).trulyrandom$getSlipperiness();

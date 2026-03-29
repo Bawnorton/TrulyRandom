@@ -3,12 +3,13 @@ package com.bawnorton.trulyrandom.client.graph.element;
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
 import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -23,17 +24,18 @@ public class ItemElement extends GraphElement {
     }
 
     @Override
-    public void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale) {
-        context.drawItemWithoutEntity(item.getDefaultInstance(), x - 8, y - 8);
+    public void extractRenderState(GuiGraphicsExtractor graphics, Minecraft minecraft, int mouseX, int mouseY, int x, int y, float scale) {
+        graphics.fakeItem(item.getDefaultInstance(), x - 8, y - 8);
     }
 
     @Override
-    protected Text getTooltip() {
-        Text tooltip = item.getName();
-        if(!Screen.hasShiftDown()) return tooltip;
+    protected Component getTooltip() {
+        Component tooltip = item.getDefaultInstance().getDisplayName();
+        Minecraft minecraft = Minecraft.getInstance();
 
-        MinecraftClient client = MinecraftClient.getInstance();
-        PlayerEntity player = client.player;
+        if(!minecraft.hasShiftDown()) return tooltip;
+
+        Player player = minecraft.player;
         if(player == null) return tooltip;
 
         Set<LootTableDrops> sources = TrulyRandomClient.getRandomiser().getLootTableTracker().getSources(item);
@@ -46,7 +48,7 @@ public class ItemElement extends GraphElement {
                 .toList();
 
         counter++;
-        if(counter >= client.getCurrentFps()) {
+        if(counter >= minecraft.getFps()) {
             counter = 0;
             offset++;
             if(offset >= lootTables.size()) {
@@ -54,7 +56,7 @@ public class ItemElement extends GraphElement {
             }
         }
 
-        return Text.of("%s (%s/%s)".formatted(lootTables.get(offset), offset + 1, lootTables.size()));
+        return Component.literal("%s (%s/%s)".formatted(lootTables.get(offset), offset + 1, lootTables.size()));
     }
 
     @Override

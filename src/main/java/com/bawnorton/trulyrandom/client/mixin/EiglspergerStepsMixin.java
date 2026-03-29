@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(EiglspergerSteps.class)
-public abstract class EiglspergerStepsMixin {
+abstract class EiglspergerStepsMixin {
     @Inject(
             method = {
                     "log(Ljava/lang/String;[Lorg/jungrapht/visualization/layout/algorithms/sugiyama/LV;)V",

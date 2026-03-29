@@ -25,6 +25,10 @@ dependencies {
     implementation("net.fabricmc:fabric-loader:0.18.4")
 
     implementation("net.fabricmc.fabric-api:fabric-api:${deps("fabric_api")}")
+
+    include(implementation("com.github.tomnelson:jungrapht-visualization:1.4")!!)
+    include(implementation("com.github.tomnelson:jungrapht-layout:1.4")!!)
+    include(implementation("org.jgrapht:jgrapht-core:1.5.2")!!)
 }
 
 java {

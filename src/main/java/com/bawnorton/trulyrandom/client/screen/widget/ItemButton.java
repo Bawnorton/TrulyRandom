@@ -1,41 +1,42 @@
 package com.bawnorton.trulyrandom.client.screen.widget;
 
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ButtonTextures;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.item.Item;
 
-public class ItemButton extends ButtonWidget {
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.world.item.Item;
+
+public class ItemButton extends Button {
     private final Item item;
-    private final ButtonTextures background;
+    private final WidgetSprites background;
 
-    protected ItemButton(Item item, ButtonTextures background, int x, int y, int width, int height, PressAction onPress) {
-        super(x, y, width, height, item.getName(), onPress, ButtonWidget.DEFAULT_NARRATION_SUPPLIER);
+    protected ItemButton(Item item, WidgetSprites background, int x, int y, int width, int height, OnPress onPress) {
+        super(x, y, width, height, item.getDefaultInstance().getItemName(), onPress, Button.DEFAULT_NARRATION);
         this.item = item;
         this.background = background;
     }
 
     @Override
-    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawGuiTexture(RenderPipelines.GUI_TEXTURED, background.get(true, isHovered()), getX(), getY(), getWidth(), getHeight());
-        context.drawItemWithoutEntity(item.getDefaultInstance(), getX() + (getWidth() - 16) / 2, getY() + (getHeight() - 16) / 2);
+    protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, background.get(true, isHovered()), getX(), getY(), getWidth(), getHeight());
+        graphics.fakeItem(item.getDefaultInstance(), getX() + (getWidth() - 16) / 2, getY() + (getHeight() - 16) / 2);
     }
 
-    public static ItemButton.Builder builder(Item item, PressAction onPress) {
+    public static ItemButton.Builder builder(Item item, OnPress onPress) {
         return new Builder(item, onPress);
     }
 
     public static class Builder {
         private Item item;
-        private PressAction onPress;
-        private ButtonTextures background;
+        private OnPress onPress;
+        private WidgetSprites background;
         private int x;
         private int y;
         private int width;
         private int height;
 
-        private Builder(Item item, PressAction onPress) {
+        private Builder(Item item, OnPress onPress) {
             this.item = item;
             this.onPress = onPress;
         }
@@ -45,12 +46,12 @@ public class ItemButton extends ButtonWidget {
             return this;
         }
 
-        public Builder onPress(PressAction onPress) {
+        public Builder onPress(OnPress onPress) {
             this.onPress = onPress;
             return this;
         }
 
-        public Builder background(ButtonTextures background) {
+        public Builder background(WidgetSprites background) {
             this.background = background;
             return this;
         }

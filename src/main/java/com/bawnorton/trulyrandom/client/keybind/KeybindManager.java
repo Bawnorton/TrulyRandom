@@ -8,16 +8,16 @@ import com.bawnorton.trulyrandom.client.screen.TrulyRandomSettingsScreen;
 import com.bawnorton.trulyrandom.network.packet.serverbound.ServerboundRequestServerRandomiserPacket;
 import com.bawnorton.trulyrandom.network.packet.serverbound.ServerboundSetServerRandomiserPacket;
 import com.bawnorton.trulyrandom.network.packet.clientbound.ClientboundSetClientRandomiserPacket;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.item.Item;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
@@ -25,23 +25,25 @@ import java.util.List;
 
 public class KeybindManager {
     private static final List<ActionedKeybind> KEYBINDS = new ArrayList<>();
-    public static final ActionedKeybind OPEN_RANDOMISER_GUI = registerKeybind("key.trulyrandom.open_randomiser_gui", GLFW.GLFW_KEY_G, client -> {
-        ClientNetworking.registerRecievedCallback(ClientboundSetClientRandomiserPacket.PACKET_ID, () -> client.setScreen(new TrulyRandomSettingsScreen(
-                client.currentScreen,
+    private static final KeyMapping.Category KEY_CATEGORY = new KeyMapping.Category(TrulyRandom.id("category"));
+
+    public static final ActionedKeybind OPEN_RANDOMISER_GUI = registerKeybind("key.trulyrandom.open_randomiser_gui", GLFW.GLFW_KEY_G, minecraft -> {
+        ClientNetworking.registerRecievedCallback(ClientboundSetClientRandomiserPacket.TYPE, () -> minecraft.setScreen(new TrulyRandomSettingsScreen(
+                minecraft.screen,
                 TrulyRandomClient.getRandomiser().getModules().copy(),
                 (modules) -> ClientPlayNetworking.send(new ServerboundSetServerRandomiserPacket(modules))
         )));
         ClientPlayNetworking.send(ServerboundRequestServerRandomiserPacket.INSTANCE);
     });
-    public static final ActionedKeybind RELOAD_CHUNKS = registerDevOnlyKeybind("key.trulyrandom.reload_chunks", GLFW.GLFW_KEY_KP_0, client -> client.worldRenderer.reload());
-    public static final ActionedKeybind QUERY_HAND = registerDevOnlyKeybind("key.trulyrandom.query_hand", GLFW.GLFW_KEY_KP_1, client -> {
-        Item handItem = client.player.getMainHandStack().getItem();
-        ModelShuffler.Items items = (ModelShuffler.Items) client.getBakedModelManager();
+    public static final ActionedKeybind RELOAD_CHUNKS = registerDevOnlyKeybind("key.trulyrandom.reload_chunks", GLFW.GLFW_KEY_KP_0, minecraft -> minecraft.levelRenderer.allChanged());
+    public static final ActionedKeybind QUERY_HAND = registerDevOnlyKeybind("key.trulyrandom.query_hand", GLFW.GLFW_KEY_KP_1, minecraft -> {
+        Item handItem = minecraft.player.getMainHandItem().getItem();
+        ModelShuffler.Items items = (ModelShuffler.Items) minecraft.getModelManager();
         TrulyRandom.LOGGER.info("Hand item: {} ({})", handItem, items.trulyrandom$getRedirectMap().get(handItem));
-        HitResult hitResult = client.crosshairTarget;
+        HitResult hitResult = minecraft.hitResult;
         if (hitResult instanceof BlockHitResult blockHitResult) {
-            BlockState block = client.world.getBlockState(blockHitResult.getBlockPos());
-            ModelShuffler.BlockStates blockStates = (ModelShuffler.BlockStates) client.getBlockRenderManager().getModels();
+            BlockState block = minecraft.level.getBlockState(blockHitResult.getBlockPos());
+            ModelShuffler.BlockStates blockStates = (ModelShuffler.BlockStates) minecraft.getModelManager().getBlockModelSet();
             TrulyRandom.LOGGER.info("Block: {} ({})", block, blockStates.trulyrandom$getRedirectMap().get(block));
         }
     });
@@ -50,11 +52,11 @@ public class KeybindManager {
     }
 
     private static ActionedKeybind registerKeybind(String key, int code, KeybindCallback callback) {
-        ActionedKeybind keybind = new ActionedKeybind(KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        ActionedKeybind keybind = new ActionedKeybind(KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 key,
-                InputUtil.Type.KEYSYM,
+                InputConstants.Type.KEYSYM,
                 code,
-                "key.categories.trulyrandom"
+                KEY_CATEGORY
         )), callback);
         KEYBINDS.add(keybind);
         return keybind;
@@ -67,36 +69,36 @@ public class KeybindManager {
         return null;
     }
 
-    public static void runKeybindActions(MinecraftClient client) {
-        KEYBINDS.forEach(keybind -> keybind.runIfPressed(client));
+    public static void runKeybindActions(Minecraft minecraft) {
+        KEYBINDS.forEach(keybind -> keybind.runIfPressed(minecraft));
     }
 
     @FunctionalInterface
     public interface KeybindCallback {
-        void onKeybindPressed(MinecraftClient client);
+        void onKeybindPressed(Minecraft minecraft);
     }
 
     public static class ActionedKeybind {
-        private final KeyBinding keybind;
+        private final KeyMapping keybind;
         private final KeybindCallback callback;
 
-        public ActionedKeybind(KeyBinding keybind, KeybindCallback callback) {
+        public ActionedKeybind(KeyMapping keybind, KeybindCallback callback) {
             this.keybind = keybind;
             this.callback = callback;
         }
 
-        public KeyBinding getKeybind() {
+        public KeyMapping getKeybind() {
             return keybind;
         }
 
-        public void runIfPressed(MinecraftClient client) {
-            while (keybind.wasPressed()) {
-                run(client);
+        public void runIfPressed(Minecraft minecraft) {
+            while (keybind.consumeClick()) {
+                run(minecraft);
             }
         }
 
-        public void run(MinecraftClient client) {
-            callback.onKeybindPressed(client);
+        public void run(Minecraft minecraft) {
+            callback.onKeybindPressed(minecraft);
         }
     }
 }

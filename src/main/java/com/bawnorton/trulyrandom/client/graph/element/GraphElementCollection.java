@@ -1,12 +1,12 @@
 package com.bawnorton.trulyrandom.client.graph.element;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix3x2fStack;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -25,8 +25,8 @@ public class GraphElementCollection extends GraphElement implements Iterable<Gra
     }
 
     @Override
-    public void render(DrawContext context, MinecraftClient client, int mouseX, int mouseY, int x, int y, float scale) {
-        Matrix3x2fStack matrices = context.getMatrices();
+    public void extractRenderState(GuiGraphicsExtractor graphics, Minecraft minecraft, int mouseX, int mouseY, int x, int y, float scale) {
+        Matrix3x2fStack matrices = graphics.pose();
         matrices.pushMatrix();
         float collectionScale = 1.4f;
         matrices.scale(1f / collectionScale, 1f / collectionScale);
@@ -34,38 +34,38 @@ public class GraphElementCollection extends GraphElement implements Iterable<Gra
         y = (int) (y * collectionScale);
         if(elements.size() >= 3) {
             GraphElement first = elements.getFirst();
-            first.render(context, client, mouseX, mouseY, x, y - 8, scale / collectionScale);
+            first.extractRenderState(graphics, minecraft, mouseX, mouseY, x, y - 8, scale / collectionScale);
             GraphElement second = elements.get(1);
-            second.render(context, client, mouseX, mouseY, x - 8, y + 8, scale / collectionScale);
+            second.extractRenderState(graphics, minecraft, mouseX, mouseY, x - 8, y + 8, scale / collectionScale);
             GraphElement third = elements.get(2);
-            third.render(context, client, mouseX, mouseY, x + 8, y + 8, scale / collectionScale);
+            third.extractRenderState(graphics, minecraft, mouseX, mouseY, x + 8, y + 8, scale / collectionScale);
         } else if (elements.size() == 2) {
             GraphElement first = elements.getFirst();
-            first.render(context, client, mouseX, mouseY, x - 8, y, scale / collectionScale);
+            first.extractRenderState(graphics, minecraft, mouseX, mouseY, x - 8, y, scale / collectionScale);
             GraphElement second = elements.get(1);
-            second.render(context, client, mouseX, mouseY, x + 8, y, scale / collectionScale);
+            second.extractRenderState(graphics, minecraft, mouseX, mouseY, x + 8, y, scale / collectionScale);
         }
         matrices.popMatrix();
     }
 
     @Override
-    protected Text getTooltip() {
-        return Text.empty();
+    protected Component getTooltip() {
+        return Component.empty();
     }
 
     @Override
-    public void drawTooltip(DrawContext context, int mouseX, int mouseY) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        TextRenderer textRenderer = client.textRenderer;
-        List<Text> tooltip = new ArrayList<>();
+    public void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        Minecraft minecraft = Minecraft.getInstance();
+        Font font = minecraft.font;
+        List<Component> tooltip = new ArrayList<>();
         for (GraphElement element : elements) {
             tooltip.add(element.getTooltip());
         }
-        context.drawTooltip(
-                textRenderer,
+        graphics.setComponentTooltipForNextFrame(
+                font,
                 tooltip,
-                mouseX - tooltip.stream().mapToInt(textRenderer::getWidth).max().orElse(0) - 15,
-                mouseY - (textRenderer.fontHeight) * tooltip.size()
+                mouseX - tooltip.stream().mapToInt(font::width).max().orElse(0) - 15,
+                mouseY - (font.lineHeight) * tooltip.size()
         );
     }
 

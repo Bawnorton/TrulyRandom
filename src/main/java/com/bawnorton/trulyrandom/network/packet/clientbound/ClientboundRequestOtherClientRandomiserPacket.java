@@ -9,7 +9,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import java.util.UUID;
 
 /**
- * Sent to this client from requestee to send this client's randomiser to the requestee.
+ * Sent to this minecraft from requestee to send this client's randomiser to the requestee.
  * @see ServerboundProvidedRandomiserPacket
  * @see ClientboundOpenTargetedRandomiserScreenPacket
  */

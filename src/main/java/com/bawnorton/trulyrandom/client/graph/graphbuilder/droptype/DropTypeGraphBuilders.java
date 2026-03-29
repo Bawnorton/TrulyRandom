@@ -10,16 +10,16 @@ import com.bawnorton.trulyrandom.tracker.loot.drop.TrackingConnection;
 import com.bawnorton.trulyrandom.tracker.loot.drop.GraphTypes;
 import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
 import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
-import net.minecraft.block.Block;
-import net.minecraft.entity.EntityType;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.loot.LootTable;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeHolder;
-import net.minecraft.registry.BuiltInRegistries;
-import net.minecraft.registry.ResourceKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.storage.loot.LootTable;
 import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +60,7 @@ public class DropTypeGraphBuilders {
     private static GraphElement blockGraphBuilder(LootTableDrops tableDrops, LootTableTracker lootTracker, RecipeTracker recipeTracker, Set<ResourceKey<LootTable>> inspectedTables, Set<ResourceKey<Recipe<?>>> inspectedRecipes) {
         LootTableIdentifier tableId = tableDrops.getLootTableId();
         Identifier sourceId = tableId.getSourceId();
-        Block block = BuiltInRegistries.BLOCK.get(sourceId);
+        Block block = BuiltInRegistries.BLOCK.getValue(sourceId);
         Item item = block.asItem();
         if(item == Items.AIR) {
             return literalBlockGraphBuilder(tableDrops, lootTracker, recipeTracker, inspectedTables, inspectedRecipes);
@@ -78,7 +78,7 @@ public class DropTypeGraphBuilders {
     private static GraphElement literalBlockGraphBuilder(LootTableDrops tableDrops, LootTableTracker lootTracker, RecipeTracker recipeTracker, Set<ResourceKey<LootTable>> inspectedTables, Set<ResourceKey<Recipe<?>>> inspectedRecipes) {
         LootTableIdentifier tableId = tableDrops.getLootTableId();
         Identifier sourceId = tableId.getSourceId();
-        Block block = BuiltInRegistries.BLOCK.get(sourceId);
+        Block block = BuiltInRegistries.BLOCK.getValue(sourceId);
         BlockElement root = new BlockElement(block);
         List<Item> parts = tableDrops.getItems();
         for(Item item : parts) {
@@ -124,7 +124,7 @@ public class DropTypeGraphBuilders {
     private static GraphElement entityGraphBuilder(LootTableDrops tableDrops, LootTableTracker lootTracker, RecipeTracker recipeTracker, Set<ResourceKey<LootTable>> inspectedTables, Set<ResourceKey<Recipe<?>>> inspectedRecipes) {
         LootTableIdentifier tableId = tableDrops.getLootTableId();
         Identifier sourceId = tableId.getSourceId();
-        EntityType<?> entity = BuiltInRegistries.ENTITY_TYPE.get(sourceId);
+        EntityType<?> entity = BuiltInRegistries.ENTITY_TYPE.getValue(sourceId);
         return new EntityGraphElement(entity);
     }
 

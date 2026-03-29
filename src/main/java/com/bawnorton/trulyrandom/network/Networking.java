@@ -60,7 +60,7 @@ public class Networking {
     private static void handleProvidedRandomiser(ServerboundProvidedRandomiserPacket packet, ServerPlayNetworking.Context context) {
         ServerPlayer player = context.player();
         MinecraftServer server = player.level().getServer();
-        // other client requesting the randomiser data
+        // other minecraft requesting the randomiser data
         UUID requestee = packet.requestee();
         ServerPlayer requesteePlayer = server.getPlayerList().getPlayer(requestee);
         if (requesteePlayer == null) {

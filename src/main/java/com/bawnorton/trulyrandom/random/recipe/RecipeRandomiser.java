@@ -182,7 +182,7 @@ public class RecipeRandomiser extends ServerRandomiserModule {
         SelectableRecipe.SingleInputSet<StonecutterRecipe> stonecutterRecipes = manager.getSynchronizedStonecutterRecipes();
         server.getPlayerList().getPlayers().forEach(player -> {
             player.connection.send(new ClientboundUpdateRecipesPacket(propertySets, stonecutterRecipes));
-            // refreshes the client recipe book
+            // refreshes the minecraft recipe book
             player.getRecipeBook().sendInitialRecipeBook(player);
         });
     }

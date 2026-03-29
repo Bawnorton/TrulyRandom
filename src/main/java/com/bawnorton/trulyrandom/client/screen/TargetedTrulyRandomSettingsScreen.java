@@ -1,17 +1,17 @@
 package com.bawnorton.trulyrandom.client.screen;
 
 import com.bawnorton.trulyrandom.random.module.Modules;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.function.Consumer;
 
 public class TargetedTrulyRandomSettingsScreen extends AbstractTrulyRandomSettingsScreen {
-    private final PlayerEntity target;
+    private final Player target;
     private final Modules modules;
 
-    public TargetedTrulyRandomSettingsScreen(Screen parent, PlayerEntity target, Modules modules, Consumer<Modules> applier) {
+    public TargetedTrulyRandomSettingsScreen(Screen parent, Player target, Modules modules, Consumer<Modules> applier) {
         super(parent, applier);
         this.target = target;
         this.modules = modules;
@@ -19,8 +19,8 @@ public class TargetedTrulyRandomSettingsScreen extends AbstractTrulyRandomSettin
     }
 
     @Override
-    protected Text getContentText() {
-        return Text.translatable("selectWorld.trulyrandom.targeted", target.getDisplayName());
+    protected Component getContentText() {
+        return Component.translatable("selectWorld.trulyrandom.targeted", target.getDisplayName());
     }
 
     @Override

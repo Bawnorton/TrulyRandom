@@ -10,11 +10,11 @@ import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.gui.screen.ingame.RecipeBookScreen;
-import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
-import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.GuiEventListener;
+import net.minecraft.client.gui.screens.ingame.InventoryScreen;
+import net.minecraft.client.gui.screens.ingame.RecipeBookScreen;
+import net.minecraft.client.gui.screens.recipebook.RecipeBookWidget;
+import net.minecraft.client.gui.widget.Button;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Final;
@@ -74,7 +74,7 @@ public abstract class RecipeBookScreenMixin extends HandledScreenMixin implement
             method = "addRecipeBook",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/screen/ingame/RecipeBookScreen;addSelectableChild(Lnet/minecraft/client/gui/Element;)Lnet/minecraft/client/gui/Element;",
+                    target = "Lnet/minecraft/client/gui/screen/ingame/RecipeBookScreen;addSelectableChild(Lnet/minecraft/client/gui/GuiEventListener;)Lnet/minecraft/client/gui/GuiEventListener;",
                     shift = At.Shift.AFTER
             )
     )
@@ -83,7 +83,7 @@ public abstract class RecipeBookScreenMixin extends HandledScreenMixin implement
         if(!((Object) this instanceof InventoryScreen invScreen)) return;
 
         isShort = height < 350;
-        lootBook.initialize(width, height, client, narrow, isShort);
+        lootBook.initialize(width, height, minecraft, narrow, isShort);
         lootBookButton = new TexturedButtonWidget(recipeButton.getX() + 22, height / 2 - 22, 20, 18, LootBookWidget.BUTTON_TEXTURES, button -> {
             lootBook.toggleOpen();
             if(lootBook.isOpen() && recipeBook.isOpen()) {
@@ -95,7 +95,7 @@ public abstract class RecipeBookScreenMixin extends HandledScreenMixin implement
             ((InventoryScreenAccessor) invScreen).setMouseDown(true);
         }) {
             @Override
-            public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+            public void renderWidget(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
                 if(TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
                     super.renderWidget(context, mouseX, mouseY, delta);
                 }
@@ -129,7 +129,7 @@ public abstract class RecipeBookScreenMixin extends HandledScreenMixin implement
     }
 
     @Inject(method = "method_64513", at = @At("TAIL"))
-    private void considerLootBook(ButtonWidget button, CallbackInfo ci) {
+    private void considerLootBook(Button button, CallbackInfo ci) {
         if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if(lootBookButton == null) return;
 
@@ -144,22 +144,22 @@ public abstract class RecipeBookScreenMixin extends HandledScreenMixin implement
             method = "addRecipeBook",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/screen/ingame/RecipeBookScreen;addDrawableChild(Lnet/minecraft/client/gui/Element;)Lnet/minecraft/client/gui/Element;"
+                    target = "Lnet/minecraft/client/gui/screen/ingame/RecipeBookScreen;addDrawableChild(Lnet/minecraft/client/gui/GuiEventListener;)Lnet/minecraft/client/gui/GuiEventListener;"
             )
     )
-    private Element captureRecipeButton(Element button) {
+    private GuiEventListener captureRecipeButton(GuiEventListener button) {
         recipeButton = (TexturedButtonWidget) button;
         return button;
     }
 
     @WrapOperation(
-            method = "render",
+            method = "extractRenderState",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/screen/ingame/HandledScreen;renderMain(Lnet/minecraft/client/gui/DrawContext;IIF)V"
             )
     )
-    private void renderLootBook(RecipeBookScreen<?> instance, DrawContext context, int mouseX, int mouseY, float delta, Operation<Void> original) {
+    private void renderLootBook(RecipeBookScreen<?> instance, GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, Operation<Void> original) {
         if (!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
             if(lootBook.isOpen()) {
                 lootBook.toggleOpen();
@@ -187,7 +187,7 @@ public abstract class RecipeBookScreenMixin extends HandledScreenMixin implement
                     target = "Lnet/minecraft/client/gui/screen/recipebook/RecipeBookWidget;drawGhostSlots(Lnet/minecraft/client/gui/DrawContext;Z)V"
             )
     )
-    private boolean dontDrawSlotsIfGraphOpen(RecipeBookWidget<?> instance, DrawContext context, boolean resultHasPadding) {
+    private boolean dontDrawSlotsIfGraphOpen(RecipeBookWidget<?> instance, GuiGraphicsExtractor graphics, boolean resultHasPadding) {
         if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return true;
         if(lootBookButton == null) return true;
 
@@ -195,14 +195,14 @@ public abstract class RecipeBookScreenMixin extends HandledScreenMixin implement
     }
 
     @Inject(
-            method = "render",
+            method = "extractRenderState",
             at = @At("TAIL")
     )
-    private void renderLootBookTooltip(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo ci) {
+    private void renderLootBookTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if(lootBookButton == null) return;
 
-        lootBook.drawTooltip(context, mouseX, mouseY);
+        lootBook.extractTooltip(context, mouseX, mouseY);
     }
 
     @WrapOperation(
@@ -264,7 +264,7 @@ public abstract class RecipeBookScreenMixin extends HandledScreenMixin implement
                     target = "Lnet/minecraft/client/gui/screen/ingame/HandledScreen;mouseClicked(DDI)Z"
             )
     )
-    private boolean mouseClickedInLootBook(RecipeBookScreen<?> instance, double mouseX, double mouseY, int button, Operation<Boolean> original) {
+    private boolean mouseClickedInLootBook(RecipeBookScreen<?> instance, MouseButtonEvent event, boolean doubleClick, Operation<Boolean> original) {
         if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES) || lootBookButton == null) {
             return original.call(instance, mouseX, mouseY, button);
         }
@@ -296,7 +296,7 @@ public abstract class RecipeBookScreenMixin extends HandledScreenMixin implement
     }
 
     @Override
-    protected void mouseDragInInvScreen(double mouseX, double mouseY, int button, double deltaX, double deltaY, CallbackInfoReturnable<Boolean> cir) {
+    protected void mouseDragInInvScreen(MouseButtonEvent event, boolean doubleClick, double deltaX, double deltaY, CallbackInfoReturnable<Boolean> cir) {
         if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if(lootBookButton == null) return;
 

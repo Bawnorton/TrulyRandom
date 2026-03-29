@@ -27,7 +27,7 @@ Enable TrulyRandom modules from the Other tab in world creation, or in-game with
 
 #### Note:
 - Structures and Features cannot be enabled or disabled in-game, only from the world creation tab.
-- `/trulyrandom Player` will configure the client modules for `Player`, allowing for per-player item/block model randomisation
+- `/trulyrandom Player` will configure the minecraft modules for `Player`, allowing for per-player item/block model randomisation
 
 ### Tracker:
 Trackers exist for each module allowing you to track the randomisation as you play along.

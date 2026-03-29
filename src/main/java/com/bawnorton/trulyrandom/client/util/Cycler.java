@@ -1,6 +1,7 @@
 package com.bawnorton.trulyrandom.client.util;
 
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
+
 import java.util.List;
 
 public final class Cycler {
@@ -11,10 +12,10 @@ public final class Cycler {
         if(list.isEmpty()) return null;
 
         counter++;
-        if(counter >= MinecraftClient.getInstance().getCurrentFps()) {
+        if(counter >= Minecraft.getInstance().getFps()) {
             counter = 0;
             offset++;
-            if(offset >= 1000000) { // Prevent overflow
+            if(offset >= 1000000) {
                 offset = 0;
             }
         }
