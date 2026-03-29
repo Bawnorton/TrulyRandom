@@ -10,7 +10,7 @@ import com.bawnorton.trulyrandom.network.packet.clientbound.*;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
-import com.bawnorton.trulyrandom.random.module.RecipeModuleState;
+import com.bawnorton.trulyrandom.random.module.state.RecipeModuleState;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -23,27 +23,27 @@ import java.util.UUID;
 public class Networking {
     public static void init() {
         PayloadTypeRegistry<RegistryFriendlyByteBuf> serverboundPlay = PayloadTypeRegistry.serverboundPlay();
-        serverboundPlay.register(ServerboundHandshakePacket.PACKET_ID, ServerboundHandshakePacket.STREAM_CODEC);
-        serverboundPlay.register(ServerboundProvidedRandomiserPacket.PACKET_ID, ServerboundProvidedRandomiserPacket.STREAM_CODEC);
-        serverboundPlay.register(ServerboundSetServerRandomiserPacket.PACKET_ID, ServerboundSetServerRandomiserPacket.STREAM_CODEC);
-        serverboundPlay.register(ServerboundSetTargetClientRandomiserPacket.PACKET_ID, ServerboundSetTargetClientRandomiserPacket.STREAM_CODEC);
-        serverboundPlay.register(ServerboundRequestServerRandomiserPacket.PACKET_ID, ServerboundRequestServerRandomiserPacket.STREAM_CODEC);
+        serverboundPlay.register(ServerboundHandshakePacket.TYPE, ServerboundHandshakePacket.STREAM_CODEC);
+        serverboundPlay.register(ServerboundProvidedRandomiserPacket.TYPE, ServerboundProvidedRandomiserPacket.STREAM_CODEC);
+        serverboundPlay.register(ServerboundSetServerRandomiserPacket.TYPE, ServerboundSetServerRandomiserPacket.STREAM_CODEC);
+        serverboundPlay.register(ServerboundSetTargetClientRandomiserPacket.TYPE, ServerboundSetTargetClientRandomiserPacket.STREAM_CODEC);
+        serverboundPlay.register(ServerboundRequestServerRandomiserPacket.TYPE, ServerboundRequestServerRandomiserPacket.STREAM_CODEC);
 
         PayloadTypeRegistry<RegistryFriendlyByteBuf> clientboundPlay = PayloadTypeRegistry.clientboundPlay();
-        clientboundPlay.register(ClientboundHandshakePacket.PACKET_ID, ClientboundHandshakePacket.STREAM_CODEC);
-        clientboundPlay.register(ClientboundOpenRandomiserScreenPacket.PACKET_ID, ClientboundOpenRandomiserScreenPacket.STREAM_CODEC);
-        clientboundPlay.register(ClientboundOpenTargetedRandomiserScreenPacket.PACKET_ID, ClientboundOpenTargetedRandomiserScreenPacket.STREAM_CODEC);
-        clientboundPlay.register(ClientboundRequestOtherClientRandomiserPacket.PACKET_ID, ClientboundRequestOtherClientRandomiserPacket.STREAM_CODEC);
-        clientboundPlay.register(ClientboundSetClientRandomiserPacket.PACKET_ID, ClientboundSetClientRandomiserPacket.STREAM_CODEC);
-        clientboundPlay.register(ClientboundSyncLootTableTrackerPacket.PACKET_ID, ClientboundSyncLootTableTrackerPacket.STREAM_CODEC);
-        clientboundPlay.register(ClientboundSyncRecipeTrackerPacket.PACKET_ID, ClientboundSyncRecipeTrackerPacket.STREAM_CODEC);
-        clientboundPlay.register(ClientboundSyncLootDropsPacket.PACKET_ID, ClientboundSyncLootDropsPacket.STREAM_CODEC);
+        clientboundPlay.register(ClientboundHandshakePacket.TYPE, ClientboundHandshakePacket.STREAM_CODEC);
+        clientboundPlay.register(ClientboundOpenRandomiserScreenPacket.TYPE, ClientboundOpenRandomiserScreenPacket.STREAM_CODEC);
+        clientboundPlay.register(ClientboundOpenTargetedRandomiserScreenPacket.TYPE, ClientboundOpenTargetedRandomiserScreenPacket.STREAM_CODEC);
+        clientboundPlay.register(ClientboundRequestOtherClientRandomiserPacket.TYPE, ClientboundRequestOtherClientRandomiserPacket.STREAM_CODEC);
+        clientboundPlay.register(ClientboundSetClientRandomiserPacket.TYPE, ClientboundSetClientRandomiserPacket.STREAM_CODEC);
+        clientboundPlay.register(ClientboundSyncLootTableTrackerPacket.TYPE, ClientboundSyncLootTableTrackerPacket.STREAM_CODEC);
+        clientboundPlay.register(ClientboundSyncRecipeTrackerPacket.TYPE, ClientboundSyncRecipeTrackerPacket.STREAM_CODEC);
+        clientboundPlay.register(ClientboundSyncLootDropsPacket.TYPE, ClientboundSyncLootDropsPacket.STREAM_CODEC);
 
-        ServerPlayNetworking.registerGlobalReceiver(ServerboundHandshakePacket.PACKET_ID, Networking::handleHandshake);
-        ServerPlayNetworking.registerGlobalReceiver(ServerboundProvidedRandomiserPacket.PACKET_ID, Networking::handleProvidedRandomiser);
-        ServerPlayNetworking.registerGlobalReceiver(ServerboundSetServerRandomiserPacket.PACKET_ID, Networking::handleSetServerRandomiser);
-        ServerPlayNetworking.registerGlobalReceiver(ServerboundSetTargetClientRandomiserPacket.PACKET_ID, Networking::handleSetTargetClientRandomiser);
-        ServerPlayNetworking.registerGlobalReceiver(ServerboundRequestServerRandomiserPacket.PACKET_ID, Networking::handleRequestRandomiser);
+        ServerPlayNetworking.registerGlobalReceiver(ServerboundHandshakePacket.TYPE, Networking::handleHandshake);
+        ServerPlayNetworking.registerGlobalReceiver(ServerboundProvidedRandomiserPacket.TYPE, Networking::handleProvidedRandomiser);
+        ServerPlayNetworking.registerGlobalReceiver(ServerboundSetServerRandomiserPacket.TYPE, Networking::handleSetServerRandomiser);
+        ServerPlayNetworking.registerGlobalReceiver(ServerboundSetTargetClientRandomiserPacket.TYPE, Networking::handleSetTargetClientRandomiser);
+        ServerPlayNetworking.registerGlobalReceiver(ServerboundRequestServerRandomiserPacket.TYPE, Networking::handleRequestRandomiser);
     }
 
     private static void handleRequestRandomiser(ServerboundRequestServerRandomiserPacket ServerboundrequestServerRandomiserPacket, ServerPlayNetworking.Context context) {

@@ -6,29 +6,29 @@ import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.block.enums.TrialSpawnerState;
-import net.minecraft.block.spawner.TrialSpawnerLogic;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.entity.trialspawner.TrialSpawner;
+import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import java.util.List;
 
 @Mixin(TrialSpawnerState.class)
-public abstract class TrialSpawnerStateMixin {
+abstract class TrialSpawnerStateMixin {
     @WrapOperation(
-            method = "tick",
+            method = "tickAndGetNext",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/block/enums/TrialSpawnerState;spawnOminousItemSpawner(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/spawner/TrialSpawnerLogic;)V"
+                    target = "Lnet/minecraft/world/level/block/entity/trialspawner/TrialSpawnerState;spawnOminousOminousItemSpawner(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/entity/trialspawner/TrialSpawner;)V"
             )
     )
-    private void trackCause(TrialSpawnerState instance, ServerWorld world, BlockPos pos, TrialSpawnerLogic logic, Operation<Void> original) {
+    private void trackCause(TrialSpawnerState instance, ServerLevel level, BlockPos trialSpawnerPos, TrialSpawner trialSpawner, Operation<Void> original) {
         LootTableTracker.attachCause(
-                () -> original.call(instance, world, pos, logic),
+                () -> original.call(instance, level, trialSpawnerPos, trialSpawner),
                 TrialSpawnerDataAccessor.callFindPlayerWithOmen(
-                                world,
-                                ((TrialSpawnerDataAccessor) logic.getData())
+                                level,
+                                ((TrialSpawnerDataAccessor) trialSpawner.getStateData())
                                         .getPlayers()
                                         .stream()
                                         .toList())

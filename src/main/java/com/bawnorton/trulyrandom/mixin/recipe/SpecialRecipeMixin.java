@@ -2,33 +2,36 @@ package com.bawnorton.trulyrandom.mixin.recipe;
 
 import com.bawnorton.trulyrandom.extend.ResultClearer;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.*;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin({
-        ArmorDyeRecipe.class,
+        DyeRecipe.class,
         BannerDuplicateRecipe.class,
         BookCloningRecipe.class,
-        CraftingDecoratedPotRecipe.class,
+        DecoratedPotRecipe.class,
         FireworkRocketRecipe.class,
         FireworkStarFadeRecipe.class,
         FireworkStarRecipe.class,
-        MapCloningRecipe.class,
+//        MapCloningRecipe.class,
         MapExtendingRecipe.class,
         RepairItemRecipe.class,
         ShieldDecorationRecipe.class,
-        TippedArrowRecipe.class,
+        ImbueRecipe.class,
         SmithingTrimRecipe.class,
         TransmuteRecipe.class
 })
-public abstract class SpecialRecipeMixin implements ResultClearer {
+abstract class SpecialRecipeMixin implements ResultClearer {
     @Unique
     private ItemStack result = ItemStack.EMPTY;
 
-    @ModifyReturnValue(method = "craft(Lnet/minecraft/recipe/input/RecipeInput;Lnet/minecraft/registry/RegistryWrapper$WrapperLookup;)Lnet/minecraft/item/ItemStack;", at = @At("RETURN"))
+    @ModifyReturnValue(
+            method = "assemble(Lnet/minecraft/world/item/crafting/RecipeInput;)Lnet/minecraft/world/item/ItemStack;",
+            at = @At("RETURN")
+    )
     private ItemStack useRandomResult(ItemStack result) {
         if (this.result.isEmpty()) return result;
         return this.result;

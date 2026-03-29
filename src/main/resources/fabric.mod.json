@@ -16,6 +16,8 @@
   "icon": "assets/${mod_id}/icon.png",
   "environment": "*",
   "depends": {
-    "minecraft": "~${minecraft_dependency}"
-  }
+    "minecraft": "~${minecraft_dependency}",
+    "fabricloader": ">=0.18.0"
+  },
+  "accessWidener": "${minecraft_dependency}.classtweaker"
 }

@@ -3,7 +3,7 @@ package com.bawnorton.trulyrandom.client.screen.module.adapter;
 import com.bawnorton.trulyrandom.client.screen.module.ModuleWidgetSettings;
 import com.bawnorton.trulyrandom.client.screen.module.RecipeModuleSettings;
 import com.bawnorton.trulyrandom.random.module.Module;
-import com.bawnorton.trulyrandom.random.module.RecipeModuleState;
+import com.bawnorton.trulyrandom.random.module.state.RecipeModuleState;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.GridWidget;
 import net.minecraft.text.Text;

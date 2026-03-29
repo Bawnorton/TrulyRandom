@@ -3,7 +3,7 @@ package com.bawnorton.trulyrandom.event;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 
 public interface PostExecuteCallback {
     Event<PostExecuteCallback> EVENT = EventFactory.createArrayBacked(PostExecuteCallback.class, (listeners) -> (source) -> {
@@ -12,5 +12,5 @@ public interface PostExecuteCallback {
         }
     });
 
-    void postExecute(ServerCommandSource source) throws CommandSyntaxException;
+    void postExecute(CommandSourceStack source) throws CommandSyntaxException;
 }

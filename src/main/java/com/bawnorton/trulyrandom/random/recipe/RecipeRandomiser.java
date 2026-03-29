@@ -2,10 +2,10 @@ package com.bawnorton.trulyrandom.random.recipe;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.extend.TeamMember;
-import com.bawnorton.trulyrandom.mixin.accessor.PreparedRecipesAccessor;
-import com.bawnorton.trulyrandom.mixin.accessor.ServerRecipeManagerAccessor;
+import com.bawnorton.trulyrandom.mixin.accessor.RecipeMapAccessor;
+import com.bawnorton.trulyrandom.mixin.accessor.RecipeManagerAccessor;
 import com.bawnorton.trulyrandom.random.module.Module;
-import com.bawnorton.trulyrandom.random.module.RecipeModuleState;
+import com.bawnorton.trulyrandom.random.module.state.RecipeModuleState;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
@@ -72,7 +72,7 @@ public class RecipeRandomiser extends ServerRandomiserModule {
     }
 
     private Map<ResourceKey<Recipe<?>>, RecipeHolder<?>> getRecipes(MinecraftServer server) {
-        return ((PreparedRecipesAccessor) ((ServerRecipeManagerAccessor) server.getRecipeManager()).getPreparedRecipes()).getByKey();
+        return ((RecipeMapAccessor) ((RecipeManagerAccessor) server.getRecipeManager()).trulyrandom$recipes()).trulyrandom$byKey();
     }
 
     @Override
@@ -102,7 +102,7 @@ public class RecipeRandomiser extends ServerRandomiserModule {
                     }
                     return true;
                 })
-                .sorted(Comparator.comparing(entry -> entry.getKey().getValue()))
+                .sorted(Comparator.comparing(entry -> entry.getKey().identifier()))
                 .toList();
         Map<ResourceKey<Recipe<?>>, RecipeHolder<?>> recipes = new HashMap<>();
         List<ItemStack> outputs = new ArrayList<>();
@@ -143,8 +143,8 @@ public class RecipeRandomiser extends ServerRandomiserModule {
 
     private void updateRecipes(MinecraftServer server, List<RecipeMetadata> recipes) {
         RecipeManager manager = server.getRecipeManager();
-        RecipeMap recipeMap = ((ServerRecipeManagerAccessor) manager).getPreparedRecipes();
-        PreparedRecipesAccessor accessor = (PreparedRecipesAccessor) recipeMap;
+        RecipeMap recipeMap = ((RecipeManagerAccessor) manager).trulyrandom$recipes();
+        RecipeMapAccessor accessor = (RecipeMapAccessor) recipeMap;
         Map<ResourceKey<Recipe<?>>, RecipeHolder<?>> newByKey = new HashMap<>();
         Multimap<RecipeType<?>, RecipeHolder<?>> newByType = HashMultimap.create();
         for(RecipeMetadata metadata : recipes) {
@@ -152,9 +152,9 @@ public class RecipeRandomiser extends ServerRandomiserModule {
             newByKey.put(metadata.key(), entry);
             newByType.put(metadata.type(), entry);
         }
-        accessor.setByKey(newByKey);
-        accessor.setByType(newByType);
-        manager.finalizeRecipeLoading(server.getSaveProperties().getEnabledFeatures());
+        accessor.trulyrandom$byKey(newByKey);
+        accessor.trulyrandom$byType(newByType);
+        manager.finalizeRecipeLoading(server.getWorldData().enabledFeatures());
     }
 
     @Override

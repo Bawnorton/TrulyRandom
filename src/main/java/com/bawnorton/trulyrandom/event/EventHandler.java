@@ -21,10 +21,10 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.loot.LootTable;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.BuiltInRegistries;
-import net.minecraft.server.PlayerManager;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 public class EventHandler {
     public static void init() {
@@ -45,7 +45,7 @@ public class EventHandler {
             randomiser.updateLoot(server, false);
             randomiser.updateRecipes(server, false);
             randomiser.updateTrades(server, false);
-            LootTableDrops.populate((Registry<LootTable>) server.reloadableRegistries().createRegistryLookup().getOrThrow(BuiltInRegistries.LOOT_TABLE));
+            LootTableDrops.populate((Registry<LootTable>) server.reloadableRegistries().lookup().lookupOrThrow(Registries.LOOT_TABLE));
         });
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
@@ -74,22 +74,22 @@ public class EventHandler {
     }
 
     private static void registerTickEvents() {
-        ServerTickEvents.START_WORLD_TICK.register(world -> {
+        ServerTickEvents.START_LEVEL_TICK.register(world -> {
             if(TrulyRandom.noRandomiserSet()) return;
 
             ServerRandomiser randomiser = TrulyRandom.getCachedRandomiser();
-            PlayerManager playerManager = world.getServer().getPlayerManager();
-            playerManager.getPlayerList().forEach(player -> {
+            PlayerList playerList = world.getServer().getPlayerList();
+            playerList.getPlayers().forEach(player -> {
                 LootTableTracker lootTableTracker = randomiser.getLootRandomiser().getTracker(player);
                 if (lootTableTracker != null && lootTableTracker.isDirty()) {
-                    TrulyRandom.getRandomiserLoader(world.getServer()).markDirty();
+                    TrulyRandom.getRandomiserLoader(world.getServer()).setDirty();
                     lootTableTracker.setDirty(false);
                     ServerPlayNetworking.send(player, new ClientboundSyncLootTableTrackerPacket(lootTableTracker));
                 }
 
                 RecipeTracker recipeTracker = randomiser.getRecipeRandomiser().getTracker(player);
                 if (recipeTracker != null && recipeTracker.isDirty()) {
-                    TrulyRandom.getRandomiserLoader(world.getServer()).markDirty();
+                    TrulyRandom.getRandomiserLoader(world.getServer()).setDirty();
                     recipeTracker.setDirty(false);
                     ServerPlayNetworking.send(player, new ClientboundSyncRecipeTrackerPacket(recipeTracker));
                 }

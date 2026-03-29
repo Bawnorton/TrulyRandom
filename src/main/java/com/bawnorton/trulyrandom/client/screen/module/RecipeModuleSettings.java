@@ -1,6 +1,6 @@
 package com.bawnorton.trulyrandom.client.screen.module;
 
-import com.bawnorton.trulyrandom.random.module.RecipeModuleState;
+import com.bawnorton.trulyrandom.random.module.state.RecipeModuleState;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;

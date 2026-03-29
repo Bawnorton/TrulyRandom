@@ -10,29 +10,30 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.ItemStackArgument;
-import net.minecraft.command.argument.ItemStackArgumentType;
-import net.minecraft.command.argument.RegistryEntryArgumentType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.item.Item;
-import net.minecraft.loot.LootTable;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.registry.BuiltInRegistries;
-import net.minecraft.registry.ResourceKey;
-import net.minecraft.registry.entry.Holder;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.LootCommand;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayer;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.text.Texts;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.ResourceOrIdArgument;
+import net.minecraft.commands.arguments.item.ItemArgument;
+import net.minecraft.commands.arguments.item.ItemInput;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.level.storage.loot.LootTable;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -44,17 +45,17 @@ public class TrulyRandomCommand {
         runner.register();
     }
 
-    private static void executeOpenRandomiserScreen(CommandContext<ServerCommandSource> context, Selection selection) throws CommandSyntaxException {
-        ServerCommandSource source = context.getSource();
+    private static void executeOpenRandomiserScreen(CommandContext<CommandSourceStack> context, Selection selection) throws CommandSyntaxException {
+        CommandSourceStack source = context.getSource();
         ServerPlayer executor = source.getPlayer();
         if (executor == null) {
-            source.sendFeedback(() -> Text.literal("You must be a player to use this command"), true);
+            source.sendFailure(Component.literal("You must be a player to use this command"));
             return;
         }
 
         ServerPlayer target = null;
         if (selection == Selection.PLAYER) {
-            target = EntityArgumentType.getPlayer(context, "player");
+            target = EntityArgument.getPlayer(context, "player");
         } else if (selection == Selection.SELF) {
             target = executor;
         }
@@ -67,35 +68,35 @@ public class TrulyRandomCommand {
         }
     }
 
-    public void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess commandRegistryAccess) {
-        dispatcher.register(CommandManager.literal("trulyrandom")
-                .requires(source -> source.hasPermissionLevel(2))
-                .then(CommandManager.literal("settings")
-                        .then(CommandManager.argument("selection", SetStringArgumentType.of("server", "all"))
+    public void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext buildContext) {
+        dispatcher.register(Commands.literal("trulyrandom")
+                .requires(Commands.hasPermission(Commands.LEVEL_MODERATORS))
+                .then(Commands.literal("settings")
+                        .then(Commands.argument("selection", SetStringArgumentType.of("server", "all"))
                                 .executes(context -> execute(context, Selection.SERVER))
                         )
-                        .then(CommandManager.argument("player", EntityArgumentType.player())
+                        .then(Commands.argument("player", EntityArgument.player())
                                 .executes(context -> execute(context, Selection.PLAYER))
                         )
                 )
-                .then(CommandManager.literal("drop")
-                        .then(CommandManager.argument("loot_table", RegistryEntryArgumentType.lootTable(commandRegistryAccess))
+                .then(Commands.literal("drop")
+                        .then(Commands.argument("loot_table", ResourceOrIdArgument.lootTable(buildContext))
                                 .executes(context -> {
-                                    ServerCommandSource source = context.getSource();
+                                    CommandSourceStack source = context.getSource();
                                     ServerRandomiser randomiser = TrulyRandom.getRandomiser(source.getServer());
-                                    Holder<LootTable> lootTable = RegistryEntryArgumentType.LootTableArgumentType.getLootTable(context, "loot_table");
-                                    Optional<ResourceKey<LootTable>> keyOptional = lootTable.getKey();
+                                    Holder<LootTable> lootTable = ResourceOrIdArgument.LootTableArgument.getLootTable(context, "loot_table");
+                                    Optional<ResourceKey<LootTable>> keyOptional = lootTable.unwrapKey();
                                     if (keyOptional.isEmpty()) {
-                                        context.getSource().sendError(Text.of("Could not find loot table key for \"%s\"".formatted(lootTable.getIdAsString())));
+                                        context.getSource().sendFailure(Component.literal("Could not find loot table key for \"%s\"".formatted(lootTable.getRegisteredName())));
                                         return 0;
                                     }
-                                    String to = lootTable.getIdAsString();
-                                    String from = randomiser.getLootRandomiser().getSourceTable(keyOptional.orElseThrow()).getValue().toString();
-                                    context.getSource().sendFeedback(
-                                            () -> Text.literal("%s".formatted(to))
-                                                    .append(ScreenTexts.LINE_BREAK)
+                                    String to = lootTable.getRegisteredName();
+                                    String from = randomiser.getLootRandomiser().getSourceTable(keyOptional.orElseThrow()).identifier().toString();
+                                    context.getSource().sendSuccess(
+                                            () -> Component.literal("%s".formatted(to))
+                                                    .append(CommonComponents.NEW_LINE)
                                                     .append("drops from")
-                                                    .append(ScreenTexts.LINE_BREAK)
+                                                    .append(CommonComponents.NEW_LINE)
                                                     .append("%s".formatted(from)),
                                             true
                                     );
@@ -103,65 +104,64 @@ public class TrulyRandomCommand {
                                 })
                         )
                 )
-                .then(CommandManager.literal("recipe")
-                        .then(CommandManager.argument("recipe", ItemStackArgumentType.itemStack(commandRegistryAccess))
+                .then(Commands.literal("recipe")
+                        .then(Commands.argument("recipe", ItemArgument.item(buildContext))
                                 .executes(context -> {
-                                    ServerCommandSource source = context.getSource();
+                                    CommandSourceStack source = context.getSource();
                                     ServerRandomiser randomiser = TrulyRandom.getRandomiser(source.getServer());
-                                    ItemStackArgument itemStackArgument = ItemStackArgumentType.getItemStackArgument(context, "recipe");
-                                    Item item = itemStackArgument.getItem();
+                                    ItemInput itemInput = ItemArgument.getItem(context, "recipe");
+                                    Item item = itemInput.item().value();
                                     List<ResourceKey<Recipe<?>>> recipes = randomiser.getRecipeRandomiser().getRecipesForOutput(item);
                                     if (recipes.isEmpty()) {
-                                        context.getSource().sendError(Text.of("No recipes found for %s".formatted(item.getTranslationKey())));
+                                        context.getSource().sendFailure(Component.literal("No recipes found for %s".formatted(item.getDescriptionId())));
                                         return 0;
                                     }
-                                    List<Text> texts = recipes.stream()
-                                            .map(ResourceKey::getValue)
-                                            .map(identifier -> Text.of(identifier.toString()))
+                                    List<MutableComponent> texts = recipes.stream()
+                                            .map(ResourceKey::identifier)
+                                            .map(identifier -> Component.literal(identifier.toString()))
                                             .toList();
-                                    context.getSource().sendFeedback(
-                                            () -> Text.literal("Recipes for ")
-                                                    .append(item.getName())
-                                                    .append(Text.literal(":"))
-                                                    .append(ScreenTexts.LINE_BREAK)
-                                                    .append(Texts.join(texts, ScreenTexts.LINE_BREAK)),
+                                    context.getSource().sendSuccess(
+                                            () -> Component.literal("Recipes for ")
+                                                    .append(item.getName(item.getDefaultInstance()))
+                                                    .append(Component.literal(":"))
+                                                    .append(CommonComponents.NEW_LINE)
+                                                    .append(ComponentUtils.formatList(texts, CommonComponents.NEW_LINE)),
                                             true
                                     );
                                     return 1;
                                 })
                         )
                 )
-                .then(CommandManager.literal("test")
-                        .then(CommandManager.literal("drops")
+                .then(Commands.literal("test")
+                        .then(Commands.literal("drops")
                                 .executes(context -> {
                                     context.getSource()
-                                            .sendFeedback(() -> Text.of("Triggering all loot tables, world will lag for a bit"), true);
+                                            .sendSuccess(() -> Component.literal("Triggering all loot tables, world will lag for a bit"), true);
                                     ServerPlayer player = context.getSource()
                                             .getPlayer();
                                     assert player != null;
-                                    ServerWorld world = player.getWorld();
-                                    BlockPos up = player.getBlockPos()
-                                            .add(0, 20, 0);
+                                    ServerLevel level = player.level();
+                                    BlockPos up = player.blockPosition().offset(0, 20, 0);
                                     BuiltInRegistries.BLOCK.forEach((block -> {
-                                        world.setBlockState(up, block.getDefaultState(), 0);
-                                        world.breakBlock(up, true, player);
+                                        level.setBlock(up, block.defaultBlockState(), 0);
+                                        level.destroyBlock(up, true, player);
                                     }));
                                     BuiltInRegistries.ENTITY_TYPE.forEach((entityType -> {
-                                        Entity entity = entityType.create(world, SpawnReason.COMMAND);
+                                        Entity entity = entityType.create(level, EntitySpawnReason.COMMAND);
                                         if (!(entity instanceof LivingEntity)) {
                                             return;
                                         }
-                                        entity.updatePosition(player.getX(), player.getY() + 1, player.getZ());
-                                        world.spawnEntity(entity);
-                                        entity.damage(world, world.getDamageSources().playerAttack(player), Float.MAX_VALUE);
+                                        entity.teleportTo(player.getX(), player.getY() + 1, player.getZ());
+                                        level.addFreshEntity(entity);
+                                        entity.hurtServer(level, level.damageSources().playerAttack(player), Float.MAX_VALUE);
                                     }));
                                     return 1;
                                 })
                         )
-                        .then(CommandManager.literal("newseed")
+                        .then(Commands.literal("newseed")
                                 .executes(context -> {
                                     context.getSource()
-                                            .sendFeedback(() -> Text.of("Unimplemented"), true);
+                                            .sendSuccess(() -> Component.literal("Unimplemented"), true);
                                     return 1;
                                 })
                         )
@@ -170,7 +170,7 @@ public class TrulyRandomCommand {
         );
     }
 
-    private int execute(CommandContext<ServerCommandSource> context, Selection selection) {
+    private int execute(CommandContext<CommandSourceStack> context, Selection selection) {
         runner.setRunnable((() -> executeOpenRandomiserScreen(context, selection)));
         return 1;
     }
@@ -190,7 +190,7 @@ public class TrulyRandomCommand {
         }
 
         @Override
-        public void postExecute(ServerCommandSource source) throws CommandSyntaxException {
+        public void postExecute(CommandSourceStack source) throws CommandSyntaxException {
             if (runnable != null) {
                 runnable.run();
                 runnable = null;

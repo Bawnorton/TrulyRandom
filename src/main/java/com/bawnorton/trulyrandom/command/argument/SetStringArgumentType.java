@@ -7,8 +7,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.command.CommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandSource;
+import net.minecraft.network.chat.Component;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -25,7 +25,7 @@ public record SetStringArgumentType(List<String> options) implements ArgumentTyp
         if (options.contains(string)) {
             return string;
         } else {
-            throw new SimpleCommandExceptionType(Text.literal("Invalid selection")).createWithContext(reader);
+            throw new SimpleCommandExceptionType(Component.literal("Invalid selection")).createWithContext(reader);
         }
     }
 

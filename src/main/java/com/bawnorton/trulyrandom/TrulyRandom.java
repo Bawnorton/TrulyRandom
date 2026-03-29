@@ -4,7 +4,7 @@ import com.bawnorton.trulyrandom.event.EventHandler;
 import com.bawnorton.trulyrandom.network.Networking;
 import com.bawnorton.trulyrandom.random.Randomiser;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
-import com.bawnorton.trulyrandom.random.module.ModuleStateTypes;
+import com.bawnorton.trulyrandom.random.module.state.ModuleStateTypes;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.registry.TrulyRandomCriteria;
 import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;

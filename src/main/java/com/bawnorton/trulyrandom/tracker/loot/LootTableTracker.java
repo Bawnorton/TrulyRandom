@@ -2,7 +2,7 @@ package com.bawnorton.trulyrandom.tracker.loot;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.extend.LookupExtender;
-import com.bawnorton.trulyrandom.mixin.accessor.VerticallyAttachableBlockItemAccessor;
+import com.bawnorton.trulyrandom.mixin.accessor.StandingAndWallBlockItemAccessor;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.Tracker;
 import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
@@ -12,7 +12,6 @@ import com.bawnorton.trulyrandom.util.collection.UnaryHashBiMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -173,8 +172,8 @@ public class LootTableTracker extends Tracker<ResourceKey<LootTable>, ResourceKe
         ItemLootMap.Result result = itemLootMap.computeIfAbsent(item, k -> {
             ItemLootMap.Result preResult = ItemLootMap.Result.of(brokeWithSilk, block);
             if(!silkQuery.hasAnyThatNeedSilk()) preResult.withSilk = true;
-            if (item instanceof VerticallyAttachableBlockItemAccessor accessor) {
-                Block wallVariant = accessor.getWallBlock();
+            if (item instanceof StandingAndWallBlockItemAccessor accessor) {
+                Block wallVariant = accessor.trulyrandom$wallBlock();
                 preResult.addBlock(wallVariant);
             }
             return preResult;

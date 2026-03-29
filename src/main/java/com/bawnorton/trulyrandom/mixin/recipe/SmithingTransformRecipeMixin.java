@@ -1,36 +1,37 @@
 package com.bawnorton.trulyrandom.mixin.recipe;
 
 import com.bawnorton.trulyrandom.extend.ResultHolder;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.SmithingTransformRecipe;
-import net.minecraft.recipe.TransmuteRecipeResult;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.SmithingTransformRecipe;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(SmithingTransformRecipe.class)
-public abstract class SmithingTransformRecipeMixin implements ResultHolder {
+abstract class SmithingTransformRecipeMixin implements ResultHolder {
     @Mutable
     @Final
     @Shadow
-    TransmuteRecipeResult result;
+    private ItemStackTemplate result;
 
     @Override
     public void trulyrandom$setResult(ItemStack result) {
-        this.result = new TransmuteRecipeResult(
-                result.getRegistryEntry(),
+        this.result = new ItemStackTemplate(
+                BuiltInRegistries.ITEM.wrapAsHolder(result.getItem()),
                 result.getCount(),
-                result.getComponentChanges()
+                result.getComponentsPatch()
         );
     }
 
     @Override
     public ItemStack trulyrandom$getResult() {
-        Item item = result.itemEntry().value();
+        Item item = result.item().value();
         ItemStack stack = new ItemStack(item, result.count());
-        stack.applyUnvalidatedChanges(result.components());
+        stack.applyComponentsAndValidate(result.components());
         return stack;
     }
 }

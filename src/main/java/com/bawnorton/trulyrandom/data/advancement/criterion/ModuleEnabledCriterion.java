@@ -5,33 +5,35 @@ import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.registry.TrulyRandomCriteria;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancement.AdvancementCriterion;
-import net.minecraft.advancement.criterion.AbstractCriterion;
-import net.minecraft.predicate.entity.EntityPredicate;
-import net.minecraft.predicate.entity.LootContextPredicate;
-import net.minecraft.server.network.ServerPlayer;
+import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
+import net.minecraft.server.level.ServerPlayer;
+
 import java.util.Optional;
 
-public final class ModuleEnabledCriterion extends AbstractCriterion<ModuleEnabledCriterion.Conditions> {
+public final class ModuleEnabledCriterion extends SimpleCriterionTrigger<ModuleEnabledCriterion.Conditions> {
+
     @Override
-    public Codec<ModuleEnabledCriterion.Conditions> getConditionsCodec() {
-        return ModuleEnabledCriterion.Conditions.CODEC;
+    public Codec<ModuleEnabledCriterion.Conditions> codec() {
+        return Conditions.CODEC;
     }
 
     public void trigger(ServerPlayer player) {
         trigger(player, conditions -> TrulyRandom.getRandomiser(player.level().getServer()).getModules().isEnabled(conditions.module));
     }
 
-    public record Conditions(Optional<LootContextPredicate> player, Module module) implements AbstractCriterion.Conditions {
+    public record Conditions(Optional<ContextAwarePredicate> player, Module module) implements SimpleCriterionTrigger.SimpleInstance {
         public static final Codec<ModuleEnabledCriterion.Conditions> CODEC = RecordCodecBuilder.create(
                 instance -> instance.group(
-                        EntityPredicate.LOOT_CONTEXT_PREDICATE_CODEC.optionalFieldOf("player").forGetter(ModuleEnabledCriterion.Conditions::player),
+                        EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(ModuleEnabledCriterion.Conditions::player),
                         Module.CODEC.fieldOf("module").forGetter(ModuleEnabledCriterion.Conditions::module)
                 ).apply(instance, ModuleEnabledCriterion.Conditions::new)
         );
 
-        public static AdvancementCriterion<ModuleEnabledCriterion.Conditions> create(Module module) {
-            return TrulyRandomCriteria.MODULE_ENABLED.create(new ModuleEnabledCriterion.Conditions(Optional.empty(), module));
+        public static Criterion<Conditions> create(Module module) {
+            return TrulyRandomCriteria.MODULE_ENABLED.createCriterion(new ModuleEnabledCriterion.Conditions(Optional.empty(), module));
         }
     }
 }

@@ -1,7 +1,8 @@
 package com.bawnorton.trulyrandom.extend;
 
-import net.minecraft.loot.LootTable;
-import net.minecraft.registry.ResourceKey;
+
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 public interface LookupExtender {
     LootTable trulyrandom$getUnalteredLootTable(ResourceKey<LootTable> key);

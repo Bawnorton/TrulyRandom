@@ -1,20 +1,19 @@
 package com.bawnorton.trulyrandom.mixin.accessor;
 
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.recipe.SmithingTrimRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.SmithingTrimRecipe;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
-import java.util.Optional;
 
 @Mixin(SmithingTrimRecipe.class)
 public interface SmithingTrimRecipeAccessor {
-    @Accessor
-    Ingredient getTemplate();
+    @Accessor("template")
+    Ingredient trulyrandom$template();
 
-    @Accessor
-    Ingredient getBase();
+    @Accessor("base")
+    Ingredient trulyrandom$base();
 
-    @Accessor
-    Ingredient getAddition();
+    @Accessor("addition")
+    Ingredient trulyrandom$addition();
 
 }

@@ -1,8 +1,8 @@
 package com.bawnorton.trulyrandom.command;
 
 import com.mojang.brigadier.CommandDispatcher;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
 
 public class CommandHandler {
     private static final TrulyRandomCommand TRULY_RANDOM_COMMAND;
@@ -11,7 +11,7 @@ public class CommandHandler {
         TRULY_RANDOM_COMMAND = new TrulyRandomCommand();
     }
 
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
-        TRULY_RANDOM_COMMAND.register(dispatcher, registryAccess);
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context) {
+        TRULY_RANDOM_COMMAND.register(dispatcher, context);
     }
 }

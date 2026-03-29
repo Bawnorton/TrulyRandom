@@ -180,13 +180,13 @@ public class ResultManager {
 
             SmithingTrimRecipeAccessor accessor = (SmithingTrimRecipeAccessor) recipe.value();
             ContextMap context = new ContextMap.Builder().create(LootContextParamSets.EMPTY);
-            ItemStack template = accessor.getTemplate().toDisplay().getFirst(context);
+            ItemStack template = accessor.trulyrandom$template().display().resolveForFirstStack(context);
             if (bases == null || bases.isEmpty()) {
-                Ingredient base = accessor.getBase();
+                Ingredient base = accessor.trulyrandom$base();
                 bases = new ArrayList<>(base.items().map(ItemStack::new).toList());
             }
             if (additions == null || additions.isEmpty()) {
-                Ingredient addition = accessor.getAddition();
+                Ingredient addition = accessor.trulyrandom$addition();
                 additions = new ArrayList<>(addition.items().map(ItemStack::new).toList());
             }
             ItemStack base = bases.remove(random.nextInt(bases.size()));

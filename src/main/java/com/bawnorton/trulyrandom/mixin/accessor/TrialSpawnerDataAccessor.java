@@ -1,26 +1,27 @@
 package com.bawnorton.trulyrandom.mixin.accessor;
 
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.block.spawner.TrialSpawnerData;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.entry.Holder;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerStateData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-@Mixin(TrialSpawnerData.class)
+@Mixin(TrialSpawnerStateData.class)
 public interface TrialSpawnerDataAccessor {
-    @Accessor
-    Set<UUID> getPlayers();
+    @Accessor("detectedPlayers")
+    Set<UUID> trulyrandom$detectedPlayers();
 
-    @Invoker
-    static Optional<Pair<PlayerEntity, Holder<StatusEffect>>> callFindPlayerWithOmen(ServerWorld world, List<UUID> players) {
+    @Invoker("findPlayerWithOminousEffect")
+    static Optional<Pair<Player, Holder<MobEffect>>> trulyrandom$findPlayerWithOminousEffect(final ServerLevel level, final List<UUID> inLineOfSightPlayers) {
         throw new AssertionError();
     }
 }

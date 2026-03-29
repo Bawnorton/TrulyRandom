@@ -34,6 +34,8 @@ java {
 }
 
 loom {
+    accessWidenerPath.set(rootProject.file("src/main/resources/${minecraft}.classtweaker"))
+
     runConfigs.all {
         ideConfigGenerated(true)
         runDir = "../../run"

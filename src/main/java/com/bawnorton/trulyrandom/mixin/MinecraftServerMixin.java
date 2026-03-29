@@ -3,9 +3,9 @@ package com.bawnorton.trulyrandom.mixin;
 import com.bawnorton.trulyrandom.extend.ModulesHolder;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import net.minecraft.resource.DataConfiguration;
-import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.world.level.WorldDataConfiguration;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -13,25 +13,25 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MinecraftServer.class)
-public abstract class MinecraftServerMixin {
+abstract class MinecraftServerMixin {
     @Unique
     private static final ThreadLocal<Modules> trulyrandom$MODULES = new ThreadLocal<>();
 
     @Inject(
-            method = "loadDataPacks(Lnet/minecraft/resource/ResourcePackManager;Lnet/minecraft/resource/DataConfiguration;ZZ)Lnet/minecraft/resource/DataConfiguration;",
+            method = "configurePackRepository",
             at = @At("HEAD")
     )
-    private static void captureModules(ResourcePackManager resourcePackManager, DataConfiguration dataConfiguration, boolean initMode, boolean safeMode, CallbackInfoReturnable<DataConfiguration> cir) {
-        trulyrandom$MODULES.set(((ModulesHolder) (Object) dataConfiguration).trulyrandom$getRandomiserModules());
+    private static void captureModules(PackRepository packRepository, WorldDataConfiguration initialDataConfig, boolean initMode, boolean safeMode, CallbackInfoReturnable<WorldDataConfiguration> cir) {
+        trulyrandom$MODULES.set(((ModulesHolder) (Object) initialDataConfig).trulyrandom$getRandomiserModules());
     }
 
     @ModifyReturnValue(
-            method = "loadDataPacks(Lnet/minecraft/resource/ResourcePackManager;Ljava/util/Collection;Lnet/minecraft/resource/featuretoggle/FeatureSet;Z)Lnet/minecraft/resource/DataConfiguration;",
+            method = "configureRepositoryWithSelection",
             at = @At("TAIL")
     )
-    private static DataConfiguration attachModules(DataConfiguration dataConfiguration) {
-        ((ModulesHolder) (Object) dataConfiguration).trulyrandom$setRandomiserModules(trulyrandom$MODULES.get());
+    private static WorldDataConfiguration attachModules(WorldDataConfiguration original) {
+        ((ModulesHolder) (Object) original).trulyrandom$setRandomiserModules(trulyrandom$MODULES.get());
         trulyrandom$MODULES.remove();
-        return dataConfiguration;
+        return original;
     }
 }

@@ -10,7 +10,6 @@ import com.bawnorton.trulyrandom.util.collection.UnaryHashBiMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -18,6 +17,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.loot.LootTable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

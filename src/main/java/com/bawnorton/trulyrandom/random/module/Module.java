@@ -1,5 +1,8 @@
 package com.bawnorton.trulyrandom.random.module;
 
+import com.bawnorton.trulyrandom.random.module.state.ModuleState;
+import com.bawnorton.trulyrandom.random.module.state.RecipeModuleState;
+import com.bawnorton.trulyrandom.random.module.state.StandardModuleState;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.StreamCodec;

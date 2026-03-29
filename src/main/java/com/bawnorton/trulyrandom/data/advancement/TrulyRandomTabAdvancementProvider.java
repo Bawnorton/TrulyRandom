@@ -4,26 +4,21 @@ import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.data.advancement.criterion.CraftingCriterion;
 import com.bawnorton.trulyrandom.data.advancement.criterion.ModuleEnabledCriterion;
 import com.bawnorton.trulyrandom.random.module.Module;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricAdvancementProvider;
-import net.minecraft.advancement.Advancement;
-import net.minecraft.advancement.AdvancementCriterion;
-import net.minecraft.advancement.AdvancementEntry;
-import net.minecraft.advancement.AdvancementFrame;
-import net.minecraft.advancement.AdvancementRewards;
-import net.minecraft.advancement.criterion.InventoryChangedCriterion;
-import net.minecraft.advancement.criterion.TickCriterion;
-import net.minecraft.block.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.recipe.Ingredient;
-import net.minecraft.registry.BuiltInRegistries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.BuiltInRegistries;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.advancements.*;
+import net.minecraft.advancements.criterion.InventoryChangeTrigger;
+import net.minecraft.advancements.criterion.PlayerTrigger;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.Ingredient;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,26 +27,26 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementProvider {
-    public TrulyRandomTabAdvancementProvider(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> lookup) {
+    public TrulyRandomTabAdvancementProvider(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
         super(output, lookup);
     }
 
     @Override
-    public void generateAdvancement(RegistryWrapper.WrapperLookup lookup, Consumer<AdvancementEntry> exporter) {
-        RegistryWrapper<Item> itemRegistry = lookup.getOrThrow(BuiltInRegistries.ITEM);
-        AdvancementEntry root = Advancement.Builder.create()
+    public void generateAdvancement(HolderLookup.Provider lookup, Consumer<AdvancementHolder> exporter) {
+        HolderLookup.RegistryLookup<Item> itemRegistry = lookup.lookupOrThrow(Registries.ITEM);
+        AdvancementHolder root = Advancement.Builder.advancement()
                 .display(
                         Items.DIAMOND,
-                        Text.translatable("advancements.trulyrandom.root.title"),
-                        Text.translatable("advancements.trulyrandom.root.description"),
-                        Identifier.ofVanilla("textures/gui/advancements/backgrounds/adventure.png"),
-                        AdvancementFrame.TASK,
+                        Component.translatable("advancements.trulyrandom.root.title"),
+                        Component.translatable("advancements.trulyrandom.root.description"),
+                        Identifier.withDefaultNamespace("textures/gui/advancements/backgrounds/adventure.png"),
+                        AdvancementType.TASK,
                         false,
                         false,
                         false
                 )
-                .criterion("tick", TickCriterion.Conditions.createTick())
-                .build(exporter, TrulyRandom.sid("root"));
+                .addCriterion("tick", PlayerTrigger.TriggerInstance.tick())
+                .save(exporter, TrulyRandom.sid("root"));
         createChallengeEntry(
                 root,
                 Items.BOW,
@@ -65,8 +60,8 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                                         "AB "
                                 ),
                                 Map.of(
-                                        'A', Ingredient.ofItems(Items.STICK),
-                                        'B', Ingredient.ofItems(Items.STRING)
+                                        'A', Ingredient.of(Items.STICK),
+                                        'B', Ingredient.of(Items.STRING)
                                 )
                         )
                 ),
@@ -84,8 +79,8 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                                 "BBB"
                         ),
                         Map.of(
-                                'A', Ingredient.ofTag(itemRegistry.getOrThrow(ItemTags.PLANKS)),
-                                'B', Ingredient.ofTag(itemRegistry.getOrThrow(ItemTags.WOOL))
+                                'A', Ingredient.of(itemRegistry.getOrThrow(ItemTags.PLANKS)),
+                                'B', Ingredient.of(itemRegistry.getOrThrow(ItemTags.WOOL))
                         )
                     )
                 ),
@@ -97,7 +92,7 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                 "this_is_not_the_rod_you_are_looking_for",
                 Map.of(
                         "rod",
-                        InventoryChangedCriterion.Conditions.items(Items.BREEZE_ROD),
+                        InventoryChangeTrigger.TriggerInstance.hasItems(Items.BREEZE_ROD),
                         "is_loot_tables",
                         ModuleEnabledCriterion.Conditions.create(Module.LOOT_TABLES)
                 ),
@@ -109,13 +104,13 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                 "avatar",
                 Map.of(
                         "wood",
-                        InventoryChangedCriterion.Conditions.items(Items.STICK),
+                        InventoryChangeTrigger.TriggerInstance.hasItems(Items.STICK),
                         "bamboo",
-                        InventoryChangedCriterion.Conditions.items(Items.BAMBOO),
+                        InventoryChangeTrigger.TriggerInstance.hasItems(Items.BAMBOO),
                         "breeze",
-                        InventoryChangedCriterion.Conditions.items(Items.BREEZE_ROD),
+                        InventoryChangeTrigger.TriggerInstance.hasItems(Items.BREEZE_ROD),
                         "blaze",
-                        InventoryChangedCriterion.Conditions.items(Items.BLAZE_ROD)
+                        InventoryChangeTrigger.TriggerInstance.hasItems(Items.BLAZE_ROD)
                 ),
                 exporter
         );
@@ -141,7 +136,7 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                         Items.GREEN_CANDLE,
                         Items.RED_CANDLE,
                         Items.BLACK_CANDLE
-                ).collect(HashMap::new, (map, item) -> map.put(BuiltInRegistries.ITEM.getId(item).getPath(), InventoryChangedCriterion.Conditions.items(item)), HashMap::putAll),
+                ).collect(HashMap::new, (map, item) -> map.put(BuiltInRegistries.ITEM.getKey(item).getPath(), InventoryChangeTrigger.TriggerInstance.hasItems(item)), HashMap::putAll),
                 exporter
         );
         createChallengeEntry(
@@ -165,26 +160,26 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                         Items.GREEN_WOOL,
                         Items.RED_WOOL,
                         Items.BLACK_WOOL
-                ).collect(HashMap::new, (map, item) -> map.put(BuiltInRegistries.ITEM.getId(item).getPath(), InventoryChangedCriterion.Conditions.items(item)), HashMap::putAll),
+                ).collect(HashMap::new, (map, item) -> map.put(BuiltInRegistries.ITEM.getKey(item).getPath(), InventoryChangeTrigger.TriggerInstance.hasItems(item)), HashMap::putAll),
                 exporter
         );
     }
 
-    private AdvancementEntry createChallengeEntry(AdvancementEntry parent, Item displayItem, String name, Map<String, AdvancementCriterion<?>> criterion, Consumer<AdvancementEntry> exporter) {
-        return createEntry(parent, displayItem, name, AdvancementFrame.CHALLENGE, true, true, false, 100, criterion, exporter);
+    private AdvancementHolder createChallengeEntry(AdvancementHolder parent, Item displayItem, String name, Map<String, Criterion<?>> criterion, Consumer<AdvancementHolder> exporter) {
+        return createEntry(parent, displayItem, name, AdvancementType.CHALLENGE, true, true, false, 100, criterion, exporter);
     }
 
-    private AdvancementEntry createTaskEntry(AdvancementEntry parent, Item displayItem, String name, Map<String, AdvancementCriterion<?>> criterion, Consumer<AdvancementEntry> exporter) {
-        return createEntry(parent, displayItem, name, AdvancementFrame.TASK, true, true, false, 0, criterion, exporter);
+    private AdvancementHolder createTaskEntry(AdvancementHolder parent, Item displayItem, String name, Map<String, Criterion<?>> criterion, Consumer<AdvancementHolder> exporter) {
+        return createEntry(parent, displayItem, name, AdvancementType.TASK, true, true, false, 0, criterion, exporter);
     }
 
-    private AdvancementEntry createEntry(AdvancementEntry parent, Item displayItem, String name, AdvancementFrame frame, boolean toast, boolean chat, boolean hidden, int xp, Map<String, AdvancementCriterion<?>> criterion, Consumer<AdvancementEntry> exporter) {
-        Advancement.Builder builder = Advancement.Builder.create()
+    private AdvancementHolder createEntry(AdvancementHolder parent, Item displayItem, String name, AdvancementType frame, boolean toast, boolean chat, boolean hidden, int xp, Map<String, Criterion<?>> criterion, Consumer<AdvancementHolder> exporter) {
+        Advancement.Builder builder = Advancement.Builder.advancement()
                 .parent(parent)
                 .display(
                         displayItem,
-                        Text.translatable("advancements.trulyrandom.%s.title".formatted(name)),
-                        Text.translatable("advancements.trulyrandom.%s.description".formatted(name)),
+                        Component.translatable("advancements.trulyrandom.%s.title".formatted(name)),
+                        Component.translatable("advancements.trulyrandom.%s.description".formatted(name)),
                         null,
                         frame,
                         toast,
@@ -192,7 +187,7 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                         hidden
                 )
                 .rewards(AdvancementRewards.Builder.experience(xp));
-        criterion.forEach(builder::criterion);
-        return builder.build(exporter, TrulyRandom.id(name).toString());
+        criterion.forEach(builder::addCriterion);
+        return builder.save(exporter, TrulyRandom.id(name).toString());
     }
 }

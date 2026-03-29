@@ -3,14 +3,14 @@ package com.bawnorton.trulyrandom.mixin.tracker;
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import org.jspecify.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,22 +19,28 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.List;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityMixin extends Entity {
+abstract class LivingEntityMixin extends Entity {
     @Shadow
-    public abstract @Nullable PlayerEntity getAttackingPlayer();
+    public abstract @Nullable Player getLastHurtByPlayer();
 
-    protected LivingEntityMixin(EntityType<?> type, World world) {
-        super(type, world);
+    protected LivingEntityMixin(EntityType<?> type, Level level) {
+        super(type, level);
     }
 
-    @Inject(method = "dropLoot", at = @At(value = "INVOKE", target = "Lnet/minecraft/registry/ReloadableRegistries$Lookup;getLootTable(Lnet/minecraft/registry/ResourceKey;)Lnet/minecraft/loot/LootTable;"))
-    private void trackCause(ServerWorld world, DamageSource damageSource, boolean causedByPlayer, CallbackInfo ci) {
+    @Inject(
+            method = "dropFromLootTable(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;Z)V",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/registry/ReloadableRegistries$Lookup;getLootTable(Lnet/minecraft/registry/ResourceKey;)Lnet/minecraft/loot/LootTable;"
+            )
+    )
+    private void trackCause(ServerLevel level, DamageSource source, boolean playerKilled, CallbackInfo ci) {
         if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
-        if (getWorld().isClient()) return;
+        if (level.isClientSide()) return;
 
         LootTableTracker.LOOT_CAUSERS.remove();
-        PlayerEntity attackingPlayer = getAttackingPlayer();
-        if (causedByPlayer && attackingPlayer != null) {
+        Player attackingPlayer = getLastHurtByPlayer();
+        if (playerKilled && attackingPlayer != null) {
             LootTableTracker.LOOT_CAUSERS.set(List.of(attackingPlayer.trulyrandom$getTeam()));
         }
     }
