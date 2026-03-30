@@ -12,6 +12,8 @@ import com.bawnorton.trulyrandom.network.packet.serverbound.ServerboundSetTarget
 import com.bawnorton.trulyrandom.network.packet.clientbound.*;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
+import com.bawnorton.trulyrandom.random.module.state.BlockModelModuleState;
+import com.bawnorton.trulyrandom.random.module.state.RecipeModuleState;
 import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
@@ -91,9 +93,10 @@ public class ClientNetworking {
 
         boolean blockModelSeedChanged = randomiser.getModules().getSeed(Module.BLOCK_MODELS) != packet.modules().getSeed(Module.BLOCK_MODELS);
         boolean itemModelSeedChanged = randomiser.getModules().getSeed(Module.ITEM_MODELS) != packet.modules().getSeed(Module.ITEM_MODELS);
+        boolean blockModelSettingsChanged = randomiser.getModules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class).isIgnoreModelOcclusion() != packet.modules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class).isIgnoreModelOcclusion();
 
         randomiser.setModules(packet.modules());
-        randomiser.updateBlockModels(minecraft, blockModelSeedChanged);
+        randomiser.updateBlockModels(minecraft, blockModelSeedChanged || blockModelSettingsChanged);
         randomiser.updateItemModels(minecraft, itemModelSeedChanged);
         runCallback(ClientboundSetClientRandomiserPacket.TYPE);
     }

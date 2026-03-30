@@ -43,7 +43,7 @@ public class KeybindManager {
         HitResult hitResult = minecraft.hitResult;
         if (hitResult instanceof BlockHitResult blockHitResult) {
             BlockState block = minecraft.level.getBlockState(blockHitResult.getBlockPos());
-            ModelShuffler.BlockStates blockStates = (ModelShuffler.BlockStates) minecraft.getModelManager().getBlockModelSet();
+            ModelShuffler.BlockStates blockStates = (ModelShuffler.BlockStates) minecraft.getModelManager().getBlockStateModelSet();
             TrulyRandom.LOGGER.info("Block: {} ({})", block, blockStates.trulyrandom$getRedirectMap().get(block));
         }
     });

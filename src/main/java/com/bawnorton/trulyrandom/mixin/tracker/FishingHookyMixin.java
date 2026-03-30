@@ -33,7 +33,7 @@ abstract class FishingHookyMixin extends Projectile {
                     target = "Lnet/minecraft/server/ReloadableServerRegistries$Holder;getLootTable(Lnet/minecraft/resources/ResourceKey;)Lnet/minecraft/world/level/storage/loot/LootTable;"
             )
     )
-    private void trackCause(ItemStack usedItem, CallbackInfoReturnable<Integer> cir) {
+    private void trackCause(ItemStack rod, CallbackInfoReturnable<Integer> cir) {
         if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if (level().isClientSide()) return;
 

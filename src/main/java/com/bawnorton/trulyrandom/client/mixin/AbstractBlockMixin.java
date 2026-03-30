@@ -4,27 +4,29 @@ import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.AbstractBlockAccessor;
 import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.sound.BlockSoundGroup;
+import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(AbstractBlock.class)
-public abstract class AbstractBlockMixin {
-    @ModifyReturnValue(method = "getSoundGroup", at = @At("RETURN"))
-    private BlockSoundGroup useRandomisedBlockSound(BlockSoundGroup original) {
+@MixinEnvironment("client")
+@Mixin(BlockBehaviour.class)
+abstract class AbstractBlockMixin {
+    @ModifyReturnValue(method = "getSoundType", at = @At("RETURN"))
+    private SoundType useRandomisedBlockSound(SoundType original) {
         UnaryMap<BlockState> originalToRandomMap = ((ModelShuffler.BlockStates) Minecraft.getInstance()
-                .getBlockRenderManager()
-                .getModels()).trulyrandom$getRedirectMap();
+                .getModelManager()
+                .getBlockStateModelSet()).trulyrandom$getRedirectMap();
         BlockState defaultState;
         if((Object) this instanceof Block block) {
-            defaultState = block.getDefaultState();
+            defaultState = block.defaultBlockState();
         } else {
             return original;
         }
-        return ((AbstractBlockAccessor) originalToRandomMap.getOrDefault(defaultState, defaultState).getBlock()).trulyrandom$getSoundGroup();
+        return ((AbstractBlockAccessor) originalToRandomMap.getOrDefault(defaultState, defaultState).getBlock()).trulyrandom$soundType();
     }
 }

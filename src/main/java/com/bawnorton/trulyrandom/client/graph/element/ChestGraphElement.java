@@ -1,15 +1,21 @@
 package com.bawnorton.trulyrandom.client.graph.element;
 
-import com.bawnorton.trulyrandom.client.mixin.accessor.ChestModelRendererAccessor;
+import com.bawnorton.trulyrandom.client.mixin.accessor.BlockModelRenderStateAccessor;
+import com.bawnorton.trulyrandom.client.mixin.accessor.ChestSpecialRendererAccessor;
 import com.bawnorton.trulyrandom.client.screen.render.BlockStateElementRenderState;
+import com.bawnorton.trulyrandom.client.screen.render.BlockStateGuiRenderer;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.block.BlockModelRenderState;
+import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.blockentity.state.ChestRenderState;
-import net.minecraft.client.renderer.special.ChestSpecialRenderer;
+import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Matrix3x2fStack;
 
@@ -19,6 +25,7 @@ import java.util.stream.Collectors;
 
 public class ChestGraphElement extends IdBasedGraphElement {
     private final ChestRenderState chestRenderState;
+    private final BlockModelRenderState blockModelRenderState;
     private int counter = 0;
     private int offset = 0;
     private final List<Item> chestContent;
@@ -27,6 +34,7 @@ public class ChestGraphElement extends IdBasedGraphElement {
         super(lootTableId);
         this.chestContent = chestContent;
         this.chestRenderState = new ChestRenderState();
+        this.blockModelRenderState = new BlockModelRenderState();
     }
 
     @Override
@@ -39,11 +47,13 @@ public class ChestGraphElement extends IdBasedGraphElement {
                 offset = 0;
             }
         }
-        ChestSpecialRenderer modelRenderer = (ChestSpecialRenderer) minecraft.getBlockEntityRenderDispatcher()
-                .getRenderer(chestRenderState);
-        ((ChestModelRendererAccessor) modelRenderer).setOpenness(0.7f);
+        BlockState state = Blocks.CHEST.defaultBlockState();
+        BlockModel blockModel = minecraft.getModelManager().getBlockModelSet().get(state);
+        blockModel.update(blockModelRenderState, state, BlockStateGuiRenderer.BLOCK_DISPLAY_CONTEXT, 42);
+        SpecialModelRenderer<?> specialModelRenderer = ((BlockModelRenderStateAccessor) blockModelRenderState).trulyrandom$specialRenderer();
+        ((ChestSpecialRendererAccessor) specialModelRenderer).trulyrandom$openness(0.7f);
         graphics.guiRenderState.addPicturesInPictureState(new BlockStateElementRenderState(
-                Blocks.CHEST.defaultBlockState(), x, y, scale, 45, graphics.scissorStack.peek()
+                state, x, y + 2, scale, 225, graphics.scissorStack.peek()
         ));
         Matrix3x2fStack matrices = graphics.pose();
         matrices.pushMatrix();
@@ -56,6 +66,11 @@ public class ChestGraphElement extends IdBasedGraphElement {
 
         graphics.fakeItem(chestContent.get(offset).getDefaultInstance(), x, y);
         matrices.popMatrix();
+    }
+
+    @Override
+    protected int getColour() {
+        return CommonColors.SOFT_YELLOW;
     }
 
     @Override

@@ -56,11 +56,16 @@ public abstract class GraphElement {
         return connections.getOrDefault(element, TrackingConnection.NONE);
     }
 
+    protected int getColour() {
+        return -1;
+    }
+
     public void extractBackground(GuiGraphicsExtractor graphics, int x, int y, int width, int height) {
         Identifier texture;
-        int color = -1;
+        int color = getColour();
         if (getTo().isEmpty()) {
             texture = AdvancementWidgetType.OBTAINED.frameSprite(AdvancementType.CHALLENGE);
+            color = -1;
         } else {
             if (isHovered()) {
                 color = CommonColors.GREEN;

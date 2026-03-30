@@ -3,6 +3,7 @@ package com.bawnorton.trulyrandom.tracker.loot;
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.extend.LookupExtender;
 import com.bawnorton.trulyrandom.mixin.accessor.StandingAndWallBlockItemAccessor;
+import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.Tracker;
 import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
@@ -19,6 +20,10 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -94,10 +99,23 @@ public class LootTableTracker extends Tracker<ResourceKey<LootTable>, ResourceKe
     }
 
     public static <T> T attachCause(Supplier<T> toAttach, List<Team> teams) {
+        if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return toAttach.get();
+
         LOOT_CAUSERS.set(teams);
         T result = toAttach.get();
         LOOT_CAUSERS.remove();
         return result;
+    }
+
+    public static <T extends Animal, V> V attachAnimalCause(T instance, ServerLevel level, Supplier<V> original) {
+        Player nearest = level.getNearestPlayer(instance, 32D);
+        if(nearest == null) return original.get();
+
+        return attachCauser(nearest, original);
+    }
+
+    public static <T> T attachCauser(Entity causer, Supplier<T> original) {
+        return causer instanceof Player player ? attachCause(original, List.of(player.trulyrandom$getTeam())) : original.get();
     }
 
     public void setLootTableRegistry(HolderGetter<LootTable> registry) {

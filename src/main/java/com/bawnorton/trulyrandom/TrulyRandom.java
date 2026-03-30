@@ -8,6 +8,7 @@ import com.bawnorton.trulyrandom.random.module.state.ModuleStateTypes;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.registry.TrulyRandomCriteria;
 import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
+import dev.kikugie.fletching_table.annotation.fabric.Entrypoint;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.Version;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.UUID;
 
+@Entrypoint("main")
 public class TrulyRandom implements ModInitializer {
     public static final String MOD_ID = "trulyrandom";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
@@ -72,9 +74,9 @@ public class TrulyRandom implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        ModuleStateTypes.init();
         Networking.init();
         EventHandler.init();
-        ModuleStateTypes.init();
         TrulyRandomCriteria.init();
         LOGGER.debug("TrulyRandom Initialised");
     }

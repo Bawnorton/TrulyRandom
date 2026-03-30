@@ -3,17 +3,16 @@ package com.bawnorton.trulyrandom.client.extend;
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.item.Item;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
 
-public interface TrackerHintDrawer {
+public interface TrackerHintExtracter {
     Identifier UNBROKEN = TrulyRandom.id("loot_tracker/unbroken");
     Identifier NOT_SILKED = TrulyRandom.id("loot_tracker/not_silked");
 
-    default void drawHints(GuiGraphicsExtractor graphics, int x, int y, Item item) {
+    default void extractStackHints(GuiGraphicsExtractor graphics, int x, int y, Item item) {
         LootTableTracker tracker = TrulyRandomClient.getRandomiser().getLootTableTracker();
         boolean knowsLootTable = tracker.knowsItemLootTable(item);
         boolean brokeWithSilk = tracker.brokeWithSilk(item);

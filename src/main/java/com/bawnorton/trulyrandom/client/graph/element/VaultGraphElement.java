@@ -5,10 +5,12 @@ import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.VaultBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.StringUtils;
+
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -27,6 +29,11 @@ public class VaultGraphElement extends IdBasedGraphElement {
         graphics.guiRenderState.addPicturesInPictureState(new BlockStateElementRenderState(
                 state, x, y, scale, 225, graphics.scissorStack.peek()
         ));
+    }
+
+    @Override
+    public int getColour() {
+        return CommonColors.COSMOS_PINK;
     }
 
     @Override

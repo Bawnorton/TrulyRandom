@@ -32,7 +32,7 @@ public class BlockStateGuiRenderer extends PictureInPictureRenderer<BlockStateEl
     @Override
     protected void renderToTexture(BlockStateElementRenderState renderState, PoseStack poseStack) {
         Minecraft minecraft = Minecraft.getInstance();
-        minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_FLAT);
+        minecraft.gameRenderer.getLighting().setupFor(Lighting.Entry.ITEMS_3D);
 
         poseStack.translate(0, -16, 50);
         poseStack.scale(15, -15, -50);
@@ -45,6 +45,7 @@ public class BlockStateGuiRenderer extends PictureInPictureRenderer<BlockStateEl
         FeatureRenderDispatcher featureRenderDispatcher = Minecraft.getInstance().gameRenderer.getFeatureRenderDispatcher();
         SubmitNodeStorage submitNodeStorage = featureRenderDispatcher.getSubmitNodeStorage();
         blockModelRenderState.submit(poseStack, submitNodeStorage, LightCoordsUtil.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0);
+        featureRenderDispatcher.renderAllFeatures();
     }
 
     @Override

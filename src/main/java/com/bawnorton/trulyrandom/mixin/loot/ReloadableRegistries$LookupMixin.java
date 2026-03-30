@@ -20,16 +20,20 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(ReloadableServerRegistries.Holder.class)
 abstract class ReloadableRegistries$LookupMixin implements LookupExtender {
-    @Shadow public abstract LootTable getLootTable(ResourceKey<LootTable> key);
+    @Shadow public abstract LootTable getLootTable(ResourceKey<LootTable> id);
 
     @Shadow @Final private HolderLookup.Provider registries;
 
-    @ModifyVariable(method = "getLootTable", at = @At("HEAD"), argsOnly = true)
-    private @Nullable ResourceKey<LootTable> getRandomisedLootTable(@Nullable ResourceKey<LootTable> original) {
+    @ModifyVariable(
+            method = "getLootTable",
+            at = @At("HEAD"),
+            argsOnly = true
+    )
+    private @Nullable ResourceKey<LootTable> getRandomisedLootTable(@Nullable ResourceKey<LootTable> id) {
         ServerRandomiser randomiser = TrulyRandom.getCachedRandomiser();
-        if(!randomiser.getModules().isEnabled(Module.LOOT_TABLES)) return original;
+        if(!randomiser.getModules().isEnabled(Module.LOOT_TABLES)) return id;
 
-        return randomiser.getLootRandomiser().getLootTable(LootTableTracker.LOOT_CAUSERS.get(), original);
+        return randomiser.getLootRandomiser().getLootTable(LootTableTracker.LOOT_CAUSERS.get(), id);
     }
 
     @Override

@@ -26,10 +26,10 @@ abstract class TrialSpawnerStateMixin {
     private void trackCause(TrialSpawnerState instance, ServerLevel level, BlockPos trialSpawnerPos, TrialSpawner trialSpawner, Operation<Void> original) {
         LootTableTracker.attachCause(
                 () -> original.call(instance, level, trialSpawnerPos, trialSpawner),
-                TrialSpawnerDataAccessor.callFindPlayerWithOmen(
+                TrialSpawnerDataAccessor.trulyrandom$findPlayerWithOminousEffect(
                                 level,
                                 ((TrialSpawnerDataAccessor) trialSpawner.getStateData())
-                                        .getPlayers()
+                                        .trulyrandom$detectedPlayers()
                                         .stream()
                                         .toList())
                         .map(Pair::getFirst)

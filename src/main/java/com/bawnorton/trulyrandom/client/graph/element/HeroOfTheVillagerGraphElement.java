@@ -5,8 +5,10 @@ import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -29,21 +31,11 @@ public class HeroOfTheVillagerGraphElement extends GameplayGraphElement implemen
 
         String giftId = lootTableId.getSegments()[2];
         String villagerId = giftId.substring(0, giftId.lastIndexOf('_'));
-        Field[] fields = VillagerProfession.class.getFields();
-        try {
-            for (Field field : fields) {
-                Object value = field.get(null);
-                if (!(value instanceof ResourceKey<?> vp)) continue;
-
-                if(vp.identifier().toString().equals(villagerId)) {
-                    RegistryAccess registryAccess = Minecraft.getInstance().level.registryAccess();
-                    //noinspection unchecked
-                    villagerData = villagerData.withProfession(registryAccess, (ResourceKey<VillagerProfession>) vp);
-                    break;
-                }
-            }
-        } catch (IllegalAccessException ignored) {
-        }
+        ClientLevel level = Minecraft.getInstance().level;
+        RegistryAccess registryAccess = level.registryAccess();
+        registryAccess.lookup(Registries.VILLAGER_PROFESSION)
+                .flatMap(registry -> registry.get(Identifier.fromNamespaceAndPath(lootTableId.getNamespace(), villagerId)))
+                .ifPresent(profession -> villagerData = villagerData.withProfession(level.registryAccess(), profession.key()));
     }
 
     @Override

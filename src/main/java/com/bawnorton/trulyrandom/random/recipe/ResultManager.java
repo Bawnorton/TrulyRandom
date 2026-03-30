@@ -165,15 +165,13 @@ public class ResultManager {
         public ItemStack getResult(RecipeHolder<?> recipe, MinecraftServer server) {
             ItemStack defaultTrimmed = Items.IRON_CHESTPLATE.getDefaultInstance();
 
-            Optional<Holder.Reference<TrimMaterial>> defaultMat = server.registries()
-                    .getLayer(RegistryLayer.RELOADABLE)
-                    .getOrThrow(Registries.TRIM_MATERIAL)
-                    .value()
+            Optional<Holder.Reference<TrimMaterial>> defaultMat = server.reloadableRegistries()
+                    .lookup()
+                    .lookupOrThrow(Registries.TRIM_MATERIAL)
                     .get(TrimMaterials.REDSTONE);
-            Optional<Holder.Reference<TrimPattern>> defaultPat = server.registries()
-                    .getLayer(RegistryLayer.RELOADABLE)
-                    .getOrThrow(Registries.TRIM_PATTERN)
-                    .value()
+            Optional<Holder.Reference<TrimPattern>> defaultPat = server.reloadableRegistries()
+                    .lookup()
+                    .lookupOrThrow(Registries.TRIM_PATTERN)
                     .get(TrimPatterns.COAST);
 
             defaultTrimmed.set(DataComponents.TRIM, new ArmorTrim(defaultMat.orElseThrow(), defaultPat.orElseThrow()));

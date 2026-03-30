@@ -33,7 +33,7 @@ abstract class ServerPlayerGameModeMixin {
             )
     )
     private InteractionResult trackCause(BlockState instance, ItemStack itemStack, Level level, Player player, InteractionHand interactionHand, BlockHitResult blockHitResult, Operation<InteractionResult> original) {
-        return LootTableTracker.attachCause(() -> original.call(instance, level, player, blockHitResult), List.of(player.trulyrandom$getTeam()));
+        return LootTableTracker.attachCause(() -> original.call(instance, itemStack, level, player, interactionHand, blockHitResult), List.of(player.trulyrandom$getTeam()));
     }
 
     @WrapOperation(

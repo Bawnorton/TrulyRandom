@@ -21,8 +21,8 @@ import java.util.stream.Collectors;
 
 @Mixin(TrialSpawner.class)
 abstract class TrialSpawnerMixin {
-
-    @Shadow public abstract TrialSpawnerStateData getData();
+    @Shadow
+    public abstract TrialSpawnerStateData getStateData();
 
     @Inject(
             method = "ejectReward",
@@ -34,7 +34,7 @@ abstract class TrialSpawnerMixin {
     private void trackCause(ServerLevel level, BlockPos pos, ResourceKey<LootTable> ejectingLootTable, CallbackInfo ci) {
         if(!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
 
-        LootTableTracker.LOOT_CAUSERS.set(((TrialSpawnerDataAccessor) getData()).getPlayers()
+        LootTableTracker.LOOT_CAUSERS.set(((TrialSpawnerDataAccessor) getStateData()).trulyrandom$detectedPlayers()
                 .stream()
                 .map(level::getPlayerByUUID)
                 .filter(Objects::nonNull)

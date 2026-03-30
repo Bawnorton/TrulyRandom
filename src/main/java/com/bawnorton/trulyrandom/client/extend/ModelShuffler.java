@@ -27,6 +27,8 @@ public interface ModelShuffler<T> {
     boolean trulyrandom$isShuffled();
 
     interface BlockStates extends ModelShuffler<BlockState> {
+        boolean trulyrandom$ignoreModelOcclusion();
+
         List<BlockState> trulyrandom$getBlockStates();
 
         default Map<String, List<BlockState>> buildPropertyMap() {
@@ -36,8 +38,10 @@ public interface ModelShuffler<T> {
                 for (Property<?> entry : state.getProperties()) {
                     variant.append(entry);
                 }
-                variant.append(state.canOcclude());
-                variant.append(state.getOcclusionShape());
+                if(!trulyrandom$ignoreModelOcclusion()) {
+                    variant.append(state.canOcclude());
+                    variant.append(state.getOcclusionShape());
+                }
                 propertyMap.computeIfAbsent(variant.toString(), _ -> new ArrayList<>()).add(state);
             }
             propertyMap.forEach((_, v) -> v.sort(Comparator.comparingInt(state -> BuiltInRegistries.BLOCK.getId(state.getBlock()))));

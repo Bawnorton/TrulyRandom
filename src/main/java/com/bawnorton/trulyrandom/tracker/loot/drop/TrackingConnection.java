@@ -10,5 +10,6 @@ public enum TrackingConnection {
     SMASHING,
     GAMEPLAY,
     BRUSHING,
-    INGREDIENT, NONE
+    INGREDIENT,
+    NONE
 }

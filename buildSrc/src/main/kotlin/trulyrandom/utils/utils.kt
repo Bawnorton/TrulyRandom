@@ -16,6 +16,13 @@ fun Project.mod(name: String): String? = findProperty("mod.${name}") as String?
 fun Project.mod(name: String, consumer: (prop: String) -> Unit) = mod(name)?.let(consumer)
 
 fun Project.applyMixinDebugSettings(vmArgConsumer: Consumer<String>, propertyConsumer: BiConsumer<String, String>) {
+  val mixinJarFile = configurations.named("runtimeClasspath").get().incoming.artifactView {
+    componentFilter {
+      it is ModuleComponentIdentifier && it.group == "net.fabricmc" && it.module == "sponge-mixin"
+    }
+  }.files.singleFile
+  vmArgConsumer.accept("-javaagent:$mixinJarFile")
+  vmArgConsumer.accept("-XX:+AllowEnhancedClassRedefinition")
   propertyConsumer.accept("mixin.hotSwap", "true")
   propertyConsumer.accept("mixin.debug.export", "true")
 }

@@ -1,17 +1,20 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
+import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
-//import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
-//import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
+import com.bawnorton.trulyrandom.random.module.Module;
+import com.bawnorton.trulyrandom.random.module.state.BlockModelModuleState;
 import com.bawnorton.trulyrandom.util.collection.UnaryHashMap;
 import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.block.BlockModels;
-import net.minecraft.client.render.model.BlockStateModel;
-import net.minecraft.minecraft.level.ClientWorld;
+import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.block.BlockStateModelSet;
+import net.minecraft.client.renderer.block.model.BlockModel;
+import net.minecraft.world.level.block.state.BlockState;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -21,32 +24,39 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Function;
 
-@Mixin(BlockModels.class)
-//@AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, invert = true)
-public abstract class VanillaBlockModelsMixin implements ModelShuffler.BlockStates {
+@MixinEnvironment("client")
+@Mixin(BlockStateModelSet.class)
+abstract class BlockStateModelSetMixin implements ModelShuffler.BlockStates {
     @Unique
     private final UnaryMap<BlockState> trulyrandom$redirectMap = new UnaryHashMap<>();
+    @Final
     @Shadow
-    private Map<BlockState, BlockStateModel> models;
+    private Map<BlockState, BlockModel> modelByState;
 
-    @WrapOperation(method = "getModel", at = @At(value = "INVOKE", target = "java/util/Map.get(Ljava/lang/Object;)Ljava/lang/Object;"))
-    private Object getShuffledModel(Map<BlockState, BlockStateModel> instance, Object key, Operation<Object> original) {
+    @WrapOperation(method = "get", at = @At(value = "INVOKE", target = "Ljava/util/Map;getOrDefault(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"))
+    private <K, V> Object getShuffledModel(Map<K, V> instance, Object key, V defaultValue, Operation<V> original) {
         BlockState redirected = trulyrandom$redirectMap.getOrDefault((BlockState) key, (BlockState) key);
-        return original.call(instance, redirected);
+        return original.call(instance, redirected, defaultValue);
     }
 
     @Override
     public List<BlockState> trulyrandom$getBlockStates() {
-        return new ArrayList<>(models.keySet());
+        return new ArrayList<>(modelByState.keySet());
+    }
+
+    @Override
+    public boolean trulyrandom$ignoreModelOcclusion() {
+        return TrulyRandomClient.getRandomiser().getModules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class).isIgnoreModelOcclusion();
     }
 
     @Override
     public void trulyrandom$shuffleModels(long seed) {
-        if (models == null) return;
+        if (modelByState == null) return;
 
-        ClientWorld world = Minecraft.getInstance().world;
-        if (world == null) return;
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null) return;
 
         trulyrandom$resetModels();
 

@@ -12,6 +12,7 @@ public class GraphTypes {
 
     public static final DropType ARCHAELOGY = of("archaelogy", LootTableIdentifier::isFromArchaelogy, TrackingConnection.BRUSHING);
     public static final DropType BLOCK = of("block", LootTableIdentifier::isFromBlock, TrackingConnection.MINING);
+    public static final DropType BRUSH = of("brush", LootTableIdentifier::isFromBrush, TrackingConnection.BRUSHING);
     public static final DropType CHEST = of("chest", LootTableIdentifier::isFromChest, TrackingConnection.LOOTING);
     public static final DropType DISPENSER = of("dispenser", LootTableIdentifier::isFromDispenser, TrackingConnection.LOOTING);
     public static final DropType ENTITY = of("entity", LootTableIdentifier::isFromEntity, TrackingConnection.KILLING);

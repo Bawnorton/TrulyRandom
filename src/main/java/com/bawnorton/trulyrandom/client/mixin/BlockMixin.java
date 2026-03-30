@@ -4,23 +4,26 @@ import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.AbstractBlockAccessor;
 import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.MinecraftClient;
+import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
+@MixinEnvironment("client")
 @Mixin(Block.class)
-public abstract class BlockMixin extends AbstractBlockMixin {
-    @Shadow
-    public abstract BlockState getDefaultState();
+abstract class BlockMixin extends AbstractBlockMixin {
 
-    @ModifyReturnValue(method = "getSlipperiness", at = @At("RETURN"))
+    @Shadow
+    public abstract BlockState defaultBlockState();
+
+    @ModifyReturnValue(method = "getFriction", at = @At("RETURN"))
     private float useRandomisedSlipperiness(float original) {
         UnaryMap<BlockState> originalToRandomMap = ((ModelShuffler.BlockStates) Minecraft.getInstance()
-                .getBlockRenderManager()
-                .getModels()).trulyrandom$getRedirectMap();
-        return ((AbstractBlockAccessor) originalToRandomMap.getOrDefault(getDefaultState(), getDefaultState()).getBlock()).trulyrandom$getSlipperiness();
+                .getModelManager()
+                .getBlockStateModelSet()).trulyrandom$getRedirectMap();
+        return ((AbstractBlockAccessor) originalToRandomMap.getOrDefault(defaultBlockState(), defaultBlockState()).getBlock()).trulyrandom$friction();
     }
 }

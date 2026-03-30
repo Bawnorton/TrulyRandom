@@ -2,6 +2,7 @@ package com.bawnorton.trulyrandom.client.screen;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.screen.module.ModuleWidgetSettings;
+import com.bawnorton.trulyrandom.client.screen.module.adapter.BlockModelsModuleWidgetAdapter;
 import com.bawnorton.trulyrandom.client.screen.module.adapter.DefaultModuleWidgetAdapter;
 import com.bawnorton.trulyrandom.client.screen.module.adapter.RecipeModuleWidgetAdapter;
 import com.bawnorton.trulyrandom.client.screen.module.adapter.StructureModuleWidgetAdapter;
@@ -56,6 +57,7 @@ public abstract class AbstractTrulyRandomSettingsScreen extends Screen {
         ModuleWidgetSettings moduleSettings = new ModuleWidgetSettings(minecraft, getModules());
         moduleSettings.registerAdapters(Set.of(Module.STRUCTURES, Module.FEATURES), new StructureModuleWidgetAdapter());
         moduleSettings.registerAdapters(Set.of(Module.RECIPES), new RecipeModuleWidgetAdapter());
+        moduleSettings.registerAdapters(Set.of(Module.BLOCK_MODELS), new BlockModelsModuleWidgetAdapter());
         moduleSettings.setDefaultAdapter(new DefaultModuleWidgetAdapter());
         GridLayout.RowHelper subRowHelper = null;
         for (int i = 0; i < modules.size(); i++) {

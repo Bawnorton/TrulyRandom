@@ -57,6 +57,7 @@ public class RecipeRandomiser extends ServerRandomiserModule {
             trackerMap.clear();
             for (RecipeTracker tracker : trackers) {
                 trackerMap.put(tracker.getTeam(), tracker);
+                tracker.setRecipeRegistry(randomiser.recipeRegistry);
             }
             return randomiser;
         }));

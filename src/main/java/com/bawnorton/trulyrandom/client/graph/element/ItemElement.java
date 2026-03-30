@@ -30,7 +30,7 @@ public class ItemElement extends GraphElement {
 
     @Override
     protected Component getTooltip() {
-        Component tooltip = item.getDefaultInstance().getDisplayName();
+        Component tooltip = item.getDefaultInstance().getHoverName();
         Minecraft minecraft = Minecraft.getInstance();
 
         if(!minecraft.hasShiftDown()) return tooltip;

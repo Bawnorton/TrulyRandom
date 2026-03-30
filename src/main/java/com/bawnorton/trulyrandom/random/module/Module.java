@@ -1,5 +1,6 @@
 package com.bawnorton.trulyrandom.random.module;
 
+import com.bawnorton.trulyrandom.random.module.state.BlockModelModuleState;
 import com.bawnorton.trulyrandom.random.module.state.ModuleState;
 import com.bawnorton.trulyrandom.random.module.state.RecipeModuleState;
 import com.bawnorton.trulyrandom.random.module.state.StandardModuleState;
@@ -33,6 +34,7 @@ public enum Module {
     public ModuleState newModuleState() {
         return switch (this) {
             case RECIPES -> new RecipeModuleState();
+            case BLOCK_MODELS -> new BlockModelModuleState();
             default -> new StandardModuleState();
         };
     }

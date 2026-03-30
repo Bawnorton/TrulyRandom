@@ -1,11 +1,13 @@
 package com.bawnorton.trulyrandom.client.mixin.accessor;
 
-import net.minecraft.entity.passive.CatEntity;
+import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import net.minecraft.world.entity.animal.feline.Cat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(CatEntity.class)
+@MixinEnvironment("client")
+@Mixin(Cat.class)
 public interface CatEntityAccessor {
-    @Accessor
-    void setSleepAnimation(float amount);
+    @Accessor("lieDownAmount")
+    void trulyrandom$lieDownAmount(float amount);
 }

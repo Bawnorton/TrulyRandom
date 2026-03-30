@@ -4,7 +4,7 @@ import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
 import com.bawnorton.trulyrandom.client.graph.TrackingGraphBookController;
-import com.bawnorton.trulyrandom.client.mixin.accessor.RecipeBookWidgetAccessor;
+import com.bawnorton.trulyrandom.client.mixin.accessor.RecipeBookComponentAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -32,7 +32,7 @@ public class LootBookWidget implements Renderable, GuiEventListener, NarratableE
             TrulyRandom.id("loot_book/button"),
             TrulyRandom.id("loot_book/button_focused")
     );
-    private static final Identifier BACKGROUND_TEXTURE = RecipeBookWidgetAccessor.getTexture();
+    private static final Identifier BACKGROUND_TEXTURE = RecipeBookComponentAccessor.trulyrandom$RECIPE_BOOK_LOCATION();
 
     public int topOffset;
     private int rightOffset;
@@ -81,7 +81,7 @@ public class LootBookWidget implements Renderable, GuiEventListener, NarratableE
         searchField = new EditBox(minecraft.font, x + 25, y + 13 + topOffset, 81, minecraft.font.lineHeight + 5, Component.translatable("itemGroup.trulyrandom.search"));
         searchField.setMaxLength(50);
         searchField.setVisible(true);
-        searchField.setTextColor(16777215);
+        searchField.setTextColor(-1);
         searchField.setValue(search);
         searchField.setHint(Component.translatable("gui.recipebook.search_hint").withStyle(ChatFormatting.ITALIC).withStyle(ChatFormatting.GRAY));
         lootArea.initalize(minecraft, x, y + topOffset);
@@ -139,7 +139,7 @@ public class LootBookWidget implements Renderable, GuiEventListener, NarratableE
         if(!search.isEmpty()) {
             items = items.stream()
                     .filter(drop -> {
-                        String name = drop.getDefaultInstance().getDisplayName().getString();
+                        String name = drop.getDefaultInstance().getHoverName().getString();
                         String transformed = name.toLowerCase();
                         return transformed.contains(search.toLowerCase());
                     })
@@ -186,7 +186,7 @@ public class LootBookWidget implements Renderable, GuiEventListener, NarratableE
         if(!(isShort && isGraphOpen())) {
             int x = (parentWidth - 147) / 2 + rightOffset;
             int y = (parentHeight - 166) / 2 + topOffset;
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BACKGROUND_TEXTURE, x, y, 0, 0, 147, 166, 256, 256);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND_TEXTURE, x, y, 1.0F, 1.0F, 147, 166, 256, 256);
             searchField.extractRenderState(graphics, mouseX, mouseY, a);
             lootArea.extractRenderState(graphics, x, y, mouseX, mouseY, a);
         }
@@ -200,10 +200,8 @@ public class LootBookWidget implements Renderable, GuiEventListener, NarratableE
     public void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if(!isOpen()) return;
 
-        try {
-            graph.extractTooltip(graphics, mouseX, mouseY);
-            lootArea.extractTooltip(graphics, mouseX, mouseY);
-        } catch(RuntimeException ignored) {}
+        graph.extractTooltip(graphics, mouseX, mouseY);
+        lootArea.extractTooltip(graphics, mouseX, mouseY);
     }
 
     @Override

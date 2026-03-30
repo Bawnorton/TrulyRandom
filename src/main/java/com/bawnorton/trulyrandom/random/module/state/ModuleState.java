@@ -41,8 +41,8 @@ public interface ModuleState {
     ModuleState copy();
 
     record Type<T extends ModuleState>(MapCodec<T> codec, StreamCodec<RegistryFriendlyByteBuf, T> packetCodec) {
-        public static final Registry<Type<?>> REGISTRY = new MappedRegistry<>(
-                ResourceKey.createRegistryKey(TrulyRandom.id("module_types")), Lifecycle.stable()
-        );
+        public static final ResourceKey<Registry<Type<?>>> KEY = ResourceKey.createRegistryKey(TrulyRandom.id("module_types"));
+
+        public static Registry<Type<?>> REGISTRY;
     }
 }

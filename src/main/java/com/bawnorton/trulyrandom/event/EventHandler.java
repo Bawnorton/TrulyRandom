@@ -48,7 +48,7 @@ public class EventHandler {
             LootTableDrops.populate((Registry<LootTable>) server.reloadableRegistries().lookup().lookupOrThrow(Registries.LOOT_TABLE));
         });
 
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+        ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
             ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
             ServerPlayNetworking.send(handler.player, new ClientboundSetClientRandomiserPacket(randomiser.getModules()));
 

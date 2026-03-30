@@ -37,20 +37,21 @@ public class DropTypeGraphBuilders {
     static {
         GRAPH_BUILDERS.put(GraphTypes.ARCHAELOGY, DropTypeGraphBuilders::archaelogyGraphBuilder);
         GRAPH_BUILDERS.put(GraphTypes.BLOCK, DropTypeGraphBuilders::blockGraphBuilder);
+        GRAPH_BUILDERS.put(GraphTypes.BRUSH, DropTypeGraphBuilders::brushGraphBuilder);
         GRAPH_BUILDERS.put(GraphTypes.CHEST, DropTypeGraphBuilders::chestGraphBuilder);
         GRAPH_BUILDERS.put(GraphTypes.DISPENSER, DropTypeGraphBuilders::dispenserGraphBuilder);
         GRAPH_BUILDERS.put(GraphTypes.ENTITY, DropTypeGraphBuilders::entityGraphBuilder);
-        GRAPH_BUILDERS.put(GraphTypes.EQUIPMENT, (tableDrops, lootTracker, recipeTracker, inspectedTables, inspectedRecipes) -> null);
+        GRAPH_BUILDERS.put(GraphTypes.EQUIPMENT, (_, _, _, _, _) -> null);
         GRAPH_BUILDERS.put(GraphTypes.GAMEPLAY, DropTypeGraphBuilders::gameplayGraphBuilder);
         GRAPH_BUILDERS.put(GraphTypes.POT, DropTypeGraphBuilders::potGraphBuilder);
         GRAPH_BUILDERS.put(GraphTypes.SHEARING, DropTypeGraphBuilders::shearingGraphBuilder);
         GRAPH_BUILDERS.put(GraphTypes.SPAWNER, DropTypeGraphBuilders::spawnerGraphBuilder);
-        GRAPH_BUILDERS.put(GraphTypes.EMPTY, (tableDrops, lootTracker, recipeTracker, inspectedTables, inspectedRecipes) -> null);
-        GRAPH_BUILDERS.put(GraphTypes.UNKNOWN, (tableDrops, lootTracker, recipeTracker, inspectedTables, inspectedRecipes) -> null);
+        GRAPH_BUILDERS.put(GraphTypes.EMPTY, (_, _, _, _, _) -> null);
+        GRAPH_BUILDERS.put(GraphTypes.UNKNOWN, (_, _, _, _, _) -> null);
     }
 
     public static GraphBuilder<LootTableDrops> getBuilder(DropType dropType) {
-        return GRAPH_BUILDERS.getOrDefault(dropType, (ForwardingDropTypeGraphBuilder) (tableDrops, inspectedTables) -> null);
+        return GRAPH_BUILDERS.getOrDefault(dropType, (ForwardingDropTypeGraphBuilder) (_, _) -> null);
     }
     
     private static GraphElement archaelogyGraphBuilder(LootTableDrops tableDrops, LootTableTracker lootTracker, RecipeTracker recipeTracker, Set<ResourceKey<LootTable>> inspectedTables, Set<ResourceKey<Recipe<?>>> inspectedRecipes) {
@@ -109,6 +110,10 @@ public class DropTypeGraphBuilders {
         }
     }
 
+    private static GraphElement brushGraphBuilder(LootTableDrops tableDrops, LootTableTracker lootTableTracker, RecipeTracker recipeTracker, Set<ResourceKey<LootTable>> inspectedTables, Set<ResourceKey<Recipe<?>>> inspectedRecipes) {
+        return new BrushGraphElement(tableDrops.getLootTableId());
+    }
+
     private static GraphElement chestGraphBuilder(LootTableDrops tableDrops, LootTableTracker lootTracker, RecipeTracker recipeTracker, Set<ResourceKey<LootTable>> inspectedTables, Set<ResourceKey<Recipe<?>>> inspectedRecipes) {
         LootTableIdentifier tableId = tableDrops.getLootTableId();
         if(tableId.isReward()) {
@@ -142,7 +147,7 @@ public class DropTypeGraphBuilders {
     }
 
     private static GraphElement shearingGraphBuilder(LootTableDrops tableDrops, LootTableTracker lootTracker, RecipeTracker recipeTracker, Set<ResourceKey<LootTable>> inspectedTables, Set<ResourceKey<Recipe<?>>> inspectedRecipes) {
-        return new ItemElement(Items.SHEARS);
+        return new ShearingGraphElement(tableDrops.getLootTableId());
     }
 
     private static GraphElement spawnerGraphBuilder(LootTableDrops tableDrops, LootTableTracker lootTracker, RecipeTracker recipeTracker, Set<ResourceKey<LootTable>> inspectedTables, Set<ResourceKey<Recipe<?>>> inspectedRecipes) {

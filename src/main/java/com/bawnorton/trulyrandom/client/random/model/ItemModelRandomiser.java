@@ -1,7 +1,6 @@
 package com.bawnorton.trulyrandom.client.random.model;
 
 import com.bawnorton.trulyrandom.client.event.ClientRandomiseEvents;
-import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.util.collection.UnaryMap;
@@ -26,6 +25,7 @@ public class ItemModelRandomiser extends ModelRandomiser {
 
     public void reloadModels(Minecraft minecraft) {
         ModelManager modelManager = minecraft.getModelManager();
+//        modelManager.reload()
     }
 
     @Override

@@ -4,15 +4,16 @@ import com.bawnorton.trulyrandom.extend.ModulesHolder;
 import com.bawnorton.trulyrandom.client.screen.TrulyRandomSettingsScreen;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.client.MinecraftClient;
+import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.tabs.GridLayoutTab;
+import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.world.CreateWorldScreen;
-import net.minecraft.client.gui.screens.world.WorldCreator;
-import net.minecraft.client.gui.tab.GridScreenTab;
-import net.minecraft.client.gui.widget.Button;
-import net.minecraft.client.gui.widget.GridLayout;
-import net.minecraft.text.Text;
-import net.minecraft.world.level.LevelInfo;
+import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
+import net.minecraft.client.gui.screens.worldselection.WorldCreationUiState;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.LevelSettings;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,14 +23,15 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+@MixinEnvironment("client")
 @Mixin(CreateWorldScreen.class)
-public abstract class CreateWorldScreenMixin extends Screen implements ModulesHolder {
+abstract class CreateWorldScreenMixin extends Screen implements ModulesHolder {
     @Shadow @Final
-    WorldCreator worldCreator;
+    private WorldCreationUiState uiState;
     @Unique
     private Modules trulyrandom$modules = new Modules();
 
-    protected CreateWorldScreenMixin(Text title) {
+    protected CreateWorldScreenMixin(Component title) {
         super(title);
     }
 
@@ -44,28 +46,29 @@ public abstract class CreateWorldScreenMixin extends Screen implements ModulesHo
     }
 
     @Inject(
-            method = "createLevelInfo",
+            method = "createLevelSettings",
             at = @At("HEAD")
     )
-    private void attachModules(boolean debugWorld, CallbackInfoReturnable<LevelInfo> cir) {
-        ((ModulesHolder) (Object) worldCreator.getGeneratorOptionsHolder().dataConfiguration()).trulyrandom$setRandomiserModules(trulyrandom$modules);
+    private void attachModules(boolean debugWorld, CallbackInfoReturnable<LevelSettings> cir) {
+        ((ModulesHolder) (Object) uiState.getSettings().dataConfiguration()).trulyrandom$setRandomiserModules(trulyrandom$modules);
         ((ModulesHolder) minecraft).trulyrandom$setRandomiserModules(trulyrandom$modules);
     }
 
-    @Mixin(targets = "net.minecraft.client.gui.screen.world.CreateWorldScreen$MoreTab")
-    public abstract static class MoreTabMixin extends GridScreenTab {
+    @MixinEnvironment("client")
+    @Mixin(targets = "net.minecraft.client.gui.screens.worldselection.CreateWorldScreen$MoreTab")
+    abstract static class MoreTabMixin extends GridLayoutTab {
         @Shadow @Final
-        CreateWorldScreen field_42178;
+        CreateWorldScreen this$0;
 
-        protected MoreTabMixin(Text title) {
+        protected MoreTabMixin(Component title) {
             super(title);
         }
 
         @Inject(method = "<init>", at = @At("TAIL"))
-        private void addTrulyRandomSettingsButton(CallbackInfo ci, @Local GridLayout.RowHelper adder) {
-            adder.add(Button.builder(
+        private void addTrulyRandomSettingsButton(CallbackInfo ci, @Local(name = "helper") GridLayout.RowHelper rowHelper) {
+            rowHelper.addChild(Button.builder(
                             Component.translatable("selectWorld.trulyrandom"),
-                            button -> openTrulyRandomSettings())
+                            _ -> openTrulyRandomSettings())
                     .width(210)
                     .build()
             );
@@ -74,8 +77,8 @@ public abstract class CreateWorldScreenMixin extends Screen implements ModulesHo
         @Unique
         private void openTrulyRandomSettings() {
             Minecraft minecraft = Minecraft.getInstance();
-            Modules modules = ((ModulesHolder) field_42178).trulyrandom$getRandomiserModules();
-            minecraft.setScreen(new TrulyRandomSettingsScreen(minecraft.screen, modules, newModules -> ((ModulesHolder) field_42178).trulyrandom$setRandomiserModules(newModules)));
+            Modules modules = ((ModulesHolder) this$0).trulyrandom$getRandomiserModules();
+            minecraft.setScreen(new TrulyRandomSettingsScreen(minecraft.screen, modules, newModules -> ((ModulesHolder) this$0).trulyrandom$setRandomiserModules(newModules)));
         }
     }
 }

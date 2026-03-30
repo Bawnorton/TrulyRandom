@@ -11,6 +11,7 @@ import com.bawnorton.trulyrandom.random.module.Modules;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import dev.kikugie.fletching_table.annotation.MixinEnvironment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -24,6 +25,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+@MixinEnvironment("client")
 @Mixin(Minecraft.class)
 abstract class MinecraftMixin implements MinecraftClientExtender, ModulesHolder {
     @Shadow
@@ -42,10 +44,10 @@ abstract class MinecraftMixin implements MinecraftClientExtender, ModulesHolder 
     @Shadow
     public abstract ModelManager getModelManager();
 
-    @Inject(method = "collectLoadTimes", at = @At("HEAD"))
+    @Inject(method = "onGameLoadFinished", at = @At("HEAD"))
     private void reloadModelsAfterResourceReload(CallbackInfo ci) {
         trulyrandom$finishedLoading = true;
-        ModelShuffler.BlockStates blockStates = (ModelShuffler.BlockStates) getModelManager().getBlockModels();
+        ModelShuffler.BlockStates blockStates = (ModelShuffler.BlockStates) getModelManager().getBlockStateModelSet();
         ModelShuffler.Items items = (ModelShuffler.Items) getModelManager();
         if (blockStates.trulyrandom$isShuffled()) {
             blockStates.trulyrandom$shuffleModels(TrulyRandomClient.getRandomiser().getModules().getSeed(Module.BLOCK_MODELS));
@@ -59,19 +61,19 @@ abstract class MinecraftMixin implements MinecraftClientExtender, ModulesHolder 
         } else {
             items.trulyrandom$resetModels();
         }
-        levelRenderer.reload();
+        levelRenderer.allChanged();
     }
 
     @WrapOperation(
-            method = "onResolutionChanged",
+            method = "resizeGui",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/screen/Screen;resize(Lnet/minecraft/client/MinecraftClient;II)V"
+                    target = "Lnet/minecraft/client/gui/screens/Screen;resize(II)V"
             )
     )
-    private void trackResize(Screen instance, Minecraft minecraft, int width, int height, Operation<Void> original) {
+    private void trackResize(Screen instance, int width, int height, Operation<Void> original) {
         trulyrandom$isResizing = true;
-        original.call(instance, minecraft, width, height);
+        original.call(instance, width, height);
         trulyrandom$isResizing = false;
     }
 
@@ -96,10 +98,10 @@ abstract class MinecraftMixin implements MinecraftClientExtender, ModulesHolder 
     }
 
     @ModifyExpressionValue(
-            method = "startIntegratedServer",
+            method = "doWorldLoad",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/server/MinecraftServer;startServer(Ljava/util/function/Function;)Lnet/minecraft/server/MinecraftServer;"
+                    target = "Lnet/minecraft/server/MinecraftServer;spin(Ljava/util/function/Function;)Lnet/minecraft/server/MinecraftServer;"
             )
     )
     private <S extends MinecraftServer> S attachModules(S original) {

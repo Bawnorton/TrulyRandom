@@ -1,18 +1,20 @@
 package com.bawnorton.trulyrandom.client.mixin.accessor;
 
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.sound.BlockSoundGroup;
+import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 /**
  * Used to avoid recursion
  */
-@Mixin(AbstractBlock.class)
+@MixinEnvironment("client")
+@Mixin(BlockBehaviour.class)
 public interface AbstractBlockAccessor {
-    @Accessor("soundGroup")
-    BlockSoundGroup trulyrandom$getSoundGroup();
+    @Accessor("soundType")
+    SoundType trulyrandom$soundType();
 
-    @Accessor("slipperiness")
-    float trulyrandom$getSlipperiness();
+    @Accessor("friction")
+    float trulyrandom$friction();
 }

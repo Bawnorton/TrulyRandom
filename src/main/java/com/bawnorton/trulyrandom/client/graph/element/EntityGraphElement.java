@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -23,6 +24,11 @@ public class EntityGraphElement extends GraphElement implements LivingEntityGuiR
         if(!(entity instanceof LivingEntity livingEntity)) return;
 
         extractRenderState(graphics, mouseX, mouseY, livingEntity, x, y, scale);
+    }
+
+    @Override
+    public int getColour() {
+        return CommonColors.SOFT_RED;
     }
 
     @Override

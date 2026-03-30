@@ -77,6 +77,8 @@ tasks {
 
 fletchingTable {
     fabric {
+        entrypointMappings.put("main", "net.fabricmc.api.ModInitializer")
+        entrypointMappings.put("client", "net.fabricmc.api.ClientModInitializer")
         entrypointMappings.put("fabric-datagen", "net.fabricmc.fabric.api.datagen.v1.FabricDataGeneratorEntrypoint")
     }
 

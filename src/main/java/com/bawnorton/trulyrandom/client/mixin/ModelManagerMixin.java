@@ -1,13 +1,12 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
-//import com.bawnorton.trulyrandom.client.util.mixin.ModernFixConditionChecker;
-//import com.bawnorton.trulyrandom.client.util.mixin.annotation.AdvancedConditionalMixin;
 import com.bawnorton.trulyrandom.util.collection.UnaryHashMap;
 import com.bawnorton.trulyrandom.util.collection.UnaryMap;
-import net.minecraft.client.render.item.model.ItemModel;
-import net.minecraft.client.render.model.ModelManager;
-import net.minecraft.util.Identifier;
+import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import net.minecraft.client.renderer.item.ItemModel;
+import net.minecraft.client.resources.model.ModelManager;
+import net.minecraft.resources.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -19,13 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+@MixinEnvironment("client")
 @Mixin(ModelManager.class)
-//@AdvancedConditionalMixin(checker = ModernFixConditionChecker.class, invert = true)
-public abstract class VanillaItemsModelsMixin implements ModelShuffler.Items {
+abstract class ModelManagerMixin implements ModelShuffler.Items {
     @Unique
     private final UnaryMap<Identifier> trulyrandom$redirectMap = new UnaryHashMap<>();
     @Shadow
-    private Map<Identifier, ItemModel> bakedItemModels;
+    private Map<Identifier, ItemModel> bakedItemStackModels;
 
     @ModifyVariable(method = "getItemModel", at = @At("HEAD"), argsOnly = true)
     private Identifier getShuffledModel(Identifier id) {
@@ -34,9 +33,9 @@ public abstract class VanillaItemsModelsMixin implements ModelShuffler.Items {
 
     @Override
     public void trulyrandom$shuffleModels(long seed) {
-        if (bakedItemModels == null) return;
+        if (bakedItemStackModels == null) return;
 
-        List<Identifier> ids = new ArrayList<>(bakedItemModels.keySet());
+        List<Identifier> ids = new ArrayList<>(bakedItemStackModels.keySet());
 
         trulyrandom$resetModels();
         Collections.shuffle(ids, new Random(seed));

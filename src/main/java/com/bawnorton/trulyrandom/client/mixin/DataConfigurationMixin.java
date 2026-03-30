@@ -4,7 +4,8 @@ import com.bawnorton.trulyrandom.extend.ModulesHolder;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.mojang.datafixers.kinds.App;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.resource.DataConfiguration;
+import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import net.minecraft.world.level.WorldDataConfiguration;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -12,8 +13,9 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 import java.util.Optional;
 import java.util.function.Function;
 
-@Mixin(DataConfiguration.class)
-public abstract class DataConfigurationMixin implements ModulesHolder {
+@MixinEnvironment("client")
+@Mixin(WorldDataConfiguration.class)
+abstract class DataConfigurationMixin implements ModulesHolder {
     @Unique
     private Modules trulyrandom$randomiserModules;
 
@@ -25,7 +27,7 @@ public abstract class DataConfigurationMixin implements ModulesHolder {
                     remap = false
             )
     )
-    private static Function<RecordCodecBuilder.Instance<DataConfiguration>, ? extends App<RecordCodecBuilder.Mu<DataConfiguration>, DataConfiguration>> attachRandomiserModules(Function<RecordCodecBuilder.Instance<DataConfiguration>, ? extends App<RecordCodecBuilder.Mu<DataConfiguration>, DataConfiguration>> builder) {
+    private static Function<RecordCodecBuilder.Instance<WorldDataConfiguration>, ? extends App<RecordCodecBuilder.Mu<WorldDataConfiguration>, WorldDataConfiguration>> attachRandomiserModules(Function<RecordCodecBuilder.Instance<WorldDataConfiguration>, ? extends App<RecordCodecBuilder.Mu<WorldDataConfiguration>, WorldDataConfiguration>> builder) {
         return instance -> instance.group(
                 RecordCodecBuilder.mapCodec(builder).forGetter(Function.identity()),
                 Modules.CODEC

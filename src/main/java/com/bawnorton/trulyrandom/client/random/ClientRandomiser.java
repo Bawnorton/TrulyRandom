@@ -45,12 +45,12 @@ public class ClientRandomiser extends Randomiser {
         recipeTracker = tracker;
     }
 
-    public void updateBlockModels(Minecraft minecraft, boolean seedChanged) {
-        update(blockModelRandomiser, minecraft, modules.isEnabled(blockModelRandomiser.getModule()), seedChanged);
+    public void updateBlockModels(Minecraft minecraft, boolean forceRandomise) {
+        update(blockModelRandomiser, minecraft, modules.isEnabled(blockModelRandomiser.getModule()), forceRandomise);
     }
 
-    public void updateItemModels(Minecraft minecraft, boolean seedChanged) {
-        update(itemModelRandomiser, minecraft, modules.isEnabled(itemModelRandomiser.getModule()), seedChanged);
+    public void updateItemModels(Minecraft minecraft, boolean forceRandomise) {
+        update(itemModelRandomiser, minecraft, modules.isEnabled(itemModelRandomiser.getModule()), forceRandomise);
     }
 
     public void updateBlockModels(UnaryMap<BlockState> redirectMap) {

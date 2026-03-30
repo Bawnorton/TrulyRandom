@@ -193,7 +193,11 @@ public class LootBookGraph implements Renderable, GuiEventListener {
             if (screenPos == null) return;
 
             if (mouseX >= screenPos.x() && mouseX <= screenPos.x() + (32 * scale) && mouseY >= screenPos.y() && mouseY <= screenPos.y() + (32 * scale)) {
-                vertex.extractTooltip(graphics, mouseX, mouseY);
+                try {
+                    vertex.extractTooltip(graphics, mouseX, mouseY);
+                } catch (RuntimeException e) {
+                    graphics.setTooltipForNextFrame(Component.literal("Error loading tooltip"), mouseX, mouseY);
+                }
             }
         });
     }
@@ -231,7 +235,7 @@ public class LootBookGraph implements Renderable, GuiEventListener {
     public boolean mouseDragged(MouseButtonEvent event, double deltaX, double deltaY) {
         if(item == null) return false;
 
-        if(event.isLeft() && inBounds(event.x(), event.y())) {
+        if(event.button() == 0 && inBounds(event.x(), event.y())) {
             moveTo(offsetX + (int) (deltaX / scale), offsetY + (int) (deltaY / scale));
             return true;
         }

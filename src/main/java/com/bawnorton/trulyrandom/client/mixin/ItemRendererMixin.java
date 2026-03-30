@@ -1,18 +1,12 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
-import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
-import com.llamalad7.mixinextras.sugar.Local;
-import com.llamalad7.mixinextras.sugar.ref.LocalRef;
-import net.minecraft.client.render.item.ItemRenderer;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import net.minecraft.client.renderer.ItemInHandRenderer;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ItemRenderer.class)
-public abstract class ItemRendererMixin {
+@MixinEnvironment("client")
+@Mixin(ItemInHandRenderer.class)
+abstract class ItemRendererMixin {
     /*@Inject(
             method = "renderItem(Lnet/minecraft/item/ModelTransformationMode;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/extractRenderState/MultiBufferSource;II[ILnet/minecraft/client/extractRenderState/model/BakedModel;Lnet/minecraft/client/extractRenderState/RenderLayer;Lnet/minecraft/client/extractRenderState/item/ItemRenderState$Glint;)V",
             at = @At(

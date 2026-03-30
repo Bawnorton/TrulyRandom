@@ -17,7 +17,7 @@ public class BlockElement extends GraphElement {
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, Minecraft minecraft, int mouseX, int mouseY, int x, int y, float scale) {
         graphics.guiRenderState.addPicturesInPictureState(new BlockStateElementRenderState(
-                block.defaultBlockState(), x, y, scale, 45, graphics.scissorStack.peek()
+                block.defaultBlockState(), x, y, scale, 135, graphics.scissorStack.peek()
         ));
     }
 

@@ -29,8 +29,8 @@ public class TargetedTrulyRandomSettingsScreen extends AbstractTrulyRandomSettin
     }
 
     @Override
-    public void close() {
-        super.close();
+    public void onClose() {
+        super.onClose();
         modules.showServerSide();
     }
 }

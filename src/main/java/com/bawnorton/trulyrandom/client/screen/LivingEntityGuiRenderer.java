@@ -13,7 +13,7 @@ public interface LivingEntityGuiRenderer {
         int y0 = (int) ((y - 16) * scale);
         int x1 = (int) ((x + 16) * scale);
         int y1 = (int) ((y + 16) * scale);
-        int size = (int) (10 * renderScale);
+        int size = (int) (10 * renderScale * scale);
         InventoryScreen.extractEntityInInventoryFollowsMouse(
                 graphics,
                 x0,

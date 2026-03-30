@@ -1,6 +1,5 @@
 package com.bawnorton.trulyrandom.world;
 
-import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.random.Randomiser;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.Modules;
@@ -14,7 +13,6 @@ import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.level.storage.SavedDataStorage;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -25,7 +23,7 @@ public class RandomiserSaveLoader extends SavedData {
     public static SavedDataType<RandomiserSaveLoader> TYPE;
 
     private ServerRandomiser serverRandomiser;
-    private Map<UUID, Modules> clientRandomisers;
+    private HashMap<UUID, Modules> clientRandomisers;
 
     public RandomiserSaveLoader(MinecraftServer server) {
         this.serverRandomiser = new ServerRandomiser(Objects.requireNonNullElseGet(worldGenModules, Modules::new), server);
@@ -33,7 +31,7 @@ public class RandomiserSaveLoader extends SavedData {
         setDirty();
     }
 
-    private RandomiserSaveLoader(ServerRandomiser serverRandomiser, Map<UUID, Modules> clientRandomisers) {
+    private RandomiserSaveLoader(ServerRandomiser serverRandomiser, HashMap<UUID, Modules> clientRandomisers) {
         this.serverRandomiser = serverRandomiser;
         this.clientRandomisers = clientRandomisers;
         setDirty();
@@ -44,7 +42,8 @@ public class RandomiserSaveLoader extends SavedData {
                 ServerRandomiser.codec(server)
                         .fieldOf("randomiser")
                         .forGetter(RandomiserSaveLoader::getServerRandomiser),
-                Codec.unboundedMap(UUIDUtil.CODEC, Modules.CODEC)
+                Codec.unboundedMap(UUIDUtil.STRING_CODEC, Modules.CODEC)
+                        .xmap(HashMap::new, map -> map)
                         .fieldOf("client_randomisers")
                         .forGetter(RandomiserSaveLoader::getClientRandomisers)
         ).apply(instance, RandomiserSaveLoader::new));
@@ -88,7 +87,7 @@ public class RandomiserSaveLoader extends SavedData {
         return serverRandomiser;
     }
 
-    private Map<UUID, Modules> getClientRandomisers() {
+    private HashMap<UUID, Modules> getClientRandomisers() {
         if (clientRandomisers == null) {
             clientRandomisers = new HashMap<>();
         }

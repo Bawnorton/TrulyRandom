@@ -140,7 +140,7 @@ public class LootBookResults {
 
         for(LootResultButton resultButton : resultButtons) {
             resultButton.extractRenderState(graphics, mouseX, mouseY, a);
-            if(resultButton.visible && resultButton.isFocused()) {
+            if(resultButton.visible && resultButton.isHoveredOrFocused()) {
                 hoveredResultButton = resultButton;
             }
         }
@@ -171,7 +171,7 @@ public class LootBookResults {
 
         for(LootResultButton resultButton : resultButtons) {
             if(resultButton.mouseClicked(event, doubleClick)) {
-                if(event.isLeft()) {
+                if(event.button() == 0) {
                     lastClickedItem = resultButton.getDrop();
                     return true;
                 }
@@ -188,7 +188,7 @@ public class LootBookResults {
         Set<Item> allItems = new HashSet<>(lootTracker.getAllDrops());
         allItems.addAll(recipeTracker.getAllOutputs());
         return allItems.stream()
-                .sorted(Comparator.comparing(item -> item.getDefaultInstance().getDisplayName().getString()))
+                .sorted(Comparator.comparing(item -> item.getDefaultInstance().getHoverName().getString()))
                 .toList();
     }
 }

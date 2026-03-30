@@ -31,7 +31,7 @@ abstract class LivingEntityMixin extends Entity {
             method = "dropFromLootTable(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;Z)V",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/registry/ReloadableRegistries$Lookup;getLootTable(Lnet/minecraft/registry/ResourceKey;)Lnet/minecraft/loot/LootTable;"
+                    target = "Lnet/minecraft/world/entity/LivingEntity;getLootTable()Ljava/util/Optional;"
             )
     )
     private void trackCause(ServerLevel level, DamageSource source, boolean playerKilled, CallbackInfo ci) {
