@@ -21,7 +21,7 @@ abstract class EndCityPieces$EndCityPieceMixin {
                   target = "Lnet/minecraft/world/entity/decoration/ItemFrame;setItem(Lnet/minecraft/world/item/ItemStack;Z)V"
           )
   )
-  private ItemStack LootrHandleDataMarker(ItemStack itemStack) {
+  private ItemStack replaceElytra(ItemStack itemStack) {
     if (!RandomiserSaveLoader.getWorldGenModules().isEnabled(Module.STRUCTURES)) return itemStack;
 
     ItemStack stack = Items.ELYTRA.getDefaultInstance();
