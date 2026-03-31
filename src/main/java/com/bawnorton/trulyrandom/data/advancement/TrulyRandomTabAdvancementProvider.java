@@ -39,7 +39,7 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                         Items.DIAMOND,
                         Component.translatable("advancements.trulyrandom.root.title"),
                         Component.translatable("advancements.trulyrandom.root.description"),
-                        Identifier.withDefaultNamespace("textures/gui/advancements/backgrounds/adventure.png"),
+                        Identifier.withDefaultNamespace("gui/advancements/backgrounds/adventure"),
                         AdvancementType.TASK,
                         false,
                         false,

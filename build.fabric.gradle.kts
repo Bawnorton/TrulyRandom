@@ -44,6 +44,13 @@ java {
 loom {
     accessWidenerPath.set(rootProject.file("src/main/resources/${minecraft}.classtweaker"))
 
+    fabricApi {
+        configureDataGeneration {
+            createRunConfiguration = true
+            modId = mod("id")
+        }
+    }
+
     runConfigs.all {
         ideConfigGenerated(true)
         runDir = "../../run"
@@ -57,6 +64,10 @@ loom {
 
     runConfigs["server"].apply {
         name = "Fabric Server $minecraft"
+    }
+
+    runConfigs["datagen"].apply {
+        name = "Fabric Data Generation $minecraft"
     }
 
     afterEvaluate {

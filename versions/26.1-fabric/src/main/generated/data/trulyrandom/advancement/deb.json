@@ -1,16 +1,15 @@
 {
   "parent": "trulyrandom:root",
   "criteria": {
-    "wob": {
+    "deb": {
       "conditions": {
         "key": {
-          "A": "minecraft:stick",
-          "B": "minecraft:string"
+          "A": "#minecraft:planks",
+          "B": "#minecraft:wool"
         },
         "pattern": [
-          "AB ",
-          "A B",
-          "AB "
+          "AAA",
+          "BBB"
         ]
       },
       "trigger": "trulyrandom:crafting"
@@ -18,20 +17,19 @@
   },
   "display": {
     "description": {
-      "translate": "advancements.trulyrandom.wob.description"
+      "translate": "advancements.trulyrandom.deb.description"
     },
     "frame": "challenge",
     "icon": {
-      "count": 1,
-      "id": "minecraft:bow"
+      "id": "minecraft:red_bed"
     },
     "title": {
-      "translate": "advancements.trulyrandom.wob.title"
+      "translate": "advancements.trulyrandom.deb.title"
     }
   },
   "requirements": [
     [
-      "wob"
+      "deb"
     ]
   ],
   "rewards": {
