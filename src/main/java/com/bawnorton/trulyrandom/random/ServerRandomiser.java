@@ -60,6 +60,10 @@ public class ServerRandomiser extends Randomiser {
         update(lootRandomiser, server, seedChanged);
     }
 
+    public void updateLoot(MinecraftServer server, boolean seedChanged, boolean force) {
+        update(lootRandomiser, server, seedChanged, force);
+    }
+
     public void updateRecipes(MinecraftServer server, boolean seedChanged) {
         updateRecipes(server, seedChanged, false);
     }

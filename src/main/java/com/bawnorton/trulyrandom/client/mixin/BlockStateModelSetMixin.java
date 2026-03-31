@@ -52,6 +52,11 @@ abstract class BlockStateModelSetMixin implements ModelShuffler.BlockStates {
     }
 
     @Override
+    public boolean trulyrandom$ignoreStateProperties() {
+        return TrulyRandomClient.getRandomiser().getModules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class).isIgnoreStateProperties();
+    }
+
+    @Override
     public void trulyrandom$shuffleModels(long seed) {
         if (modelByState == null) return;
 

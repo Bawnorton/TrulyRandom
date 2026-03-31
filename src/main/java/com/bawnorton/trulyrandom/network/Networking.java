@@ -10,6 +10,7 @@ import com.bawnorton.trulyrandom.network.packet.clientbound.*;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
+import com.bawnorton.trulyrandom.random.module.state.LootModuleState;
 import com.bawnorton.trulyrandom.random.module.state.RecipeModuleState;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -78,11 +79,12 @@ public class Networking {
         boolean lootSeedChanged = randomiser.getModules().getSeed(Module.LOOT_TABLES) != packet.modules().getSeed(Module.LOOT_TABLES);
         boolean recipeSeedChanged = randomiser.getModules().getSeed(Module.RECIPES) != packet.modules().getSeed(Module.RECIPES);
         boolean tradeSeedChanged = randomiser.getModules().getSeed(Module.TRADES) != packet.modules().getSeed(Module.TRADES);
-        boolean enabledRecipeTypesChanged = !randomiser.getModules().getState(Module.RECIPES, RecipeModuleState.class).getEnabledRecipeTypes().equals(packet.modules().getState(Module.RECIPES, RecipeModuleState.class).getEnabledRecipeTypes());
+        boolean recipeSettingsChanged = !randomiser.getModules().getState(Module.RECIPES, RecipeModuleState.class).getEnabledRecipeTypes().equals(packet.modules().getState(Module.RECIPES, RecipeModuleState.class).getEnabledRecipeTypes());
+        boolean lootSettingsChanged = randomiser.getModules().getState(Module.LOOT_TABLES, LootModuleState.class).useOtherLootTables() != packet.modules().getState(Module.LOOT_TABLES, LootModuleState.class).useOtherLootTables();
 
         randomiser.setModules(packet.modules());
-        randomiser.updateLoot(server, lootSeedChanged);
-        randomiser.updateRecipes(server, recipeSeedChanged, enabledRecipeTypesChanged);
+        randomiser.updateLoot(server, lootSeedChanged, lootSettingsChanged);
+        randomiser.updateRecipes(server, recipeSeedChanged, recipeSettingsChanged);
         randomiser.updateTrades(server, tradeSeedChanged);
         randomiser.updateClients(server);
     }

@@ -1,9 +1,11 @@
 package com.bawnorton.trulyrandom.tracker.loot;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
+import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.extend.LookupExtender;
 import com.bawnorton.trulyrandom.mixin.accessor.StandingAndWallBlockItemAccessor;
 import com.bawnorton.trulyrandom.random.module.Module;
+import com.bawnorton.trulyrandom.random.module.state.LootModuleState;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.Tracker;
 import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
@@ -97,9 +99,14 @@ public class LootTableTracker extends Tracker<ResourceKey<LootTable>, ResourceKe
         this.itemLootMap = new ItemLootMap();
         this.sourceMap = new HashMap<>();
     }
+    
+    public boolean shoulDisplayTracker() {
+        LootModuleState state = TrulyRandomClient.getRandomiser().getModules().getState(Module.LOOT_TABLES, LootModuleState.class);
+        return state.isEnabled() && state.useOtherLootTables();
+    }
 
     public static <T> T attachCause(Supplier<T> toAttach, List<Team> teams) {
-        if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return toAttach.get();
+        if (!TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker()) return toAttach.get();
 
         LOOT_CAUSERS.set(teams);
         T result = toAttach.get();

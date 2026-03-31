@@ -1,8 +1,10 @@
 package com.bawnorton.trulyrandom.random.loot;
 
+import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
+import com.bawnorton.trulyrandom.random.module.state.LootModuleState;
 import com.bawnorton.trulyrandom.tracker.Team;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import com.bawnorton.trulyrandom.util.collection.UnaryBiMap;
@@ -10,11 +12,20 @@ import com.bawnorton.trulyrandom.util.collection.UnaryHashBiMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntry;
+import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,6 +38,8 @@ public class LootRandomiser extends ServerRandomiserModule {
     private final Map<ResourceKey<LootTable>, LootTable> originalLootTables = new HashMap<>();
     private final UnaryBiMap<ResourceKey<LootTable>> redirectMap = new UnaryHashBiMap<>();
     private final Registry<LootTable> lootTableRegistry;
+
+    private RandomSource randomSource;
 
     private final Set<ResourceKey<LootTable>> blacklist = Stream.of(
             Blocks.SHULKER_BOX.getLootTable(),
@@ -75,10 +88,12 @@ public class LootRandomiser extends ServerRandomiserModule {
     }
 
     public ResourceKey<LootTable> getLootTable(@NotNull List<Team> teams, ResourceKey<LootTable> key) {
+        if(isCompletelyRandom()) return key;
+
         ResourceKey<LootTable> result = redirectMap.getOrDefault(key, key);
         if (!result.equals(key)) {
             for (Team team : teams) {
-                trackers.computeIfAbsent(team, k -> {
+                trackers.computeIfAbsent(team, _ -> {
                     LootTableTracker tracker = new LootTableTracker();
                     tracker.setLootTableRegistry(lootTableRegistry);
                     tracker.setTeam(team);
@@ -88,6 +103,29 @@ public class LootRandomiser extends ServerRandomiserModule {
         }
         LootTableTracker.BROKEN_WITH_SILK.remove();
         return result;
+    }
+
+    public boolean isCompletelyRandom() {
+        return !TrulyRandom.getCachedRandomiser().getModules().getState(getModule(), LootModuleState.class).useOtherLootTables();
+    }
+
+    public LootTable maybeReplaceLootTable(LootTable original) {
+        if(!isCompletelyRandom()) return original;
+
+        if(randomSource == null) {
+            randomSource = RandomSource.create(TrulyRandom.getCachedRandomiser().getModules().getSeed(getModule()));
+        }
+
+        Item item = BuiltInRegistries.ITEM.getRandom(randomSource)
+                .flatMap(ref -> ref.unwrap()
+                        .map(key -> Optional.ofNullable(BuiltInRegistries.ITEM.getValue(key)), Optional::of))
+                .orElse(Items.PAPER);
+
+        return LootTable.lootTable()
+                .withPool(LootPool.lootPool()
+                        .add(LootItem.lootTableItem(item))
+                        .setRolls(ConstantValue.exactly(randomSource.nextInt(1, Math.max(2, item.getDefaultMaxStackSize())))))
+                .build();
     }
 
     public ResourceKey<LootTable> getSourceTable(ResourceKey<LootTable> key) {

@@ -4,13 +4,12 @@ import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public interface ModelShuffler<T> {
     void trulyrandom$shuffleModels(long seed);
@@ -29,6 +28,8 @@ public interface ModelShuffler<T> {
     interface BlockStates extends ModelShuffler<BlockState> {
         boolean trulyrandom$ignoreModelOcclusion();
 
+        boolean trulyrandom$ignoreStateProperties();
+
         List<BlockState> trulyrandom$getBlockStates();
 
         default Map<String, List<BlockState>> buildPropertyMap() {
@@ -36,10 +37,11 @@ public interface ModelShuffler<T> {
             for (BlockState state : trulyrandom$getBlockStates()) {
                 StringBuilder variant = new StringBuilder();
                 for (Property<?> entry : state.getProperties()) {
-                    variant.append(entry);
+                    if(trulyrandom$ignoreStateProperties()) continue;
+
+                    variant.append(state.getValue(entry));
                 }
                 if(!trulyrandom$ignoreModelOcclusion()) {
-                    variant.append(state.canOcclude());
                     variant.append(state.getOcclusionShape());
                 }
                 propertyMap.computeIfAbsent(variant.toString(), _ -> new ArrayList<>()).add(state);

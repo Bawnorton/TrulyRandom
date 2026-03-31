@@ -84,7 +84,7 @@ abstract class AbstractRecipeBookScreenMixin extends AbstractContainerScreenMixi
             )
     )
     private void initLootBook(CallbackInfo ci) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+        if(!TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker()) return;
         if(!((Object) this instanceof InventoryScreen invScreen)) return;
 
         isShort = height < 350;
@@ -101,14 +101,14 @@ abstract class AbstractRecipeBookScreenMixin extends AbstractContainerScreenMixi
         }) {
             @Override
             public void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
-                if(TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+                if(TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker()) {
                     super.extractContents(graphics, mouseX, mouseY, a);
                 }
             }
 
             @Override
             protected void handleCursor(GuiGraphicsExtractor graphics) {
-                if(TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+                if(TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker()) {
                     super.handleCursor(graphics);
                 }
             }
@@ -142,7 +142,7 @@ abstract class AbstractRecipeBookScreenMixin extends AbstractContainerScreenMixi
 
     @Inject(method = "lambda$initButton$0", at = @At("TAIL"))
     private void considerLootBook(Button button, CallbackInfo ci) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+        if(!TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker()) return;
         if(lootBookButton == null) return;
 
         if(recipeBookComponent.isVisible() && lootBook.isOpen()) {
@@ -172,7 +172,7 @@ abstract class AbstractRecipeBookScreenMixin extends AbstractContainerScreenMixi
             )
     )
     private void extractLootBook(AbstractRecipeBookScreen<?> instance, GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, Operation<Void> original) {
-        if (!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+        if (!TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker()) {
             if(lootBook.isOpen()) {
                 lootBook.toggleOpen();
             }
@@ -200,7 +200,7 @@ abstract class AbstractRecipeBookScreenMixin extends AbstractContainerScreenMixi
             )
     )
     private boolean dontDrawSlotsIfGraphOpen(RecipeBookComponent<?> instance, GuiGraphicsExtractor graphics, boolean isResultSlotBig) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return true;
+        if(!TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker()) return true;
         if(lootBookButton == null) return true;
 
         return !lootBook.isGraphOpen();
@@ -211,7 +211,7 @@ abstract class AbstractRecipeBookScreenMixin extends AbstractContainerScreenMixi
             at = @At("TAIL")
     )
     private void renderLootBookTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a, CallbackInfo ci) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+        if(!TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker()) return;
         if(lootBookButton == null) return;
 
         lootBook.extractTooltip(graphics, mouseX, mouseY);
@@ -225,7 +225,7 @@ abstract class AbstractRecipeBookScreenMixin extends AbstractContainerScreenMixi
             )
     )
     private boolean keyPressedInLootBook(AbstractRecipeBookScreen<?> instance, KeyEvent event, Operation<Boolean> original) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES) || lootBookButton == null) {
+        if(!TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker() || lootBookButton == null) {
             return original.call(instance, event);
         }
 
@@ -240,7 +240,7 @@ abstract class AbstractRecipeBookScreenMixin extends AbstractContainerScreenMixi
             )
     )
     private boolean charTypedInLootBook(AbstractRecipeBookScreen<?> instance, CharacterEvent characterEvent, Operation<Boolean> original) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES) || lootBookButton == null) {
+        if(!TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker() || lootBookButton == null) {
             return original.call(instance, characterEvent);
         }
 
@@ -255,7 +255,7 @@ abstract class AbstractRecipeBookScreenMixin extends AbstractContainerScreenMixi
             )
     )
     private boolean hasClickedOutsideLootBookBounds(RecipeBookComponent<?> instance, double mx, double my, int leftPos, int topPos, int imageWidth, int imageHeight, Operation<Boolean> original) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES) || lootBookButton == null) {
+        if(!TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker() || lootBookButton == null) {
             return original.call(instance, mx, my, leftPos, topPos, imageWidth, imageHeight);
         }
 
@@ -277,7 +277,7 @@ abstract class AbstractRecipeBookScreenMixin extends AbstractContainerScreenMixi
             )
     )
     private boolean mouseClickedInLootBook(AbstractRecipeBookScreen<?> instance, MouseButtonEvent containerInput, boolean xo, Operation<Boolean> original) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES) || lootBookButton == null) {
+        if(!TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker() || lootBookButton == null) {
             return original.call(instance, containerInput, xo);
         }
 
@@ -300,7 +300,7 @@ abstract class AbstractRecipeBookScreenMixin extends AbstractContainerScreenMixi
             at = @At("RETURN")
     )
     private boolean hasClickedOutsideLootBookBounds(boolean original, double mouseX, double mouseY, int left, int top) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return original;
+        if(!TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker()) return original;
         if (lootBookButton == null) return original;
 
         return original && lootBook.isClickOutsideBounds(mouseX, mouseY, left, top, imageWidth, imageHeight);
@@ -308,7 +308,7 @@ abstract class AbstractRecipeBookScreenMixin extends AbstractContainerScreenMixi
 
     @Override
     protected void mouseDragInInvScreen(MouseButtonEvent event, double dx, double dy, CallbackInfoReturnable<Boolean> cir) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+        if(!TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker()) return;
         if(lootBookButton == null) return;
 
         if(lootBook.mouseDragged(event, dx, dy)) {
@@ -318,7 +318,7 @@ abstract class AbstractRecipeBookScreenMixin extends AbstractContainerScreenMixi
 
     @Override
     protected void mouseScrolledInInvScreen(double mouseX, double mouseY, double horizontalAmount, double verticalAmount, CallbackInfoReturnable<Boolean> cir) {
-        if(!TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+        if(!TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker()) return;
         if(lootBookButton == null) return;
 
         if(lootBook.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) {

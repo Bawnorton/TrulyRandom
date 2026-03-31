@@ -13,6 +13,8 @@ plugins {
 
 repositories {
     mavenCentral()
+    maven("https://maven.caffeinemc.net/releases")
+    maven("https://api.modrinth.com/maven")
 }
 
 val minecraft: String by project
@@ -25,6 +27,8 @@ dependencies {
     implementation("net.fabricmc:fabric-loader:0.18.4")
 
     implementation("net.fabricmc.fabric-api:fabric-api:${deps("fabric_api")}")
+    implementation("net.caffeinemc:sodium-fabric:${deps("sodium")}+mc$minecraft")
+    implementation("maven.modrinth:iris:${deps("iris")}+$minecraft-$loader")
 
     include(implementation("com.github.tomnelson:jungrapht-visualization:1.4")!!)
     include(implementation("com.github.tomnelson:jungrapht-layout:1.4")!!)

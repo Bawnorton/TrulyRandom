@@ -9,10 +9,12 @@ import net.minecraft.network.codec.StreamCodec;
 
 public class BlockModelModuleState extends StandardModuleState {
     private boolean ignoreModelOcclusion;
+    private boolean ignoreStateProprties;
 
     public static final MapCodec<BlockModelModuleState> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             StandardModuleState.CODEC.fieldOf("standard").forGetter(moduleState -> moduleState),
-            Codec.BOOL.fieldOf("ignore_model_occlusion").forGetter(BlockModelModuleState::isIgnoreModelOcclusion)
+            Codec.BOOL.optionalFieldOf("ignore_model_occlusion", false).forGetter(BlockModelModuleState::isIgnoreModelOcclusion),
+            Codec.BOOL.optionalFieldOf("ignore_state_properties", false).forGetter(BlockModelModuleState::isIgnoreStateProperties)
     ).apply(instance, BlockModelModuleState::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, BlockModelModuleState> STREAM_CODEC = StreamCodec.composite(
@@ -20,17 +22,21 @@ public class BlockModelModuleState extends StandardModuleState {
             moduleState -> moduleState,
             ByteBufCodecs.BOOL,
             BlockModelModuleState::isIgnoreModelOcclusion,
+            ByteBufCodecs.BOOL,
+            BlockModelModuleState::isIgnoreStateProperties,
             BlockModelModuleState::new
     );
 
-    private BlockModelModuleState(StandardModuleState state, boolean ignoreModelOcclusion) {
+    private BlockModelModuleState(StandardModuleState state, boolean ignoreModelOcclusion, boolean ignoreStateProprties) {
         super(state.isEnabled(), state.isVisible(), state.getSeed());
         this.ignoreModelOcclusion = ignoreModelOcclusion;
+        this.ignoreStateProprties = ignoreStateProprties;
     }
 
     public BlockModelModuleState() {
         super();
         this.ignoreModelOcclusion = false;
+        this.ignoreStateProprties = false;
     }
 
     @Override
@@ -46,7 +52,16 @@ public class BlockModelModuleState extends StandardModuleState {
         return ignoreModelOcclusion;
     }
 
-    public BlockModelModuleState copy() {
-        return new BlockModelModuleState(super.copy(), ignoreModelOcclusion);
+    public void setIgnoreStateProprties(boolean ignoreStateProprties) {
+        this.ignoreStateProprties = ignoreStateProprties;
     }
+
+    public boolean isIgnoreStateProperties() {
+        return ignoreStateProprties;
+    }
+
+    public BlockModelModuleState copy() {
+        return new BlockModelModuleState(super.copy(), ignoreModelOcclusion, ignoreStateProprties);
+    }
+
 }

@@ -25,7 +25,7 @@ abstract class GuiMixin implements TrackerHintExtracter {
     )
     private void extractStackHints(GuiGraphicsExtractor instance, Font font, ItemStack itemStack, int x, int y, Operation<Void> original) {
         original.call(instance, font, itemStack, x, y);
-        if(TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+        if(TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker()) {
             extractStackHints(instance, x, y, itemStack.getItem());
         }
     }

@@ -1,22 +1,29 @@
 package com.bawnorton.trulyrandom.client.screen.module.adapter;
 
-import com.bawnorton.trulyrandom.client.screen.module.BlockModelModuleSettings;
 import com.bawnorton.trulyrandom.client.screen.module.ModuleWidgetSettings;
-import com.bawnorton.trulyrandom.client.screen.module.RecipeModuleSettings;
 import com.bawnorton.trulyrandom.random.module.Module;
-import com.bawnorton.trulyrandom.random.module.state.BlockModelModuleState;
-import com.bawnorton.trulyrandom.random.module.state.RecipeModuleState;
+import com.bawnorton.trulyrandom.random.module.state.ModuleState;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import org.apache.commons.lang3.function.TriFunction;
 
-public class BlockModelsModuleWidgetAdapter extends ModuleWidgetAdapter {
+public class SettingsWidgetAdapter<T extends ModuleState> extends ModuleWidgetAdapter {
+    private final Class<T> moduleStateClass;
+    private final TriFunction<Component, Screen, T, Screen> settingsScreenFactory;
+
+    public SettingsWidgetAdapter(Class<T> moduleStateClass, TriFunction<Component, Screen, T, Screen> settingsScreenFactory) {
+        this.moduleStateClass = moduleStateClass;
+        this.settingsScreenFactory = settingsScreenFactory;
+    }
+
     @Override
     public GridLayout create(ModuleWidgetSettings settings, Module module) {
         GridLayout gridWidget = new GridLayout();
         GridLayout.RowHelper rowHelper = gridWidget.createRowHelper(1);
         ModuleWidgetSettings.Title title = rowHelper.addChild(
-                settings.createBuilder(module, BlockModelsTitle::new)
+                settings.createBuilder(module, SettingsWidgetAdapter.Title::new)
                         .dimensions(0, 0, 130, 17)
                         .build()
         );
@@ -29,10 +36,10 @@ public class BlockModelsModuleWidgetAdapter extends ModuleWidgetAdapter {
         return gridWidget;
     }
 
-    public static class BlockModelsTitle extends ModuleWidgetSettings.Title {
+    public class Title extends ModuleWidgetSettings.Title {
         private Button settingsButton;
 
-        public BlockModelsTitle(ModuleWidgetSettings settings, Module module, int x, int y, int width, int height, int columns) {
+        public Title(ModuleWidgetSettings settings, Module module, int x, int y, int width, int height, int columns) {
             super(settings, module, x, y, width, height, 3);
         }
 
@@ -43,7 +50,7 @@ public class BlockModelsModuleWidgetAdapter extends ModuleWidgetAdapter {
 
         @Override
         protected void addToggle(int x, int y, int width, int height) {
-            settingsButton = Button.builder(Component.translatable("selectWorld.trulyrandom.settings"), _ -> minecraft.setScreen(new BlockModelModuleSettings(Component.translatable("selectWorld.trulyrandom"), minecraft.screen, modules.getState(module, BlockModelModuleState.class))))
+            settingsButton = Button.builder(Component.translatable("selectWorld.trulyrandom.settings"), _ -> minecraft.setScreen(settingsScreenFactory.apply(Component.translatable("selectWorld.trulyrandom"), minecraft.screen, modules.getState(module, moduleStateClass))))
                     .bounds(x, y, 56, height)
                     .build();
             super.addToggle(x, y, width, height);

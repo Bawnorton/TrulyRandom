@@ -44,7 +44,7 @@ abstract class AbstractContainerScreenMixin extends Screen implements TrackerHin
     )
     private void extractSlotHints(GuiGraphicsExtractor instance, Font font, ItemStack itemStack, int x, int y, String countText, Operation<Void> original) {
         original.call(instance, font, itemStack, x, y, countText);
-        if(TrulyRandomClient.getRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) {
+        if(TrulyRandomClient.getRandomiser().getLootTableTracker().shoulDisplayTracker()) {
             extractStackHints(instance, x, y, itemStack.getItem());
         }
     }

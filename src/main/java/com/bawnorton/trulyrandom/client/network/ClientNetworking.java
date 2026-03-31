@@ -94,6 +94,7 @@ public class ClientNetworking {
         boolean blockModelSeedChanged = randomiser.getModules().getSeed(Module.BLOCK_MODELS) != packet.modules().getSeed(Module.BLOCK_MODELS);
         boolean itemModelSeedChanged = randomiser.getModules().getSeed(Module.ITEM_MODELS) != packet.modules().getSeed(Module.ITEM_MODELS);
         boolean blockModelSettingsChanged = randomiser.getModules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class).isIgnoreModelOcclusion() != packet.modules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class).isIgnoreModelOcclusion();
+        blockModelSettingsChanged |= randomiser.getModules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class).isIgnoreStateProperties() != packet.modules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class).isIgnoreStateProperties();
 
         randomiser.setModules(packet.modules());
         randomiser.updateBlockModels(minecraft, blockModelSeedChanged || blockModelSettingsChanged);

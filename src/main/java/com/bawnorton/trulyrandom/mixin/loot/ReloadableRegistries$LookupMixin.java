@@ -5,6 +5,7 @@ import com.bawnorton.trulyrandom.extend.LookupExtender;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -34,6 +35,17 @@ abstract class ReloadableRegistries$LookupMixin implements LookupExtender {
         if(!randomiser.getModules().isEnabled(Module.LOOT_TABLES)) return id;
 
         return randomiser.getLootRandomiser().getLootTable(LootTableTracker.LOOT_CAUSERS.get(), id);
+    }
+
+    @ModifyReturnValue(
+            method = "getLootTable",
+            at = @At("RETURN")
+    )
+    private LootTable interceptCreatedLootTable(LootTable original) {
+        ServerRandomiser randomiser = TrulyRandom.getCachedRandomiser();
+        if(!randomiser.getModules().isEnabled(Module.LOOT_TABLES)) return original;
+
+        return randomiser.getLootRandomiser().maybeReplaceLootTable(original);
     }
 
     @Override

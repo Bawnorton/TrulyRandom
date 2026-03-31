@@ -1,13 +1,16 @@
 package com.bawnorton.trulyrandom.client.screen;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
+import com.bawnorton.trulyrandom.client.screen.module.BlockModelModuleSettings;
+import com.bawnorton.trulyrandom.client.screen.module.LootModuleSettings;
 import com.bawnorton.trulyrandom.client.screen.module.ModuleWidgetSettings;
-import com.bawnorton.trulyrandom.client.screen.module.adapter.BlockModelsModuleWidgetAdapter;
-import com.bawnorton.trulyrandom.client.screen.module.adapter.DefaultModuleWidgetAdapter;
-import com.bawnorton.trulyrandom.client.screen.module.adapter.RecipeModuleWidgetAdapter;
-import com.bawnorton.trulyrandom.client.screen.module.adapter.StructureModuleWidgetAdapter;
+import com.bawnorton.trulyrandom.client.screen.module.RecipeModuleSettings;
+import com.bawnorton.trulyrandom.client.screen.module.adapter.*;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
+import com.bawnorton.trulyrandom.random.module.state.BlockModelModuleState;
+import com.bawnorton.trulyrandom.random.module.state.LootModuleState;
+import com.bawnorton.trulyrandom.random.module.state.RecipeModuleState;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
@@ -56,8 +59,9 @@ public abstract class AbstractTrulyRandomSettingsScreen extends Screen {
         modules.sort(Comparator.comparingInt(Module::ordinal));
         ModuleWidgetSettings moduleSettings = new ModuleWidgetSettings(minecraft, getModules());
         moduleSettings.registerAdapters(Set.of(Module.STRUCTURES, Module.FEATURES), new StructureModuleWidgetAdapter());
-        moduleSettings.registerAdapters(Set.of(Module.RECIPES), new RecipeModuleWidgetAdapter());
-        moduleSettings.registerAdapters(Set.of(Module.BLOCK_MODELS), new BlockModelsModuleWidgetAdapter());
+        moduleSettings.registerAdapters(Set.of(Module.RECIPES), new SettingsWidgetAdapter<>(RecipeModuleState.class, RecipeModuleSettings::new));
+        moduleSettings.registerAdapters(Set.of(Module.BLOCK_MODELS), new SettingsWidgetAdapter<>(BlockModelModuleState.class, BlockModelModuleSettings::new));
+        moduleSettings.registerAdapters(Set.of(Module.LOOT_TABLES), new SettingsWidgetAdapter<>(LootModuleState.class, LootModuleSettings::new));
         moduleSettings.setDefaultAdapter(new DefaultModuleWidgetAdapter());
         GridLayout.RowHelper subRowHelper = null;
         for (int i = 0; i < modules.size(); i++) {
