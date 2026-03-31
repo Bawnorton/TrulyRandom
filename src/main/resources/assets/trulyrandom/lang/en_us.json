@@ -76,5 +76,7 @@
   "advancements.trulyrandom.woold_you_look_at_that.title": "Complete What Monument?",
   "advancements.trulyrandom.woold_you_look_at_that.description": "Collect all the colours of wool",
   "advancements.trulyrandom.i_didnt_wax_for_this.title": "I Didn't Wax for This",
-  "advancements.trulyrandom.i_didnt_wax_for_this.description": "Collect all the colour variants of candles"
+  "advancements.trulyrandom.i_didnt_wax_for_this.description": "Collect all the colour variants of candles",
+  "key.category.trulyrandom.keys": "TrulyRandom",
+  "trulyrandom.join": "§bTrulyRandom §r%s - Press %s to open the Randomiser GUI"
 }

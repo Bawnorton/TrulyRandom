@@ -9,6 +9,7 @@ plugins {
     id("me.modmuss50.mod-publish-plugin")
     id("com.google.devtools.ksp") version "2.2.0-2.0.2"
     id("dev.kikugie.fletching-table.fabric") version "0.1.0-alpha.15"
+    id("dev.isxander.secrets") version "0.1.0"
 }
 
 repositories {
@@ -110,9 +111,10 @@ extensions.configure<PublishingExtension> {
         maven {
             name = "bawnorton"
             url = uri("https://maven.bawnorton.com/releases")
-            credentials(PasswordCredentials::class)
-            authentication {
-                create<BasicAuthentication>("basic")
+
+            credentials {
+                username = onePassword["op://Private/Maven API Key/username"].get()
+                password = onePassword["op://Private/Maven API Key/credential"].get()
             }
         }
     }
@@ -128,8 +130,8 @@ extensions.configure<PublishingExtension> {
 }
 
 publishMods {
-    val mrToken = providers.gradleProperty("MODRINTH_TOKEN")
-    val cfToken = providers.gradleProperty("CURSEFORGE_TOKEN")
+    val mrTokenProvider = onePassword["op://Private/Modrinth API Key/credential"]
+    val cfTokenProvider = onePassword["op://Private/Curseforge API Key/credential"]
 
     type = STABLE
     file = tasks.jar.map { it.archiveFile.get() }
@@ -145,13 +147,13 @@ publishMods {
 
     modrinth {
         projectId = property("publishing.modrinth") as String
-        accessToken = mrToken
+        accessToken = mrTokenProvider.get()
         minecraftVersions.addAll(compatibleVersions)
     }
 
     curseforge {
         projectId = property("publishing.curseforge") as String
-        accessToken = cfToken
+        accessToken = cfTokenProvider.get()
         minecraftVersions.addAll(compatibleVersions)
     }
 }

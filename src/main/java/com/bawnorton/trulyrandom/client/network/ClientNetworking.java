@@ -3,6 +3,7 @@ package com.bawnorton.trulyrandom.client.network;
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.extend.RecipeBookScreenExtender;
+import com.bawnorton.trulyrandom.client.keybind.KeybindManager;
 import com.bawnorton.trulyrandom.client.random.ClientRandomiser;
 import com.bawnorton.trulyrandom.client.screen.TargetedTrulyRandomSettingsScreen;
 import com.bawnorton.trulyrandom.client.screen.TrulyRandomSettingsScreen;
@@ -56,6 +57,8 @@ public class ClientNetworking {
     private static void handleHandshake(ClientboundHandshakePacket packet, ClientPlayNetworking.Context context) {
         if (TrulyRandom.VERSION.compareTo(packet.version()) != 0) {
             context.player().sendSystemMessage(Component.translatable("trulyrandom.version_mismatch", packet.version().getFriendlyString(), TrulyRandom.VERSION.getFriendlyString()));
+        } else {
+            context.player().sendSystemMessage(Component.translatable("trulyrandom.join", packet.version().getFriendlyString(), KeybindManager.OPEN_RANDOMISER_GUI.getKeybind().getTranslatedKeyMessage().getString()));
         }
         runCallback(ClientboundHandshakePacket.TYPE);
     }

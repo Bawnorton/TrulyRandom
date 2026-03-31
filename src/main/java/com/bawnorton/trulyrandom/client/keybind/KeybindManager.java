@@ -25,7 +25,7 @@ import java.util.List;
 
 public class KeybindManager {
     private static final List<ActionedKeybind> KEYBINDS = new ArrayList<>();
-    private static final KeyMapping.Category KEY_CATEGORY = new KeyMapping.Category(TrulyRandom.id("category"));
+    private static final KeyMapping.Category KEY_CATEGORY = new KeyMapping.Category(TrulyRandom.id("keys"));
 
     public static final ActionedKeybind OPEN_RANDOMISER_GUI = registerKeybind("key.trulyrandom.open_randomiser_gui", GLFW.GLFW_KEY_G, minecraft -> {
         ClientNetworking.registerRecievedCallback(ClientboundSetClientRandomiserPacket.TYPE, () -> minecraft.setScreen(new TrulyRandomSettingsScreen(
