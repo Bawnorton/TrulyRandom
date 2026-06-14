@@ -94,15 +94,15 @@ public class Modules implements Iterable<Module> {
     }
 
     public void randomSeedAll() {
-        moduleStates.forEach((module, state) -> state.randomSeed());
+        moduleStates.forEach((_, state) -> state.randomSeed());
     }
 
     public void enableAll() {
-        moduleStates.forEach((module, state) -> state.enable());
+        moduleStates.forEach((_, state) -> state.enable());
     }
 
     public void disableAll() {
-        moduleStates.forEach((module, state) -> state.disable());
+        moduleStates.forEach((_, state) -> state.disable());
     }
 
     public void confirm() {

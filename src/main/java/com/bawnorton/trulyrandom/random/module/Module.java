@@ -14,8 +14,8 @@ public enum Module {
     LOOT_TABLES(true, true, true, LootModuleState::new),
     RECIPES(true, true, true, RecipeModuleState::new),
     TRADES(true, true, true, StandardModuleState::new),
-    STRUCTURES(true, true, false, StandardModuleState::new),
-    FEATURES(false, true, false, StandardModuleState::new);
+    STRUCTURES(true, true, false, StructureModuleState::new),
+    FEATURES(true, true, false, StandardModuleState::new);
 
     public static final Codec<Module> CODEC = Codec.STRING.xmap(Module::valueOf, Module::name);
     public static final StreamCodec<ByteBuf, Module> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(Module::valueOf, Module::name);

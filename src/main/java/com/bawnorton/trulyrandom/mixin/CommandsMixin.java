@@ -21,8 +21,8 @@ abstract class CommandsMixin {
                     target = "Lnet/minecraft/commands/Commands;executeCommandInContext(Lnet/minecraft/commands/CommandSourceStack;Ljava/util/function/Consumer;)V"
             )
     )
-    private void postExecute(CommandSourceStack executionContext, Consumer<ExecutionContext<CommandSourceStack>> gameRules, Operation<Void> original) throws CommandSyntaxException {
-        original.call(executionContext, gameRules);
-        PostExecuteCallback.EVENT.invoker().postExecute(executionContext);
+    private void postExecute(CommandSourceStack context, Consumer<ExecutionContext<CommandSourceStack>> config, Operation<Void> original) throws CommandSyntaxException {
+        original.call(context, config);
+        PostExecuteCallback.EVENT.invoker().postExecute(context);
     }
 }

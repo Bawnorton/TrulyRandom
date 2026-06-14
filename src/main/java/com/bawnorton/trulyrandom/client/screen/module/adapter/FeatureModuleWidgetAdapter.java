@@ -4,7 +4,7 @@ import com.bawnorton.trulyrandom.client.screen.module.ModuleWidgetSettings;
 import com.bawnorton.trulyrandom.random.module.Module;
 import net.minecraft.client.gui.layouts.GridLayout;
 
-public class StructureModuleWidgetAdapter extends ModuleWidgetAdapter {
+public class FeatureModuleWidgetAdapter extends ModuleWidgetAdapter {
     @Override
     public GridLayout create(ModuleWidgetSettings settings, Module module) {
         GridLayout gridWidget = new GridLayout();
@@ -16,6 +16,4 @@ public class StructureModuleWidgetAdapter extends ModuleWidgetAdapter {
         );
         return gridWidget;
     }
-
-
 }

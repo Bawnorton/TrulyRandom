@@ -15,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(MatchTool.class)
 abstract class MatchToolMixin {
+    @SuppressWarnings("unchecked")
     @WrapOperation(
             method = "test(Lnet/minecraft/world/level/storage/loot/LootContext;)Z",
             at = @At(
@@ -31,7 +32,6 @@ abstract class MatchToolMixin {
         Entity attacker = instance.getOptionalParameter(LootContextParams.ATTACKING_ENTITY);
         if (!(attacker instanceof LivingEntity livingEntity)) return null;
 
-        //noinspection unchecked
         return (T) livingEntity.getMainHandItem();
     }
 }

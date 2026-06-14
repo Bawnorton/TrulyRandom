@@ -1,6 +1,6 @@
 package com.bawnorton.trulyrandom.client.screen.module;
 
-import com.bawnorton.trulyrandom.random.module.state.LootModuleState;
+import com.bawnorton.trulyrandom.random.module.state.StructureModuleState;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -8,17 +8,17 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
-public class LootModuleSettings extends Screen {
+public class StructureModuleSettings extends Screen {
     private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 15, 36);
-    private final LootModuleState moduleState;
+    private final StructureModuleState moduleState;
     private final Screen parent;
-    private boolean useOtherLootTables;
+    private boolean replaceStructuresInstead;
 
-    public LootModuleSettings(Component title, Screen parent, LootModuleState moduleState) {
+    public StructureModuleSettings(Component title, Screen parent, StructureModuleState moduleState) {
         super(title);
         this.parent = parent;
         this.moduleState = moduleState;
-        this.useOtherLootTables = moduleState.useOtherLootTables();
+        this.replaceStructuresInstead = moduleState.replaceStructuresInstead();
     }
 
     @Override
@@ -31,27 +31,27 @@ public class LootModuleSettings extends Screen {
     }
 
     protected void addHeader() {
-        layout.addToHeader(new MultiLineTextWidget(Component.translatable("selectWorld.trulyrandom.loot_settings"), font), positioner -> positioner.paddingTop(15));
+        layout.addToHeader(new MultiLineTextWidget(Component.translatable("selectWorld.trulyrandom.structure_settings"), font), positioner -> positioner.paddingTop(15));
     }
 
     protected void addBody() {
         GridLayout columns = layout.addToContents(new GridLayout());
         columns.rowSpacing(2);
         GridLayout.RowHelper rowHelper = columns.createRowHelper(2);
-        StringWidget useOtherLootTablesTitle = new StringWidget(
+        StringWidget replaceStructureInsteadTitle = new StringWidget(
                 0,
                 0,
-                130,
+                160,
                 17,
-                Component.translatable("selectWorld.trulyrandom.loot_settings.use_other_loot_tables"),
+                Component.translatable("selectWorld.trulyrandom.structure_settings.replace_structures_instead"),
                 font
         );
-        CycleButton<Boolean> useOtherLootTablesToggle = CycleButton.onOffBuilder(useOtherLootTables)
+        CycleButton<Boolean> replaceStructureInsteadToggle = CycleButton.onOffBuilder(replaceStructuresInstead)
                 .displayOnlyValue()
-                .create(0, 0, 44, 17, Component.empty(), (_, value) -> useOtherLootTables = value);
-        useOtherLootTablesToggle.setTooltip(Tooltip.create(Component.translatable("selectWorld.trulyrandom.loot_settings.use_other_loot_tables.tooltip")));
-        rowHelper.addChild(useOtherLootTablesTitle);
-        rowHelper.addChild(useOtherLootTablesToggle);
+                .create(0, 0, 44, 17, Component.empty(), (_, value) -> replaceStructuresInstead = value);
+        replaceStructureInsteadToggle.setTooltip(Tooltip.create(Component.translatable("selectWorld.trulyrandom.structure_settings.replace_structures_instead.tooltip")));
+        rowHelper.addChild(replaceStructureInsteadTitle);
+        rowHelper.addChild(replaceStructureInsteadToggle);
     }
 
     protected void addFooter() {
@@ -66,7 +66,7 @@ public class LootModuleSettings extends Screen {
     }
 
     public void applyAndClose() {
-        moduleState.setUseOtherLootTables(useOtherLootTables);
+        moduleState.setReplaceStructuresInstead(replaceStructuresInstead);
         onClose();
     }
 

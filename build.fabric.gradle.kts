@@ -106,15 +106,20 @@ fletchingTable {
     }
 }
 
+val isPublishing = gradle.startParameter.taskNames.any {
+    it.contains("publish", ignoreCase = true)
+}
+
 extensions.configure<PublishingExtension> {
     repositories {
         maven {
             name = "bawnorton"
             url = uri("https://maven.bawnorton.com/releases")
-
-            credentials {
-                username = onePassword["op://Private/Maven API Key/username"].get()
-                password = onePassword["op://Private/Maven API Key/credential"].get()
+            if (isPublishing) {
+                credentials {
+                    username = onePassword["op://Private/Maven API Key/username"].get()
+                    password = onePassword["op://Private/Maven API Key/credential"].get()
+                }
             }
         }
     }
@@ -147,13 +152,13 @@ publishMods {
 
     modrinth {
         projectId = property("publishing.modrinth") as String
-        accessToken = mrTokenProvider.get()
+        accessToken = mrTokenProvider
         minecraftVersions.addAll(compatibleVersions)
     }
 
     curseforge {
         projectId = property("publishing.curseforge") as String
-        accessToken = cfTokenProvider.get()
+        accessToken = cfTokenProvider
         minecraftVersions.addAll(compatibleVersions)
     }
 }

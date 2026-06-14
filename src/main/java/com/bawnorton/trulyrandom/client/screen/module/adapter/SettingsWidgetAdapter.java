@@ -53,6 +53,7 @@ public class SettingsWidgetAdapter<T extends ModuleState> extends ModuleWidgetAd
             settingsButton = Button.builder(Component.translatable("selectWorld.trulyrandom.settings"), _ -> minecraft.setScreen(settingsScreenFactory.apply(Component.translatable("selectWorld.trulyrandom"), minecraft.screen, modules.getState(module, moduleStateClass))))
                     .bounds(x, y, 56, height)
                     .build();
+            settingsButton.active = module.isImplemented() && (minecraft.level == null || module.isMutable());
             super.addToggle(x, y, width, height);
         }
 

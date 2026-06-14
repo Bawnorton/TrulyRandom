@@ -89,7 +89,7 @@ public abstract class AbstractVillagerMixin extends AgeableMob {
             )
     )
     private MerchantOffers dontWriteRandomised(AbstractVillager instance, Operation<MerchantOffers> original) {
-        if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.TRADES)) return original.call(instance);
+        if (!TrulyRandom.getRandomiser(level().getServer()).getModules().isEnabled(Module.TRADES)) return original.call(instance);
 
         if(offers == null && level() instanceof ServerLevel level) {
             offers = new MerchantOffers();

@@ -22,7 +22,7 @@ abstract class EndCityPieces$EndCityPieceMixin {
           )
   )
   private ItemStack replaceElytra(ItemStack itemStack) {
-    if (!RandomiserSaveLoader.getWorldGenModules().isEnabled(Module.STRUCTURES)) return itemStack;
+    if (!RandomiserSaveLoader.getWorldGenHolder().modules().isEnabled(Module.STRUCTURES)) return itemStack;
 
     ItemStack stack = Items.ELYTRA.getDefaultInstance();
     stack.set(DataComponents.LORE, ItemLore.EMPTY.withLineAdded(Component.literal("You can repair this right? :clueless:")));

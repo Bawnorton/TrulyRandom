@@ -11,14 +11,14 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.level.storage.SavedDataStorage;
+import org.jspecify.annotations.NonNull;
 
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.UUID;
 
 public class RandomiserSaveLoader extends SavedData {
     private static ServerRandomiser lastSetRandomiser;
-    private static Modules worldGenModules;
+    private static WorldGenHolder worldGenHolder;
 
     public static SavedDataType<RandomiserSaveLoader> TYPE;
 
@@ -26,7 +26,7 @@ public class RandomiserSaveLoader extends SavedData {
     private HashMap<UUID, Modules> clientRandomisers;
 
     public RandomiserSaveLoader(MinecraftServer server) {
-        this.serverRandomiser = new ServerRandomiser(Objects.requireNonNullElseGet(worldGenModules, Modules::new), server);
+        this.serverRandomiser = new ServerRandomiser(getWorldgenModulesOrElseCreate(), server);
         this.clientRandomisers = new HashMap<>();
         setDirty();
     }
@@ -35,6 +35,17 @@ public class RandomiserSaveLoader extends SavedData {
         this.serverRandomiser = serverRandomiser;
         this.clientRandomisers = clientRandomisers;
         setDirty();
+    }
+
+    private static @NonNull Modules getWorldgenModulesOrElseCreate() {
+        Modules modules = null;
+        if (worldGenHolder != null) {
+            modules = worldGenHolder.modules();
+        }
+        if (modules == null) {
+            modules = new Modules();
+        }
+        return modules;
     }
 
     public static Codec<RandomiserSaveLoader> codec(MinecraftServer server) {
@@ -57,7 +68,7 @@ public class RandomiserSaveLoader extends SavedData {
         RandomiserSaveLoader state = storage.computeIfAbsent(TYPE);
         state.setDirty();
         if(state.getServerRandomiser() == null) {
-            state.serverRandomiser = new ServerRandomiser(Objects.requireNonNullElseGet(worldGenModules, Modules::new), server);
+            state.serverRandomiser = new ServerRandomiser(getWorldgenModulesOrElseCreate(), server);
         }
         lastSetRandomiser = state.getServerRandomiser();
         return state;
@@ -73,14 +84,14 @@ public class RandomiserSaveLoader extends SavedData {
         return lastSetRandomiser != null;
     }
 
-    public static void setWorldGenModules(Modules modules) {
-        worldGenModules = modules;
+    public static void setWorldGenHolder(WorldGenHolder worldGenHolder) {
+        RandomiserSaveLoader.worldGenHolder = worldGenHolder;
     }
 
-    public static Modules getWorldGenModules() {
-        if(worldGenModules == null) return lastSetRandomiser.getModules();
+    public static WorldGenHolder getWorldGenHolder() {
+        if(worldGenHolder == null) return new WorldGenHolder(lastSetRandomiser.getModules());
 
-        return worldGenModules;
+        return worldGenHolder;
     }
 
     public ServerRandomiser getServerRandomiser() {

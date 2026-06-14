@@ -106,9 +106,9 @@ public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
         protected void addSeedBox(Module module, int x, int y, int width, int height) {
             seedEditBox = new LongEditBoxWidget(x, y, width, height, Component.translatable("selectWorld.trulyrandom.seed.title"), modules.getSeedMemento(module), minecraft.font);
             seedEditBox.setLong(modules.getSeedMemento(module));
-            seedEditBox.setValueListener(value -> modules.setSeedMemento(module, seedEditBox.getLong()));
+            seedEditBox.setValueListener(_ -> modules.setSeedMemento(module, seedEditBox.getLong()));
             seedEditBox.setTooltip(Tooltip.create(getSeedTooltipText()));
-            seedEditBox.active = module.isImplemented();
+            seedEditBox.active = module.isImplemented() && (minecraft.level == null || module.isMutable());
         }
 
         protected void addNewSeedButton(Module module, int height) {
@@ -116,12 +116,14 @@ public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
                     .bounds(0, 0, 44, height)
                     .build();
             newSeedButton.setTooltip(Tooltip.create(getNewSeedTooltipText()));
-            newSeedButton.active = module.isImplemented();
+            newSeedButton.active = module.isImplemented() && (minecraft.level == null || module.isMutable());
         }
 
         private Component getNewSeedTooltipText() {
-            if(module.isImplemented()) {
+            if(module.isImplemented() && module.isMutable()) {
                 return Component.translatable("selectWorld.trulyrandom.new_seed.tooltip");
+            } else if (!module.isMutable()) {
+                return Component.empty();
             } else {
                 return Component.translatable("selectWorld.trulyrandom.not_implemented")
                         .withStyle(ChatFormatting.DARK_GRAY)

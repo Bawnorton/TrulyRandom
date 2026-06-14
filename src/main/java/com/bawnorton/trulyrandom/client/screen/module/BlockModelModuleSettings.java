@@ -51,7 +51,7 @@ public class BlockModelModuleSettings extends Screen {
         CycleButton<Boolean> ignoreModelOcclusionToggle = CycleButton.onOffBuilder(isIgnoreModelOcclusion)
                 .displayOnlyValue()
                 .create(0, 0, 44, 17, Component.empty(), (_, value) -> isIgnoreModelOcclusion = value);
-        ignoreModelOcclusionToggle.setTooltip(Tooltip.create(Component.literal("Ignoring model occlussion can cause solid blocks to be replaced with non-solid block models allowing you to see through the world, which can cause significant FPS lag as no culling will be applied to these blocks.")));
+        ignoreModelOcclusionToggle.setTooltip(Tooltip.create(Component.translatable("selectWorld.trulyrandom.block_models_settings.ignore_model_occlusion.tooltip")));
         rowHelper.addChild(ignoreModelOcclusionTitle);
         rowHelper.addChild(ignoreModelOcclusionToggle);
 
@@ -66,7 +66,7 @@ public class BlockModelModuleSettings extends Screen {
         CycleButton<Boolean> ignoreStatePropertiesToggle = CycleButton.onOffBuilder(isIgnoreStateProperties)
                 .displayOnlyValue()
                 .create(0, 0, 44, 17, Component.empty(), (_, value) -> isIgnoreStateProperties = value);
-        ignoreStatePropertiesToggle.setTooltip(Tooltip.create(Component.literal("Ignoring state properties can cause blocks to use any model with the same occlusion shape, which can make tracking what is what significantly more difficult and rendering quirks are to be expected.")));
+        ignoreStatePropertiesToggle.setTooltip(Tooltip.create(Component.translatable("selectWorld.trulyrandom.block_models_settings.ignore_state_properties.tooltip")));
         rowHelper.addChild(ignoreStatePropertiesTitle);
         rowHelper.addChild(ignoreStatePropertiesToggle);
     }
