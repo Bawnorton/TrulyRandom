@@ -9,27 +9,26 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import java.util.function.Supplier;
 
 public enum Module {
-    BLOCK_MODELS(true, false, true, BlockModelModuleState::new),
-    ITEM_MODELS(true, false, true, StandardModuleState::new),
-    LOOT_TABLES(true, true, true, LootModuleState::new),
-    RECIPES(true, true, true, RecipeModuleState::new),
-    TRADES(true, true, true, StandardModuleState::new),
-    STRUCTURES(true, true, false, StructureModuleState::new),
-    FEATURES(true, true, false, StandardModuleState::new);
+    BLOCK_MODELS(ModuleCategory.CLIENT, true, BlockModelModuleState::new),
+    ITEM_MODELS(ModuleCategory.CLIENT, true, ItemModelModuleState::new),
+    LOOT_TABLES(ModuleCategory.GENERAL, true, LootModuleState::new),
+    RECIPES(ModuleCategory.GENERAL, true, RecipeModuleState::new),
+    TRADES(ModuleCategory.GENERAL, true, StandardModuleState::new),
+    STRUCTURES(ModuleCategory.WORLD_GEN, true, StructureModuleState::new),
+    FEATURES(ModuleCategory.WORLD_GEN, true, StandardModuleState::new),
+    BLOCK_PALETTE(ModuleCategory.WORLD_GEN, true, BlockPaletteModuleState::new);
 
     public static final Codec<Module> CODEC = Codec.STRING.xmap(Module::valueOf, Module::name);
     public static final StreamCodec<ByteBuf, Module> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(Module::valueOf, Module::name);
 
     private final boolean implemented;
-    private final boolean mutable;
-    private final boolean serverSide;
     private final Supplier<ModuleState> moduleStateSupplier;
+    private final ModuleCategory category;
 
-    Module(boolean implemented, boolean serverSide, boolean mutable, Supplier<ModuleState> moduleStateSupplier) {
+    Module(ModuleCategory category, boolean implemented, Supplier<ModuleState> moduleStateSupplier) {
         this.implemented = implemented;
-        this.mutable = mutable;
-        this.serverSide = serverSide;
         this.moduleStateSupplier = moduleStateSupplier;
+        this.category = category;
     }
 
     public ModuleState newModuleState() {
@@ -41,10 +40,14 @@ public enum Module {
     }
 
     public boolean isMutable() {
-        return mutable;
+        return category.isMutable();
     }
 
     public boolean isServerSide() {
-        return serverSide;
+        return category.isServerSide();
+    }
+
+    public ModuleCategory getCategory() {
+        return category;
     }
 }

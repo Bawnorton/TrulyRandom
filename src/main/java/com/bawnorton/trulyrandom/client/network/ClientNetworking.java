@@ -14,7 +14,7 @@ import com.bawnorton.trulyrandom.network.packet.clientbound.*;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.random.module.state.BlockModelModuleState;
-import com.bawnorton.trulyrandom.random.module.state.RecipeModuleState;
+import com.bawnorton.trulyrandom.random.module.state.ItemModelModuleState;
 import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
@@ -94,14 +94,21 @@ public class ClientNetworking {
 
         ClientRandomiser randomiser = TrulyRandomClient.getRandomiser();
 
-        boolean blockModelSeedChanged = randomiser.getModules().getSeed(Module.BLOCK_MODELS) != packet.modules().getSeed(Module.BLOCK_MODELS);
         boolean itemModelSeedChanged = randomiser.getModules().getSeed(Module.ITEM_MODELS) != packet.modules().getSeed(Module.ITEM_MODELS);
-        boolean blockModelSettingsChanged = randomiser.getModules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class).isIgnoreModelOcclusion() != packet.modules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class).isIgnoreModelOcclusion();
-        blockModelSettingsChanged |= randomiser.getModules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class).isIgnoreStateProperties() != packet.modules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class).isIgnoreStateProperties();
+        ItemModelModuleState currentItemState = randomiser.getModules().getState(Module.ITEM_MODELS, ItemModelModuleState.class);
+        ItemModelModuleState incomingItemState = packet.modules().getState(Module.ITEM_MODELS, ItemModelModuleState.class);
+        boolean itemModelSettingsChanged = currentItemState.isMatchingBlockModelRandomisation() != incomingItemState.isMatchingBlockModelRandomisation();
+
+        boolean blockModelSeedChanged = randomiser.getModules().getSeed(Module.BLOCK_MODELS) != packet.modules().getSeed(Module.BLOCK_MODELS);
+        BlockModelModuleState currentBlockState = randomiser.getModules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class);
+        BlockModelModuleState incomingBlockState = packet.modules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class);
+        boolean blockModelSettingsChanged = currentBlockState.isIgnoreModelOcclusion() != incomingBlockState.isIgnoreModelOcclusion()
+                || currentBlockState.isIgnoreStateProperties() != incomingBlockState.isIgnoreStateProperties()
+                || currentBlockState.isForcingStatesToUseSameModel() != incomingBlockState.isForcingStatesToUseSameModel();
 
         randomiser.setModules(packet.modules());
         randomiser.updateBlockModels(minecraft, blockModelSeedChanged || blockModelSettingsChanged);
-        randomiser.updateItemModels(minecraft, itemModelSeedChanged);
+        randomiser.updateItemModels(minecraft, itemModelSeedChanged || itemModelSettingsChanged);
         runCallback(ClientboundSetClientRandomiserPacket.TYPE);
     }
 

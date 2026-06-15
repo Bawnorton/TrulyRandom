@@ -14,12 +14,12 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 
 import java.util.Map;
 
-public class StructureReplacementRandomiser extends RandomiserModule {
+public class StructureRandomiser extends RandomiserModule {
     private final Map<Key, UnaryMap<Structure>> structureReplacmements = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<>());
     private final Map<Key, RandomSource> randomCache = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<>());
     private final long seed;
 
-    public StructureReplacementRandomiser(long seed) {
+    public StructureRandomiser(long seed) {
         super();
         this.seed = seed;
     }

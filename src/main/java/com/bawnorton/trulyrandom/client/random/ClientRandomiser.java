@@ -37,6 +37,14 @@ public class ClientRandomiser extends Randomiser {
         return recipeTracker;
     }
 
+    public BlockModelRandomiser getBlockModelRandomiser() {
+        return blockModelRandomiser;
+    }
+
+    public ItemModelRandomiser getItemModelRandomiser() {
+        return itemModelRandomiser;
+    }
+
     public void setLootTableTracker(LootTableTracker tracker) {
         lootTableTracker = tracker;
     }
@@ -63,7 +71,7 @@ public class ClientRandomiser extends Randomiser {
         itemModelRandomiser.reloadModels(Minecraft.getInstance());
     }
 
-    private void update(ModelRandomiser randomiser, Minecraft minecraft, boolean randomise, boolean forceRandomise) {
+    private void update(ModelRandomiser<?> randomiser, Minecraft minecraft, boolean randomise, boolean forceRandomise) {
         boolean isRandomised = randomiser.isRandomised();
 
         if (!randomise && isRandomised) {

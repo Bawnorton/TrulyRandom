@@ -26,9 +26,9 @@ abstract class ChunkStatusTaskMixin {
             WorldGenHolder worldGenHolder = RandomiserSaveLoader.getWorldGenHolder();
             Modules modules = worldGenHolder.modules();
             StructureModuleState state = modules.getState(Module.STRUCTURES, StructureModuleState.class);
-            if (state.isEnabled() && state.replaceStructuresInstead()) {
+            if (state.isEnabled() && !state.useLegacyRandomiser()) {
                 Level level = context.level();
-                worldGenHolder.structureReplacementRandomiser().clearChunk(level.dimension(), chunk.getPos());
+                worldGenHolder.structureRandomiser().clearChunk(level.dimension(), chunk.getPos());
             }
         });
     }

@@ -8,29 +8,35 @@ import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 public class StructureModuleState extends StandardModuleState {
-    private boolean replaceStructuresInstead;
+    private boolean useLegacyRandomiser;
+    private boolean nerfElytra;
 
     public static final MapCodec<StructureModuleState> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             StandardModuleState.CODEC.fieldOf("standard").forGetter(moduleState -> moduleState),
-            Codec.BOOL.optionalFieldOf("replace_structures_instead", false).forGetter(StructureModuleState::replaceStructuresInstead)
+            Codec.BOOL.optionalFieldOf("use_legacy_randomiser", false).forGetter(StructureModuleState::useLegacyRandomiser),
+            Codec.BOOL.optionalFieldOf("nerf_elytra", false).forGetter(StructureModuleState::isNerfElytra)
     ).apply(instance, StructureModuleState::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, StructureModuleState> STREAM_CODEC = StreamCodec.composite(
             StandardModuleState.STREAM_CODEC,
             moduleState -> moduleState,
             ByteBufCodecs.BOOL,
-            StructureModuleState::replaceStructuresInstead,
+            StructureModuleState::useLegacyRandomiser,
+            ByteBufCodecs.BOOL,
+            StructureModuleState::isNerfElytra,
             StructureModuleState::new
     );
 
-    private StructureModuleState(StandardModuleState state, boolean replaceStructuresInstead) {
+    private StructureModuleState(StandardModuleState state, boolean useLegacyRandomiser, boolean nerfElytra) {
         super(state.isEnabled(), state.isVisible(), state.getSeed());
-        this.replaceStructuresInstead = replaceStructuresInstead;
+        this.useLegacyRandomiser = useLegacyRandomiser;
+        this.nerfElytra = nerfElytra;
     }
 
     public StructureModuleState() {
         super();
-        this.replaceStructuresInstead = false;
+        this.useLegacyRandomiser = false;
+        this.nerfElytra = false;
     }
 
     @Override
@@ -38,15 +44,23 @@ public class StructureModuleState extends StandardModuleState {
         return ModuleStateTypes.STRUCTURE;
     }
 
-    public void setReplaceStructuresInstead(boolean replaceStructuresInstead) {
-        this.replaceStructuresInstead = replaceStructuresInstead;
+    public void setUseLegacyRandomiser(boolean legacyRandomiser) {
+        this.useLegacyRandomiser = legacyRandomiser;
     }
 
-    public boolean replaceStructuresInstead() {
-        return replaceStructuresInstead;
+    public void setNerfElytra(boolean nerfElytra) {
+        this.nerfElytra = nerfElytra;
+    }
+
+    public boolean useLegacyRandomiser() {
+        return useLegacyRandomiser;
+    }
+
+    public boolean isNerfElytra() {
+        return nerfElytra;
     }
 
     public StructureModuleState copy() {
-        return new StructureModuleState(super.copy(), replaceStructuresInstead);
+        return new StructureModuleState(super.copy(), useLegacyRandomiser, nerfElytra);
     }
 }

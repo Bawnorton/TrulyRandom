@@ -13,7 +13,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.client.renderer.block.model.BlockModel;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Property;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,6 +24,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -47,6 +52,11 @@ abstract class BlockStateModelSetMixin implements ModelShuffler.BlockStates {
     }
 
     @Override
+    public boolean trulyrandom$forceStatesToUseSameModel() {
+        return TrulyRandomClient.getRandomiser().getModules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class).isForcingStatesToUseSameModel();
+    }
+
+    @Override
     public boolean trulyrandom$ignoreModelOcclusion() {
         return TrulyRandomClient.getRandomiser().getModules().getState(Module.BLOCK_MODELS, BlockModelModuleState.class).isIgnoreModelOcclusion();
     }
@@ -66,12 +76,69 @@ abstract class BlockStateModelSetMixin implements ModelShuffler.BlockStates {
         trulyrandom$resetModels();
 
         Random rnd = new Random(seed);
-        for (List<BlockState> variant : buildPropertyMap().values()) {
-            Collections.shuffle(variant, rnd);
-            for (int i = 0; i < variant.size(); i++) {
-                BlockState original = variant.get(i);
-                BlockState randomised = variant.get((i + 1) % variant.size());
-                trulyrandom$redirectMap.put(original, randomised);
+
+        if (trulyrandom$forceStatesToUseSameModel()) {
+            Map<Block, List<BlockState>> statesByBlock = new HashMap<>();
+            for (BlockState state : trulyrandom$getBlockStates()) {
+                statesByBlock.computeIfAbsent(state.getBlock(), _ -> new ArrayList<>()).add(state);
+            }
+
+            Function<BlockState, String> getStateSignature = state -> {
+                StringBuilder sb = new StringBuilder();
+                if (!trulyrandom$ignoreStateProperties()) {
+                    state.getProperties().stream()
+                            .sorted(Comparator.comparing(Property::getName))
+                            .forEach(p -> sb.append(p.getName()).append("=").append(state.getValue(p)).append(","));
+                }
+                if (!trulyrandom$ignoreModelOcclusion()) {
+                    sb.append("|occ=").append(state.getOcclusionShape());
+                }
+                return sb.toString();
+            };
+
+            Map<String, List<Block>> blocksByStructure = new HashMap<>();
+            for (Block block : statesByBlock.keySet()) {
+                List<String> stateSignatures = new ArrayList<>();
+                for (BlockState state : statesByBlock.get(block)) {
+                    stateSignatures.add(getStateSignature.apply(state));
+                }
+                Collections.sort(stateSignatures);
+                String blockStructureKey = String.join("||", stateSignatures);
+
+                blocksByStructure.computeIfAbsent(blockStructureKey, _ -> new ArrayList<>()).add(block);
+            }
+
+            for (List<Block> structuralGroup : blocksByStructure.values()) {
+                structuralGroup.sort(Comparator.comparingInt(BuiltInRegistries.BLOCK::getId));
+
+                List<Block> shuffledGroup = new ArrayList<>(structuralGroup);
+                Collections.shuffle(shuffledGroup, rnd);
+
+                for (int i = 0; i < structuralGroup.size(); i++) {
+                    Block originalBlock = structuralGroup.get(i);
+                    Block randomizedBlock = shuffledGroup.get(i);
+
+                    List<BlockState> originalStates = statesByBlock.get(originalBlock);
+                    List<BlockState> randomizedStates = statesByBlock.get(randomizedBlock);
+
+                    originalStates.sort(Comparator.comparing(getStateSignature));
+                    randomizedStates.sort(Comparator.comparing(getStateSignature));
+
+                    for (int j = 0; j < originalStates.size(); j++) {
+                        BlockState originalState = originalStates.get(j);
+                        BlockState randomizedState = randomizedStates.get(j % randomizedStates.size());
+                        trulyrandom$redirectMap.put(originalState, randomizedState);
+                    }
+                }
+            }
+        } else {
+            for (List<BlockState> variant : buildPropertyMap().values()) {
+                Collections.shuffle(variant, rnd);
+                for (int i = 0; i < variant.size(); i++) {
+                    BlockState original = variant.get(i);
+                    BlockState randomised = variant.get((i + 1) % variant.size());
+                    trulyrandom$redirectMap.put(original, randomised);
+                }
             }
         }
     }

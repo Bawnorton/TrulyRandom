@@ -85,11 +85,16 @@ public class RandomiserSaveLoader extends SavedData {
     }
 
     public static void setWorldGenHolder(WorldGenHolder worldGenHolder) {
+        if (worldGenHolder == null) {
+            throw new IllegalArgumentException("Attempted to set a null worldgen holder, this is not allowed");
+        }
         RandomiserSaveLoader.worldGenHolder = worldGenHolder;
     }
 
     public static WorldGenHolder getWorldGenHolder() {
-        if(worldGenHolder == null) return new WorldGenHolder(lastSetRandomiser.getModules());
+        if(worldGenHolder == null) {
+            return new WorldGenHolder(getLastSetRandomiser().getModules());
+        }
 
         return worldGenHolder;
     }

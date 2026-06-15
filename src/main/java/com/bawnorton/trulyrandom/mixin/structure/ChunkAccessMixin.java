@@ -35,9 +35,9 @@ abstract class ChunkAccessMixin {
         WorldGenHolder worldGenHolder = RandomiserSaveLoader.getWorldGenHolder();
         Modules modules = worldGenHolder.modules();
         StructureModuleState state = modules.getState(Module.STRUCTURES, StructureModuleState.class);
-        if(state.isEnabled() && state.replaceStructuresInstead()) {
+        if(state.isEnabled() && !state.useLegacyRandomiser()) {
             if (levelHeightAccessor instanceof Level level) {
-                return worldGenHolder.structureReplacementRandomiser().getReplacementFor(level.dimension(), chunkPos, structure);
+                return worldGenHolder.structureRandomiser().getReplacementFor(level.dimension(), chunkPos, structure);
             }
         }
         return structure;

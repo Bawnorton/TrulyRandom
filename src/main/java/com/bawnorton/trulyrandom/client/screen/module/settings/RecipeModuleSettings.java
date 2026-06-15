@@ -1,5 +1,6 @@
-package com.bawnorton.trulyrandom.client.screen.module;
+package com.bawnorton.trulyrandom.client.screen.module.settings;
 
+import com.bawnorton.trulyrandom.client.extend.CycleButtonExtender;
 import com.bawnorton.trulyrandom.random.module.state.RecipeModuleState;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -58,7 +59,7 @@ public class RecipeModuleSettings extends Screen {
                     Component.translatable("selectWorld.trulyrandom.recipe_settings.%s".formatted(BuiltInRegistries.RECIPE_TYPE.getKey(recipeType))),
                     font
             );
-            CycleButton<Boolean> specialRecipesToggle = CycleButton.onOffBuilder(enabled)
+            CycleButton<Boolean> specialRecipesToggle = CycleButtonExtender.colouredOnOffButton(enabled)
                     .displayOnlyValue()
                     .create(0, 0, 44, 17, Component.empty(), (_, value) -> setEnabledRecipeType(recipeType, value));
             rowHelper.addChild(specialReciesTitle);

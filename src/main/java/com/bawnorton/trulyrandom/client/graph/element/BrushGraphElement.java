@@ -1,6 +1,6 @@
 package com.bawnorton.trulyrandom.client.graph.element;
 
-import com.bawnorton.trulyrandom.client.screen.LivingEntityGuiRenderer;
+import com.bawnorton.trulyrandom.client.screen.render.LivingEntityGuiRenderer;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableIdentifier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;

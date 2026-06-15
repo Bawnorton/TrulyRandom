@@ -1,5 +1,6 @@
 package com.bawnorton.trulyrandom.client.random.model;
 
+import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.event.ClientRandomiseEvents;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.ClientChunkCacheAccessor;
@@ -14,18 +15,23 @@ import net.minecraft.world.level.chunk.LevelChunk;
 
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
-public class BlockModelRandomiser extends ModelRandomiser {
+public class BlockModelRandomiser extends ModelRandomiser<BlockState> {
     @Override
     public void randomise(Minecraft minecraft, long seed) {
         ModelShuffler.BlockStates modelShuffler = (ModelShuffler.BlockStates) minecraft.getModelManager().getBlockStateModelSet();
         modelShuffler.trulyrandom$shuffleModels(seed);
         ClientRandomiseEvents.BLOCK_MODELS.invoker().onBlockModels(modelShuffler.trulyrandom$getRedirectMap());
+        if(TrulyRandomClient.getRandomiser().getItemModelRandomiser().syncWithBlockModels(minecraft, false)) {
+            ModelShuffler.Items itemModelShuffler = (ModelShuffler.Items) minecraft.getModelManager();
+            ClientRandomiseEvents.ITEM_MODELS.invoker().onItemModels(itemModelShuffler.trulyrandom$getRedirectMap());
+        }
     }
 
     @Override
     public void reset(Minecraft minecraft) {
         ModelShuffler.BlockStates modelShuffler = (ModelShuffler.BlockStates) minecraft.getModelManager().getBlockStateModelSet();
         modelShuffler.trulyrandom$resetModels();
+        TrulyRandomClient.getRandomiser().getItemModelRandomiser().syncWithBlockModels(minecraft, true);
         reloadModels(minecraft);
     }
 
@@ -47,6 +53,12 @@ public class BlockModelRandomiser extends ModelRandomiser {
                 }
             }
         }
+    }
+
+    @Override
+    public UnaryMap<BlockState> getRedirectMap(Minecraft minecraft) {
+        ModelShuffler.BlockStates modelShuffler = (ModelShuffler.BlockStates) minecraft.getModelManager().getBlockStateModelSet();
+        return modelShuffler.trulyrandom$getRedirectMap();
     }
 
     @Override

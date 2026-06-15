@@ -1,6 +1,6 @@
 package com.bawnorton.trulyrandom.mixin.feature;
 
-import com.bawnorton.trulyrandom.random.feature.FeatureReplacementRandomiser;
+import com.bawnorton.trulyrandom.random.feature.FeatureRandomiser;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
@@ -37,7 +37,7 @@ abstract class ChunkGeneratorMixin {
             return original.call(instance, level, generator, random, origin);
         } else {
             Registry<PlacedFeature> lookup = level.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE);
-            FeatureReplacementRandomiser randomiser = worldGenHolder.featureReplacementRandomiser();
+            FeatureRandomiser randomiser = worldGenHolder.featureRandomiser();
             Holder.Reference<PlacedFeature> randomFeature = lookup.getRandom(randomiser.getRandom(ChunkPos.containing(origin))).orElseThrow();
             PlacedFeature feature = randomFeature.unwrap().map(lookup::getValueOrThrow, Function.identity());
             return feature.place(level, generator, random, origin);

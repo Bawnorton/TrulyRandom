@@ -1,5 +1,6 @@
-package com.bawnorton.trulyrandom.client.screen.module;
+package com.bawnorton.trulyrandom.client.screen.module.settings;
 
+import com.bawnorton.trulyrandom.client.extend.CycleButtonExtender;
 import com.bawnorton.trulyrandom.random.module.state.StructureModuleState;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.layouts.GridLayout;
@@ -12,13 +13,15 @@ public class StructureModuleSettings extends Screen {
     private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 15, 36);
     private final StructureModuleState moduleState;
     private final Screen parent;
-    private boolean replaceStructuresInstead;
+    private boolean legacyRandomiser;
+    private boolean nerfElytra;
 
     public StructureModuleSettings(Component title, Screen parent, StructureModuleState moduleState) {
         super(title);
         this.parent = parent;
         this.moduleState = moduleState;
-        this.replaceStructuresInstead = moduleState.replaceStructuresInstead();
+        this.legacyRandomiser = moduleState.useLegacyRandomiser();
+        this.nerfElytra = moduleState.isNerfElytra();
     }
 
     @Override
@@ -38,20 +41,35 @@ public class StructureModuleSettings extends Screen {
         GridLayout columns = layout.addToContents(new GridLayout());
         columns.rowSpacing(2);
         GridLayout.RowHelper rowHelper = columns.createRowHelper(2);
-        StringWidget replaceStructureInsteadTitle = new StringWidget(
+        StringWidget useLegacyRandomiserTitle = new StringWidget(
                 0,
                 0,
                 160,
                 17,
-                Component.translatable("selectWorld.trulyrandom.structure_settings.replace_structures_instead"),
+                Component.translatable("selectWorld.trulyrandom.structure_settings.use_legacy_randomiser"),
                 font
         );
-        CycleButton<Boolean> replaceStructureInsteadToggle = CycleButton.onOffBuilder(replaceStructuresInstead)
+        CycleButton<Boolean> useLegacyRandomiserToggle = CycleButtonExtender.colouredOnOffButton(legacyRandomiser)
                 .displayOnlyValue()
-                .create(0, 0, 44, 17, Component.empty(), (_, value) -> replaceStructuresInstead = value);
-        replaceStructureInsteadToggle.setTooltip(Tooltip.create(Component.translatable("selectWorld.trulyrandom.structure_settings.replace_structures_instead.tooltip")));
-        rowHelper.addChild(replaceStructureInsteadTitle);
-        rowHelper.addChild(replaceStructureInsteadToggle);
+                .create(0, 0, 44, 17, Component.empty(), (_, value) -> legacyRandomiser = value);
+        useLegacyRandomiserToggle.setTooltip(Tooltip.create(Component.translatable("selectWorld.trulyrandom.structure_settings.use_legacy_randomiser.tooltip")));
+        rowHelper.addChild(useLegacyRandomiserTitle);
+        rowHelper.addChild(useLegacyRandomiserToggle);
+
+        StringWidget nerfElytraTitle = new StringWidget(
+                0,
+                0,
+                160,
+                17,
+                Component.translatable("selectWorld.trulyrandom.structure_settings.nerf_elytra"),
+                font
+        );
+        CycleButton<Boolean> nerfElytraToggle = CycleButtonExtender.colouredOnOffButton(nerfElytra)
+                .displayOnlyValue()
+                .create(0, 0, 44, 17, Component.empty(), (_, value) -> nerfElytra = value);
+        nerfElytraToggle.setTooltip(Tooltip.create(Component.translatable("selectWorld.trulyrandom.structure_settings.nerf_elytra.tooltip")));
+        rowHelper.addChild(nerfElytraTitle);
+        rowHelper.addChild(nerfElytraToggle);
     }
 
     protected void addFooter() {
@@ -66,7 +84,8 @@ public class StructureModuleSettings extends Screen {
     }
 
     public void applyAndClose() {
-        moduleState.setReplaceStructuresInstead(replaceStructuresInstead);
+        moduleState.setUseLegacyRandomiser(legacyRandomiser);
+        moduleState.setNerfElytra(nerfElytra);
         onClose();
     }
 

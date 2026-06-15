@@ -8,7 +8,6 @@ import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.extend.ModulesHolder;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
-import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import dev.kikugie.fletching_table.annotation.MixinEnvironment;
@@ -16,7 +15,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.resources.model.ModelManager;
-import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -97,15 +95,11 @@ abstract class MinecraftMixin implements MinecraftClientExtender, ModulesHolder 
         return trulyrandom$modules;
     }
 
-    @ModifyExpressionValue(
+    @Inject(
             method = "doWorldLoad",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/server/MinecraftServer;spin(Ljava/util/function/Function;)Lnet/minecraft/server/MinecraftServer;"
-            )
+            at = @At("HEAD")
     )
-    private <S extends MinecraftServer> S attachModules(S original) {
+    private void attachModules(CallbackInfo ci) {
         TrulyRandom.setWorldGenModules(trulyrandom$modules);
-        return original;
     }
 }

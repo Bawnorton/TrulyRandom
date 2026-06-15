@@ -56,6 +56,9 @@
   },
   "requirements": [
     [
+      "breeze"
+    ],
+    [
       "bamboo"
     ],
     [
@@ -63,9 +66,6 @@
     ],
     [
       "blaze"
-    ],
-    [
-      "breeze"
     ]
   ],
   "rewards": {

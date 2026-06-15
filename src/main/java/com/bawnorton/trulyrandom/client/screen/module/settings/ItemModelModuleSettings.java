@@ -1,6 +1,7 @@
-package com.bawnorton.trulyrandom.client.screen.module;
+package com.bawnorton.trulyrandom.client.screen.module.settings;
 
-import com.bawnorton.trulyrandom.random.module.state.LootModuleState;
+import com.bawnorton.trulyrandom.client.extend.CycleButtonExtender;
+import com.bawnorton.trulyrandom.random.module.state.ItemModelModuleState;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -8,17 +9,17 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
-public class LootModuleSettings extends Screen {
+public class ItemModelModuleSettings extends Screen {
     private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 15, 36);
-    private final LootModuleState moduleState;
+    private final ItemModelModuleState moduleState;
     private final Screen parent;
-    private boolean useOtherLootTables;
+    private boolean matchBlockModelRandomisation;
 
-    public LootModuleSettings(Component title, Screen parent, LootModuleState moduleState) {
+    public ItemModelModuleSettings(Component title, Screen parent, ItemModelModuleState moduleState) {
         super(title);
         this.parent = parent;
         this.moduleState = moduleState;
-        this.useOtherLootTables = moduleState.useOtherLootTables();
+        this.matchBlockModelRandomisation = moduleState.isMatchingBlockModelRandomisation();
     }
 
     @Override
@@ -31,27 +32,27 @@ public class LootModuleSettings extends Screen {
     }
 
     protected void addHeader() {
-        layout.addToHeader(new MultiLineTextWidget(Component.translatable("selectWorld.trulyrandom.loot_settings"), font), positioner -> positioner.paddingTop(15));
+        layout.addToHeader(new MultiLineTextWidget(Component.translatable("selectWorld.trulyrandom.item_model_settings"), font), positioner -> positioner.paddingTop(15));
     }
 
     protected void addBody() {
         GridLayout columns = layout.addToContents(new GridLayout());
         columns.rowSpacing(2);
         GridLayout.RowHelper rowHelper = columns.createRowHelper(2);
-        StringWidget useOtherLootTablesTitle = new StringWidget(
+        StringWidget matchBlockModelRandomisationTitle = new StringWidget(
                 0,
                 0,
-                130,
+                170,
                 17,
-                Component.translatable("selectWorld.trulyrandom.loot_settings.use_other_loot_tables"),
+                Component.translatable("selectWorld.trulyrandom.item_model_settings.match_block_model_randomisation"),
                 font
         );
-        CycleButton<Boolean> useOtherLootTablesToggle = CycleButton.onOffBuilder(useOtherLootTables)
+        CycleButton<Boolean> matchBlockModelRandomisationToggle = CycleButtonExtender.colouredOnOffButton(matchBlockModelRandomisation)
                 .displayOnlyValue()
-                .create(0, 0, 44, 17, Component.empty(), (_, value) -> useOtherLootTables = value);
-        useOtherLootTablesToggle.setTooltip(Tooltip.create(Component.translatable("selectWorld.trulyrandom.loot_settings.use_other_loot_tables.tooltip")));
-        rowHelper.addChild(useOtherLootTablesTitle);
-        rowHelper.addChild(useOtherLootTablesToggle);
+                .create(0, 0, 44, 17, Component.empty(), (_, value) -> matchBlockModelRandomisation = value);
+        matchBlockModelRandomisationToggle.setTooltip(Tooltip.create(Component.translatable("selectWorld.trulyrandom.item_model_settings.match_block_model_randomisation.tooltip")));
+        rowHelper.addChild(matchBlockModelRandomisationTitle);
+        rowHelper.addChild(matchBlockModelRandomisationToggle);
     }
 
     protected void addFooter() {
@@ -66,7 +67,7 @@ public class LootModuleSettings extends Screen {
     }
 
     public void applyAndClose() {
-        moduleState.setUseOtherLootTables(useOtherLootTables);
+        moduleState.setMatchBlockModelRandomisation(matchBlockModelRandomisation);
         onClose();
     }
 

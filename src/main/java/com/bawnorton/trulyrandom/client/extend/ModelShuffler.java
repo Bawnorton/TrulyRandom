@@ -26,6 +26,8 @@ public interface ModelShuffler<T> {
     boolean trulyrandom$isShuffled();
 
     interface BlockStates extends ModelShuffler<BlockState> {
+        boolean trulyrandom$forceStatesToUseSameModel();
+
         boolean trulyrandom$ignoreModelOcclusion();
 
         boolean trulyrandom$ignoreStateProperties();

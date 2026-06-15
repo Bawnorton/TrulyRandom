@@ -1,4 +1,4 @@
-package com.bawnorton.trulyrandom.client.screen;
+package com.bawnorton.trulyrandom.client.screen.render;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;

@@ -24,7 +24,7 @@ abstract class ChunkStatusTaskMixin {
             WorldGenHolder worldGenHolder = RandomiserSaveLoader.getWorldGenHolder();
             Modules modules = worldGenHolder.modules();
             if (modules.isEnabled(Module.FEATURES)) {
-                worldGenHolder.featureReplacementRandomiser().clearChunk(chunk.getPos());
+                worldGenHolder.featureRandomiser().clearChunk(chunk.getPos());
             }
         });
     }

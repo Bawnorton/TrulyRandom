@@ -1,5 +1,6 @@
-package com.bawnorton.trulyrandom.client.screen.module;
+package com.bawnorton.trulyrandom.client.screen.module.settings;
 
+import com.bawnorton.trulyrandom.client.extend.CycleButtonExtender;
 import com.bawnorton.trulyrandom.client.screen.module.adapter.ModuleWidgetAdapter;
 import com.bawnorton.trulyrandom.client.screen.widget.LongEditBoxWidget;
 import com.bawnorton.trulyrandom.random.module.Module;
@@ -12,7 +13,6 @@ import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.layouts.GridLayout;
-import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.network.chat.Component;
 
 import java.util.Random;
@@ -26,12 +26,16 @@ public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
         this.modules = modules;
     }
 
-    public LayoutElement getWidget(Module module) {
+    public GridLayout getWidget(Module module) {
         return getAdapter(module).create(this, module);
     }
 
     public <T extends ModuleElement> Builder<T> createBuilder(Module module, ModuleElementFactory<T> factory) {
         return new Builder<>(this, module, factory);
+    }
+
+    public interface ModuleElementFactory<T extends ModuleElement> {
+        T create(ModuleWidgetSettings settings, Module module, int x, int y, int width, int height, int columns);
     }
 
     public abstract static class ModuleElement extends GridLayout {
@@ -70,7 +74,7 @@ public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
         }
 
         protected void addToggle(int x, int y, int width, int height) {
-            toggleButton = CycleButton.onOffBuilder(modules.getEnabledMemento(module))
+            toggleButton = CycleButtonExtender.colouredOnOffButton(modules.getEnabledMemento(module))
                     .displayOnlyValue()
                     .create(x, y, 44, height, Component.empty(), (_, value) -> modules.setEnabledMemento(module, value));
             toggleButton.active = module.isImplemented() && (minecraft.level == null || module.isMutable());
@@ -120,7 +124,7 @@ public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
         }
 
         private Component getNewSeedTooltipText() {
-            if(module.isImplemented() && module.isMutable()) {
+            if (module.isImplemented() && module.isMutable()) {
                 return Component.translatable("selectWorld.trulyrandom.new_seed.tooltip");
             } else if (!module.isMutable()) {
                 return Component.empty();
@@ -179,9 +183,5 @@ public class ModuleWidgetSettings extends ModuleAdpatable<ModuleWidgetAdapter> {
             moduleElement.columnSpacing(2);
             return moduleElement;
         }
-    }
-
-    public interface ModuleElementFactory<T extends ModuleElement> {
-        T create(ModuleWidgetSettings settings, Module module, int x, int y, int width, int height, int columns);
     }
 }

@@ -1,7 +1,10 @@
 package com.bawnorton.trulyrandom.mixin.structure;
 
 import com.bawnorton.trulyrandom.random.module.Module;
+import com.bawnorton.trulyrandom.random.module.Modules;
+import com.bawnorton.trulyrandom.random.module.state.StructureModuleState;
 import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
+import com.bawnorton.trulyrandom.world.WorldGenHolder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -14,19 +17,23 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 @Mixin(EndCityPieces.EndCityPiece.class)
 abstract class EndCityPieces$EndCityPieceMixin {
-  @ModifyArg(
-          method = "handleDataMarker",
-          at = @At(
-                  value = "INVOKE",
-                  target = "Lnet/minecraft/world/entity/decoration/ItemFrame;setItem(Lnet/minecraft/world/item/ItemStack;Z)V"
-          )
-  )
-  private ItemStack replaceElytra(ItemStack itemStack) {
-    if (!RandomiserSaveLoader.getWorldGenHolder().modules().isEnabled(Module.STRUCTURES)) return itemStack;
-
-    ItemStack stack = Items.ELYTRA.getDefaultInstance();
-    stack.set(DataComponents.LORE, ItemLore.EMPTY.withLineAdded(Component.literal("You can repair this right? :clueless:")));
-    stack.setDamageValue(stack.getMaxDamage() - 1);
-    return stack;
-  }
+    @ModifyArg(
+            method = "handleDataMarker",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/entity/decoration/ItemFrame;setItem(Lnet/minecraft/world/item/ItemStack;Z)V"
+            )
+    )
+    private ItemStack replaceElytra(ItemStack itemStack) {
+        WorldGenHolder worldGenHolder = RandomiserSaveLoader.getWorldGenHolder();
+        Modules modules = worldGenHolder.modules();
+        StructureModuleState state = modules.getState(Module.STRUCTURES, StructureModuleState.class);
+        if (state.isEnabled() && state.isNerfElytra()) {
+            ItemStack stack = Items.ELYTRA.getDefaultInstance();
+            stack.set(DataComponents.LORE, ItemLore.EMPTY.withLineAdded(Component.literal("You can repair this right? :clueless:")));
+            stack.setDamageValue(stack.getMaxDamage() - 1);
+            return stack;
+        }
+        return itemStack;
+    }
 }

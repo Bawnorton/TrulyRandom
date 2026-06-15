@@ -1,0 +1,136 @@
+package com.bawnorton.trulyrandom.client.screen.module.settings;
+
+import com.bawnorton.trulyrandom.client.extend.CycleButtonExtender;
+import com.bawnorton.trulyrandom.random.module.state.BlockPaletteModuleState;
+import net.minecraft.client.gui.components.*;
+import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+
+public class BlockPaletteModuleSettings extends Screen {
+    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 15, 36);
+    private final BlockPaletteModuleState moduleState;
+    private final Screen parent;
+    private boolean isIgnoreStateProperties;
+    private boolean isIgnoreCollisionShape;
+    private boolean isIgnoreOcclusionShape;
+    private boolean isKeepStoneAsStone;
+
+    public BlockPaletteModuleSettings(Component title, Screen parent, BlockPaletteModuleState moduleState) {
+        super(title);
+        this.parent = parent;
+        this.moduleState = moduleState;
+        this.isIgnoreStateProperties = moduleState.isIgnoreStateProperties();
+        this.isIgnoreCollisionShape = moduleState.isIgnoreCollisionShape();
+        this.isIgnoreOcclusionShape = moduleState.isIgnoreOcclusionShape();
+        this.isKeepStoneAsStone = moduleState.isKeepStoneAsStone();
+    }
+
+    @Override
+    protected void init() {
+        addHeader();
+        addBody();
+        addFooter();
+        layout.visitWidgets(this::addRenderableWidget);
+        repositionElements();
+    }
+
+    protected void addHeader() {
+        layout.addToHeader(new MultiLineTextWidget(Component.translatable("selectWorld.trulyrandom.block_palette_settings"), font), positioner -> positioner.paddingTop(15));
+    }
+
+    protected void addBody() {
+        GridLayout columns = layout.addToContents(new GridLayout());
+        columns.rowSpacing(2);
+        GridLayout.RowHelper rowHelper = columns.createRowHelper(2);
+        StringWidget ignoreStatePropertiesTitle = new StringWidget(
+                0,
+                0,
+                150,
+                17,
+                Component.translatable("selectWorld.trulyrandom.block_palette_settings.ignore_state_properties"),
+                font
+        );
+        CycleButton<Boolean> ignoreStatePropertiesToggle = CycleButtonExtender.colouredOnOffButton(isIgnoreStateProperties)
+                .displayOnlyValue()
+                .create(0, 0, 44, 17, Component.empty(), (_, value) -> isIgnoreStateProperties = value);
+        ignoreStatePropertiesToggle.setTooltip(Tooltip.create(Component.translatable("selectWorld.trulyrandom.block_palette_settings.ignore_state_properties.tooltip")));
+        rowHelper.addChild(ignoreStatePropertiesTitle);
+        rowHelper.addChild(ignoreStatePropertiesToggle);
+
+        StringWidget ignoreCollisionShapeTitle = new StringWidget(
+                0,
+                0,
+                150,
+                17,
+                Component.translatable("selectWorld.trulyrandom.block_palette_settings.ignore_collision_shape"),
+                font
+        );
+        CycleButton<Boolean> ignoreCollisionShapeToggle = CycleButtonExtender.colouredOnOffButton(isIgnoreCollisionShape)
+                .displayOnlyValue()
+                .create(0, 0, 44, 17, Component.empty(), (_, value) -> isIgnoreCollisionShape = value);
+        ignoreCollisionShapeToggle.setTooltip(Tooltip.create(Component.translatable("selectWorld.trulyrandom.block_palette_settings.ignore_collision_shape.tooltip")));
+        rowHelper.addChild(ignoreCollisionShapeTitle);
+        rowHelper.addChild(ignoreCollisionShapeToggle);
+
+        StringWidget ignoreOcclusionShapeTitle = new StringWidget(
+                0,
+                0,
+                150,
+                17,
+                Component.translatable("selectWorld.trulyrandom.block_palette_settings.ignore_occlusion_shape"),
+                font
+        );
+        CycleButton<Boolean> ignoreOcclusionShapeToggle = CycleButtonExtender.colouredOnOffButton(isIgnoreOcclusionShape)
+                .displayOnlyValue()
+                .create(0, 0, 44, 17, Component.empty(), (_, value) -> isIgnoreOcclusionShape = value);
+        ignoreOcclusionShapeToggle.setTooltip(Tooltip.create(Component.translatable("selectWorld.trulyrandom.block_palette_settings.ignore_occlusion_shape.tooltip")));
+        rowHelper.addChild(ignoreOcclusionShapeTitle);
+        rowHelper.addChild(ignoreOcclusionShapeToggle);
+
+        StringWidget keepStoneAsStoneTitle = new StringWidget(
+                0,
+                0,
+                150,
+                17,
+                Component.translatable("selectWorld.trulyrandom.block_palette_settings.keep_stone_as_stone"),
+                font
+        );
+        CycleButton<Boolean> keepStoneAsStone = CycleButtonExtender.colouredOnOffButton(isKeepStoneAsStone)
+                .displayOnlyValue()
+                .create(0, 0, 44, 17, Component.empty(), (_, value) -> isKeepStoneAsStone = value);
+        keepStoneAsStone.setTooltip(Tooltip.create(Component.translatable("selectWorld.trulyrandom.block_palette_settings.keep_stone_as_stone.tooltip")));
+        rowHelper.addChild(keepStoneAsStoneTitle);
+        rowHelper.addChild(keepStoneAsStone);
+    }
+
+    protected void addFooter() {
+        GridLayout.RowHelper rowHelper = layout.addToFooter(new GridLayout().columnSpacing(10)).createRowHelper(2);
+        rowHelper.addChild(Button.builder(CommonComponents.GUI_DONE, _ -> applyAndClose()).build());
+        rowHelper.addChild(Button.builder(CommonComponents.GUI_CANCEL, _ -> forgetAndClose()).build());
+    }
+
+    @Override
+    public void onClose() {
+        minecraft.setScreen(parent);
+    }
+
+    public void applyAndClose() {
+        moduleState.setIgnoreStateProprties(isIgnoreStateProperties);
+        moduleState.setIgnoreCollisionShape(isIgnoreCollisionShape);
+        moduleState.setIgnoreOcclusionShape(isIgnoreOcclusionShape);
+        moduleState.setKeepStoneAsStone(isKeepStoneAsStone);
+        onClose();
+    }
+
+    public void forgetAndClose() {
+        onClose();
+    }
+
+    @Override
+    protected void repositionElements() {
+        layout.arrangeElements();
+    }
+}

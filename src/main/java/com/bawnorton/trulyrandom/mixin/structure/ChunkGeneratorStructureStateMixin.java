@@ -44,7 +44,7 @@ abstract class ChunkGeneratorStructureStateMixin {
             WorldGenHolder holder = RandomiserSaveLoader.getWorldGenHolder();
             Modules modules = holder.modules();
             StructureModuleState state = modules.getState(Module.STRUCTURES, StructureModuleState.class);
-            return state.isEnabled() && !state.replaceStructuresInstead();
+            return state.isEnabled() && state.useLegacyRandomiser();
         };
     }
 }

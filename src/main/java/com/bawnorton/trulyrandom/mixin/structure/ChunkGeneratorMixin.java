@@ -3,7 +3,7 @@ package com.bawnorton.trulyrandom.mixin.structure;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.random.module.state.StructureModuleState;
-import com.bawnorton.trulyrandom.random.structure.StructureReplacementRandomiser;
+import com.bawnorton.trulyrandom.random.structure.StructureRandomiser;
 import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import com.bawnorton.trulyrandom.world.WorldGenHolder;
 import com.google.common.base.Predicates;
@@ -18,17 +18,12 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
-import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.RandomState;
-import net.minecraft.world.level.levelgen.structure.BoundingBox;
-import net.minecraft.world.level.levelgen.structure.Structure;
-import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.world.level.levelgen.structure.*;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -47,14 +42,23 @@ abstract class ChunkGeneratorMixin {
         Modules modules = worldGenHolder.modules();
         StructureModuleState state = modules.getState(Module.STRUCTURES, StructureModuleState.class);
         if(state.isEnabled()) {
-            if(state.replaceStructuresInstead()) {
+            if (state.useLegacyRandomiser()) {
+                return original.call(instance, selected, dimension, registryAccess, chunkGenerator, biomeSource, randomState, structureTemplateManager, seed, sourceChunkPos, references, heightAccessor, Predicates.alwaysTrue());
+            } else {
+                if (instance.type().equals(StructureType.STRONGHOLD)) {
+                    return original.call(instance, selected, dimension, registryAccess, chunkGenerator, biomeSource, randomState, structureTemplateManager, seed, sourceChunkPos, references, heightAccessor, validBiome);
+                }
                 Registry<Structure> lookup = registryAccess.lookupOrThrow(Registries.STRUCTURE);
-                StructureReplacementRandomiser randomiser = worldGenHolder.structureReplacementRandomiser();
+                StructureRandomiser randomiser = worldGenHolder.structureRandomiser();
                 Holder.Reference<Structure> randomStructure = lookup.getRandom(randomiser.getRandom(dimension, sourceChunkPos)).orElseThrow();
                 Structure structure = randomStructure.unwrap().map(lookup::getValueOrThrow, Function.identity());
+                while (structure.type().equals(StructureType.STRONGHOLD)) {
+                    randomStructure = lookup.getRandom(randomiser.getRandom(dimension, sourceChunkPos)).orElseThrow();
+                    structure = randomStructure.unwrap().map(lookup::getValueOrThrow, Function.identity());
+                }
                 StructureStart start = original.call(structure, selected, dimension, registryAccess, chunkGenerator, biomeSource, randomState, structureTemplateManager, seed, sourceChunkPos, references, heightAccessor, Predicates.alwaysTrue());
                 randomiser.registerReplacement(dimension, sourceChunkPos, instance, structure);
-                start.getPieces().forEach(piece -> {
+                for (StructurePiece piece : start.getPieces()) {
                     BoundingBox boundingBox = piece.getBoundingBox();
                     ChunkPos minXZ = new ChunkPos(
                             SectionPos.blockToSectionCoord(boundingBox.minX()),
@@ -69,10 +73,8 @@ abstract class ChunkGeneratorMixin {
                             randomiser.registerReplacement(dimension, new ChunkPos(i, j), instance, structure);
                         }
                     }
-                });
+                }
                 return start;
-            } else {
-                return original.call(instance, selected, dimension, registryAccess, chunkGenerator, biomeSource, randomState, structureTemplateManager, seed, sourceChunkPos, references, heightAccessor, Predicates.alwaysTrue());
             }
         }
         return original.call(instance, selected, dimension, registryAccess, chunkGenerator, biomeSource, randomState, structureTemplateManager, seed, sourceChunkPos, references, heightAccessor, validBiome);

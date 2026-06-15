@@ -9,11 +9,11 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.SingleThreadedRandomSource;
 
-public class FeatureReplacementRandomiser extends RandomiserModule {
+public class FeatureRandomiser extends RandomiserModule {
     private final Object2ObjectMap<ChunkPos, RandomSource> randomCache = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<>());
     private final long seed;
 
-    public FeatureReplacementRandomiser(long seed) {
+    public FeatureRandomiser(long seed) {
         super();
         this.seed = seed;
     }

@@ -22,6 +22,6 @@ public abstract class StructureMixin {
         WorldGenHolder worldGenHolder = RandomiserSaveLoader.getWorldGenHolder();
         Modules modules = worldGenHolder.modules();
         StructureModuleState state = modules.getState(Module.STRUCTURES, StructureModuleState.class);
-        return state.isEnabled() && !state.replaceStructuresInstead();
+        return state.isEnabled() && !state.useLegacyRandomiser();
     }
 }
