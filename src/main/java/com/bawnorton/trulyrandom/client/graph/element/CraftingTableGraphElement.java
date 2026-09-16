@@ -26,20 +26,15 @@ public class CraftingTableGraphElement extends CraftingStationGraphElement {
         graphics.blitSprite(
                 RenderPipelines.GUI_TEXTURED,
                 CRAFTING,
-                mouseX + (BACKGROUND_WIDTH - 58) / 2,
-                mouseY + (BACKGROUND_HEIGHT - 27) / 2,
-                58,
-                27
+                mouseX + (BACKGROUND_WIDTH - 116) / 2,
+                mouseY + (BACKGROUND_HEIGHT - 54) / 2,
+                116,
+                54
         );
         PlacementInfo placement = recipe.value().placementInfo();
         List<Ingredient> ingredients = placement.ingredients();
         IntList slots = placement.slotsToIngredientIndex();
 
-        Matrix3x2fStack matrices = graphics.pose();
-        matrices.pushMatrix();
-        matrices.scale(0.5f, 0.5f);
-        mouseX *= 2;
-        mouseY *= 2;
         int skipCount = 0;
         int width = 3;
         if(recipe.value() instanceof ShapedRecipe shapedRecipe) {
@@ -52,11 +47,10 @@ public class CraftingTableGraphElement extends CraftingStationGraphElement {
                 continue;
             }
 
-            int x = mouseX + 17 + ((slot + skipCount) % width) * 18;
+            int x = mouseX + 18 + ((slot + skipCount) % width) * 18;
             int y = mouseY + 7 + ((slot + skipCount) / width) * 18;
             extractIngredient(graphics, ingredients.get(slot), x, y, true);
         }
-        extractOutput(graphics, mouseX + 111, mouseY + 25);
-        matrices.popMatrix();
+        extractOutput(graphics, mouseX + 112, mouseY + 25);
     }
 }

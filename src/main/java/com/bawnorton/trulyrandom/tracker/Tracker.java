@@ -1,7 +1,8 @@
 package com.bawnorton.trulyrandom.tracker;
 
+import com.bawnorton.trulyrandom.team.Team;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
 import java.util.Map;
 
 public abstract class Tracker<F, T> {

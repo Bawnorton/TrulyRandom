@@ -1,6 +1,6 @@
 package com.bawnorton.trulyrandom.tracker.recipe;
 
-import com.bawnorton.trulyrandom.tracker.Team;
+import com.bawnorton.trulyrandom.team.Team;
 import com.bawnorton.trulyrandom.tracker.Tracker;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

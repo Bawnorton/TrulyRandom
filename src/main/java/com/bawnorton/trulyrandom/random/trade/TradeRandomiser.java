@@ -1,9 +1,8 @@
 package com.bawnorton.trulyrandom.random.trade;
 
-import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
-import com.bawnorton.trulyrandom.tracker.Team;
+import com.bawnorton.trulyrandom.team.Team;
 import com.bawnorton.trulyrandom.tracker.trade.TradeTracker;
 import com.bawnorton.trulyrandom.util.collection.UnaryHashMap;
 import com.bawnorton.trulyrandom.util.collection.UnaryMap;
@@ -12,15 +11,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.npc.villager.AbstractVillager;
 import net.minecraft.world.item.Item;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class TradeRandomiser extends ServerRandomiserModule {
-    private final Map<Team, TradeTracker> trackers = new HashMap<>();
+    private final Map<UUID, TradeTracker> trackers = new HashMap<>();
     private final UnaryMap<Item> redirectMap = new UnaryHashMap<>();
     private final Map<Item, Integer> countMap = new HashMap<>();
 
@@ -49,7 +43,7 @@ public class TradeRandomiser extends ServerRandomiserModule {
     public void track(AbstractVillager villager, Team team, Item key) {
         Item result = getItem(villager, key);
         if(!result.equals(key)) {
-            trackers.computeIfAbsent(team, k -> {
+            trackers.computeIfAbsent(team.getOwner(), _ -> {
                 TradeTracker tracker = new TradeTracker();
                 tracker.setTeam(team);
                 return tracker;
@@ -77,8 +71,8 @@ public class TradeRandomiser extends ServerRandomiserModule {
     }
 
     @Override
-    public TradeTracker getTracker(TeamMember teamMember) {
-        return trackers.get(teamMember.trulyrandom$getTeam());
+    public TradeTracker getTracker(Team team) {
+        return trackers.get(team.getOwner());
     }
 
     @Override
@@ -87,7 +81,7 @@ public class TradeRandomiser extends ServerRandomiserModule {
     }
 
     @Override
-    public Map<Team, TradeTracker> getTrackers() {
+    public Map<UUID, TradeTracker> getTrackers() {
         return trackers;
     }
 

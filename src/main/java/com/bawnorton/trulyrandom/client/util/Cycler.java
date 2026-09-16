@@ -1,24 +1,27 @@
 package com.bawnorton.trulyrandom.client.util;
 
-import net.minecraft.client.Minecraft;
-
 import java.util.List;
 
-public final class Cycler {
-    private static int counter;
-    private static int offset;
+public final class Cycler<T> {
+    private final List<T> list;
+    private long target = 0;
+    private int offset;
+    public Cycler(List<T> list) {
+        this.list = list;
+    }
 
-    public static <T> T one(List<T> list) {
-        if(list.isEmpty()) return null;
+    public T current() {
+        if (list.isEmpty()) return null;
+        if (list.size() == 1) return list.getFirst();
 
-        counter++;
-        if(counter >= Minecraft.getInstance().getFps()) {
-            counter = 0;
+        if (System.currentTimeMillis() >= target) {
             offset++;
-            if(offset >= 1000000) {
+            if (offset >= list.size()) {
                 offset = 0;
             }
+            target = System.currentTimeMillis() + 1000;
         }
+
         return list.get(offset % list.size());
     }
 }

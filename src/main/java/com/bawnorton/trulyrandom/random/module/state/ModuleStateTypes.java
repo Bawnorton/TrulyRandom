@@ -5,6 +5,8 @@ import net.minecraft.core.Registry;
 
 public final class ModuleStateTypes {
     public static final ModuleState.Type<StandardModuleState> STANDARD = register("standard", new ModuleState.Type<>(StandardModuleState.CODEC, StandardModuleState.STREAM_CODEC));
+    public static final ModuleState.Type<StandardModuleState> FEATURE = register("feature", new ModuleState.Type<>(StandardModuleState.CODEC, StandardModuleState.STREAM_CODEC));
+    public static final ModuleState.Type<StandardModuleState> TRADE = register("trade", new ModuleState.Type<>(StandardModuleState.CODEC, StandardModuleState.STREAM_CODEC));
     public static final ModuleState.Type<RecipeModuleState> RECIPE = register("recipe", new ModuleState.Type<>(RecipeModuleState.CODEC, RecipeModuleState.STREAM_CODEC));
     public static final ModuleState.Type<LootModuleState> LOOT = register("loot", new ModuleState.Type<>(LootModuleState.CODEC, LootModuleState.STREAM_CODEC));
     public static final ModuleState.Type<BlockModelModuleState> BLOCK_MODEL = register("block_model", new ModuleState.Type<>(BlockModelModuleState.CODEC, BlockModelModuleState.STREAM_CODEC));

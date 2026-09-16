@@ -6,6 +6,7 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.codec.ByteBufCodecs;
 
+import java.util.Locale;
 import java.util.function.Supplier;
 
 public enum Module {
@@ -18,7 +19,10 @@ public enum Module {
     FEATURES(ModuleCategory.WORLD_GEN, true, StandardModuleState::new),
     BLOCK_PALETTE(ModuleCategory.WORLD_GEN, true, BlockPaletteModuleState::new);
 
-    public static final Codec<Module> CODEC = Codec.STRING.xmap(Module::valueOf, Module::name);
+    public static final Codec<Module> CODEC = Codec.STRING.xmap(
+            s -> Module.valueOf(s.toUpperCase(Locale.ENGLISH)),
+            m -> m.name().toLowerCase(Locale.ENGLISH)
+    );
     public static final StreamCodec<ByteBuf, Module> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(Module::valueOf, Module::name);
 
     private final boolean implemented;

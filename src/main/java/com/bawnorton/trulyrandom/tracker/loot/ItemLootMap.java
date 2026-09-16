@@ -20,11 +20,10 @@ import java.util.Objects;
 import java.util.function.Function;
 
 public class ItemLootMap extends HashMap<Item, ItemLootMap.Result> {
-    public static final MapCodec<ItemLootMap> CODEC = Codec.unboundedMap(
+    public static final Codec<ItemLootMap> CODEC = Codec.unboundedMap(
             Identifier.CODEC.xmap(BuiltInRegistries.ITEM::getValue, BuiltInRegistries.ITEM::getKey),
-            ItemLootMap.Result.CODEC)
-            .xmap(ItemLootMap::new, Function.identity())
-            .fieldOf("item_loot_map");
+            ItemLootMap.Result.CODEC
+    ).xmap(ItemLootMap::new, Function.identity());
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ItemLootMap> STREAM_CODEC = ByteBufCodecs.map(
             ItemLootMap::new,

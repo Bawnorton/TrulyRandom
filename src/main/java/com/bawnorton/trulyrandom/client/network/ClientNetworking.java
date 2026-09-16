@@ -7,6 +7,7 @@ import com.bawnorton.trulyrandom.client.keybind.KeybindManager;
 import com.bawnorton.trulyrandom.client.random.ClientRandomiser;
 import com.bawnorton.trulyrandom.client.screen.TargetedTrulyRandomSettingsScreen;
 import com.bawnorton.trulyrandom.client.screen.TrulyRandomSettingsScreen;
+import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.network.packet.serverbound.ServerboundProvidedRandomiserPacket;
 import com.bawnorton.trulyrandom.network.packet.serverbound.ServerboundSetServerRandomiserPacket;
 import com.bawnorton.trulyrandom.network.packet.serverbound.ServerboundSetTargetClientRandomiserPacket;
@@ -15,6 +16,7 @@ import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.random.module.state.BlockModelModuleState;
 import com.bawnorton.trulyrandom.random.module.state.ItemModelModuleState;
+import com.bawnorton.trulyrandom.team.Team;
 import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
@@ -38,6 +40,7 @@ public class ClientNetworking {
         ClientPlayNetworking.registerGlobalReceiver(ClientboundSyncLootTableTrackerPacket.TYPE, ClientNetworking::handleSyncLootTableTracker);
         ClientPlayNetworking.registerGlobalReceiver(ClientboundSyncRecipeTrackerPacket.TYPE, ClientNetworking::handleSyncRecipeTracker);
         ClientPlayNetworking.registerGlobalReceiver(ClientboundSyncLootDropsPacket.TYPE, ClientNetworking::handleSyncLootDrops);
+        ClientPlayNetworking.registerGlobalReceiver(ClientboundChangeTeamPacket.TYPE, ClientNetworking::handleChangeTeam);
     }
 
     public static void registerRecievedCallback(CustomPacketPayload.Type<?> packetId, Runnable callback) {
@@ -114,6 +117,9 @@ public class ClientNetworking {
 
     private static void handleSyncLootTableTracker(ClientboundSyncLootTableTrackerPacket packet, ClientPlayNetworking.Context context) {
         TrulyRandomClient.getRandomiser().setLootTableTracker(packet.tracker());
+        if(context.client().screen instanceof RecipeBookScreenExtender extender) {
+            extender.trulyrandom$refreshResults();
+        }
         runCallback(ClientboundSyncLootTableTrackerPacket.TYPE);
     }
 
@@ -129,6 +135,12 @@ public class ClientNetworking {
         LootTableDrops.ALL_DROPS.clear();
         LootTableDrops.ALL_DROPS.putAll(packet.dropsMap());
         runCallback(ClientboundSyncLootDropsPacket.TYPE);
+    }
+
+    private static void handleChangeTeam(ClientboundChangeTeamPacket packet, ClientPlayNetworking.Context context) {
+        Team team = packet.team();
+        ((TeamMember) context.player()).trulyrandom$setTeam(team);
+        runCallback(ClientboundChangeTeamPacket.TYPE);
     }
 
     interface RunOnce {

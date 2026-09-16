@@ -23,21 +23,15 @@ public class FurnaceGraphElement extends CraftingStationGraphElement {
         graphics.blitSprite(
                 RenderPipelines.GUI_TEXTURED,
                 FURNACE,
-                mouseX + (BACKGROUND_WIDTH - 41) / 2,
-                mouseY + (BACKGROUND_HEIGHT - 27) / 2,
-                41,
-                27
+                mouseX + (BACKGROUND_WIDTH - 82) / 2,
+                mouseY + (BACKGROUND_HEIGHT - 54) / 2,
+                82,
+                54
         );
         if(recipe.value() instanceof AbstractCookingRecipe cookingRecipe) {
-            Matrix3x2fStack matrices = graphics.pose();
-            matrices.pushMatrix();
-            matrices.scale(0.5f, 0.5f);
-            mouseX *= 2;
-            mouseY *= 2;
-            extractIngredient(graphics, cookingRecipe.input(), mouseX + 35, mouseY + 7, true);
-            extractIngredient(graphics, Ingredient.of(Items.COAL), mouseX + 35, mouseY + 43, false);
+            extractIngredient(graphics, cookingRecipe.input(), mouseX + 34, mouseY + 6, true);
+            extractIngredient(graphics, Ingredient.of(Items.COAL), mouseX + 34, mouseY + 43, false);
             extractOutput(graphics, mouseX + 94, mouseY + 25);
-            matrices.popMatrix();
         }
     }
 }

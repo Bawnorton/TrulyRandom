@@ -7,18 +7,17 @@ import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.CommonColors;
 import net.minecraft.world.item.Item;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class LootBookResults {
     private static final WidgetSprites PAGE_FORWARD_TEXTURES = new WidgetSprites(
@@ -59,7 +58,6 @@ public class LootBookResults {
         this.minecraft = minecraft;
         y = parentTop;
         refreshTrackers();
-        items = getAllItems();
 
         for (int i = 0; i < resultButtons.size(); i++) {
             LootResultButton resultButton = resultButtons.get(i);
@@ -77,6 +75,7 @@ public class LootBookResults {
         ClientRandomiser clientRandomiser = TrulyRandomClient.getRandomiser();
         lootTracker = clientRandomiser.getLootTableTracker();
         recipeTracker = clientRandomiser.getRecipeTracker();
+        items = getAllItems();
     }
 
     public void clearHovered() {

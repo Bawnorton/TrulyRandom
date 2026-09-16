@@ -21,22 +21,16 @@ public class SmithingGraphElement extends CraftingStationGraphElement {
         graphics.blitSprite(
                 RenderPipelines.GUI_TEXTURED,
                 SMITHING,
-                mouseX + (BACKGROUND_WIDTH - 54) / 2,
-                mouseY + (BACKGROUND_HEIGHT - 9) / 2,
-                54,
-                9
+                mouseX + (BACKGROUND_WIDTH - 108) / 2,
+                mouseY + (BACKGROUND_HEIGHT - 18) / 2,
+                108,
+                18
         );
         if(recipe.value() instanceof SmithingRecipe smithingRecipe) {
-            Matrix3x2fStack matrices = graphics.pose();
-            matrices.pushMatrix();
-            matrices.scale(0.5f, 0.5f);
-            int x = mouseX * 2;
-            int y = mouseY * 2;
-            smithingRecipe.templateIngredient().ifPresent(ingredient -> extractIngredient(graphics, ingredient, x + 20, y + 25, true));
-            extractIngredient(graphics, smithingRecipe.baseIngredient(), x + 39, y + 25, true);
-            smithingRecipe.additionIngredient().ifPresent(ingredient -> extractIngredient(graphics, ingredient, x + 57, y + 25, true));
-            extractOutput(graphics, x + 111, y + 25);
-            matrices.popMatrix();
+            smithingRecipe.templateIngredient().ifPresent(ingredient -> extractIngredient(graphics, ingredient, mouseX + 21, mouseY + 25, true));
+            extractIngredient(graphics, smithingRecipe.baseIngredient(), mouseX + 40, mouseY + 25, true);
+            smithingRecipe.additionIngredient().ifPresent(ingredient -> extractIngredient(graphics, ingredient, mouseX + 58, mouseY + 25, true));
+            extractOutput(graphics, mouseX + 112, mouseY + 25);
         }
     }
 }

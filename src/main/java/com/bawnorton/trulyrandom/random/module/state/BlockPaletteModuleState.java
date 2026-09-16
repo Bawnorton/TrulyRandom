@@ -1,5 +1,6 @@
 package com.bawnorton.trulyrandom.random.module.state;
 
+import com.bawnorton.trulyrandom.serialisation.CodecExtensions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -14,11 +15,11 @@ public class BlockPaletteModuleState extends StandardModuleState {
     private boolean keepStoneAsStone;
 
     public static final MapCodec<BlockPaletteModuleState> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            StandardModuleState.CODEC.fieldOf("standard").forGetter(moduleState -> moduleState),
-            Codec.BOOL.optionalFieldOf("ignore_state_properties", false).forGetter(BlockPaletteModuleState::isIgnoreStateProperties),
-            Codec.BOOL.optionalFieldOf("ignore_collision_shape", false).forGetter(BlockPaletteModuleState::isIgnoreCollisionShape),
-            Codec.BOOL.optionalFieldOf("ignore_occlusion_shape", false).forGetter(BlockPaletteModuleState::isIgnoreOcclusionShape),
-            Codec.BOOL.optionalFieldOf("keep_stone_as_stone", false).forGetter(BlockPaletteModuleState::isKeepStoneAsStone)
+            StandardModuleState.CODEC.forGetter(moduleState -> moduleState),
+            CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "ignore_state_properties", false).forGetter(BlockPaletteModuleState::isIgnoreStateProperties),
+            CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "ignore_collision_shape", false).forGetter(BlockPaletteModuleState::isIgnoreCollisionShape),
+            CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "ignore_occlusion_shape", false).forGetter(BlockPaletteModuleState::isIgnoreOcclusionShape),
+            CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "keep_stone_as_stone", false).forGetter(BlockPaletteModuleState::isKeepStoneAsStone)
     ).apply(instance, BlockPaletteModuleState::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, BlockPaletteModuleState> STREAM_CODEC = StreamCodec.composite(

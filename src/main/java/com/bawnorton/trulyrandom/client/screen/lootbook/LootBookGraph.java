@@ -290,6 +290,17 @@ public class LootBookGraph implements Renderable, GuiEventListener {
         }
     }
 
+
+    public void refresh() {
+        if(item == null) return;
+
+        try {
+            graph = controller.createGraph(item);
+        } catch (Exception e) {
+            TrulyRandom.LOGGER.error("Couldn't create graph", e);
+        }
+    }
+
     public void moveTo(int x, int y) {
         offsetX = x;
         offsetY = y;

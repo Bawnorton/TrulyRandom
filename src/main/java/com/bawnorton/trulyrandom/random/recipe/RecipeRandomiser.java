@@ -1,13 +1,12 @@
 package com.bawnorton.trulyrandom.random.recipe;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.extend.TeamMember;
-import com.bawnorton.trulyrandom.mixin.accessor.RecipeMapAccessor;
 import com.bawnorton.trulyrandom.mixin.accessor.RecipeManagerAccessor;
+import com.bawnorton.trulyrandom.mixin.accessor.RecipeMapAccessor;
 import com.bawnorton.trulyrandom.random.module.Module;
-import com.bawnorton.trulyrandom.random.module.state.RecipeModuleState;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
-import com.bawnorton.trulyrandom.tracker.Team;
+import com.bawnorton.trulyrandom.random.module.state.RecipeModuleState;
+import com.bawnorton.trulyrandom.team.Team;
 import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -20,17 +19,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.function.Function;
 
 public class RecipeRandomiser extends ServerRandomiserModule {
-    private final Map<Team, RecipeTracker> trackers = new HashMap<>();
+    private final Map<UUID, RecipeTracker> trackers = new HashMap<>();
     private final ResultManager resultManager = new ResultManager();
     private final Map<ResourceKey<Recipe<?>>, ItemStack> originalOutputs = new HashMap<>();
     private final Function<ResourceKey<Recipe<?>>, RecipeHolder<?>> recipeRegistry;
@@ -53,10 +46,10 @@ public class RecipeRandomiser extends ServerRandomiserModule {
                 RecipeTracker.CODEC.listOf().fieldOf("trackers").forGetter(RecipeRandomiser::getTrackerList)
         ).apply(instance, (trackers) -> {
             RecipeRandomiser randomiser = new RecipeRandomiser(server);
-            Map<Team, RecipeTracker> trackerMap = randomiser.getTrackers();
+            Map<UUID, RecipeTracker> trackerMap = randomiser.getTrackers();
             trackerMap.clear();
             for (RecipeTracker tracker : trackers) {
-                trackerMap.put(tracker.getTeam(), tracker);
+                trackerMap.put(tracker.getTeam().getOwner(), tracker);
                 tracker.setRecipeRegistry(randomiser.recipeRegistry);
             }
             return randomiser;
@@ -64,10 +57,10 @@ public class RecipeRandomiser extends ServerRandomiserModule {
     }
 
     public void trackRecipeOutput(Team team, ResourceKey<Recipe<?>> recipe, ItemStack result) {
-        trackers.computeIfAbsent(team, k -> {
+        trackers.computeIfAbsent(team.getOwner(), _ -> {
             RecipeTracker tracker = new RecipeTracker();
             tracker.setRecipeRegistry(recipeRegistry);
-            tracker.setTeam(k);
+            tracker.setTeam(team);
             return tracker;
         }).track(recipe, result);
     }
@@ -159,12 +152,12 @@ public class RecipeRandomiser extends ServerRandomiserModule {
     }
 
     @Override
-    public RecipeTracker getTracker(TeamMember teamMember) {
-        return trackers.get(teamMember.trulyrandom$getTeam());
+    public RecipeTracker getTracker(Team team) {
+        return trackers.get(team.getOwner());
     }
 
     @Override
-    public Map<Team, RecipeTracker> getTrackers() {
+    public Map<UUID, RecipeTracker> getTrackers() {
         return trackers;
     }
 

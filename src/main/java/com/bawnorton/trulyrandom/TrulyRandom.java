@@ -7,6 +7,7 @@ import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.state.ModuleStateTypes;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.bawnorton.trulyrandom.registry.TrulyRandomCriteria;
+import com.bawnorton.trulyrandom.team.Teams;
 import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import com.bawnorton.trulyrandom.world.WorldGenHolder;
 import dev.kikugie.fletching_table.annotation.fabric.Entrypoint;
@@ -43,6 +44,10 @@ public class TrulyRandom implements ModInitializer {
 
     public static boolean noRandomiserSet() {
         return !RandomiserSaveLoader.isLastSetRandomiserPresent();
+    }
+
+    public static Teams getTeams(MinecraftServer server) {
+        return RandomiserSaveLoader.getServerState(server).getTeams();
     }
 
     public static Randomiser getClientRandomiser(MinecraftServer server, UUID uuid) {

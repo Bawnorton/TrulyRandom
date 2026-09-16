@@ -1,11 +1,10 @@
 package com.bawnorton.trulyrandom.random.loot;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.extend.TeamMember;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.module.ServerRandomiserModule;
 import com.bawnorton.trulyrandom.random.module.state.LootModuleState;
-import com.bawnorton.trulyrandom.tracker.Team;
+import com.bawnorton.trulyrandom.team.Team;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import com.bawnorton.trulyrandom.util.collection.UnaryBiMap;
 import com.bawnorton.trulyrandom.util.collection.UnaryHashBiMap;
@@ -23,9 +22,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.entries.LootPoolEntry;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +31,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class LootRandomiser extends ServerRandomiserModule {
-    private final Map<Team, LootTableTracker> trackers = new HashMap<>();
+    private final Map<UUID, LootTableTracker> trackers = new HashMap<>();
     private final Map<ResourceKey<LootTable>, LootTable> originalLootTables = new HashMap<>();
     private final UnaryBiMap<ResourceKey<LootTable>> redirectMap = new UnaryHashBiMap<>();
     private final Registry<LootTable> lootTableRegistry;
@@ -77,10 +74,10 @@ public class LootRandomiser extends ServerRandomiserModule {
                 LootTableTracker.CODEC.listOf().fieldOf("trackers").forGetter(LootRandomiser::getTrackerList)
         ).apply(instance, (trackers) -> {
             LootRandomiser randomiser = new LootRandomiser(server);
-            Map<Team, LootTableTracker> trackerMap = randomiser.getTrackers();
+            Map<UUID, LootTableTracker> trackerMap = randomiser.getTrackers();
             trackerMap.clear();
             for (LootTableTracker tracker : trackers) {
-                trackerMap.put(tracker.getTeam(), tracker);
+                trackerMap.put(tracker.getTeam().getOwner(), tracker);
                 tracker.setLootTableRegistry(server.reloadableRegistries().lookup().lookupOrThrow(Registries.LOOT_TABLE));
             }
             return randomiser;
@@ -93,7 +90,7 @@ public class LootRandomiser extends ServerRandomiserModule {
         ResourceKey<LootTable> result = redirectMap.getOrDefault(key, key);
         if (!result.equals(key)) {
             for (Team team : teams) {
-                trackers.computeIfAbsent(team, _ -> {
+                trackers.computeIfAbsent(team.getOwner(), _ -> {
                     LootTableTracker tracker = new LootTableTracker();
                     tracker.setLootTableRegistry(lootTableRegistry);
                     tracker.setTeam(team);
@@ -159,12 +156,12 @@ public class LootRandomiser extends ServerRandomiserModule {
     }
 
     @Override
-    public @Nullable LootTableTracker getTracker(TeamMember teamMember) {
-        return trackers.get(teamMember.trulyrandom$getTeam());
+    public @Nullable LootTableTracker getTracker(Team team) {
+        return trackers.get(team.getOwner());
     }
 
     @Override
-    public Map<Team, LootTableTracker> getTrackers() {
+    public Map<UUID, LootTableTracker> getTrackers() {
         return trackers;
     }
 

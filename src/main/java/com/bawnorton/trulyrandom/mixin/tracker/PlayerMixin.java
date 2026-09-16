@@ -1,10 +1,18 @@
 package com.bawnorton.trulyrandom.mixin.tracker;
 
+import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.extend.TeamMember;
-import com.bawnorton.trulyrandom.tracker.Team;
+import com.bawnorton.trulyrandom.network.packet.clientbound.ClientboundChangeTeamPacket;
+import com.bawnorton.trulyrandom.random.ServerRandomiser;
+import com.bawnorton.trulyrandom.team.Team;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
+import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
+import com.bawnorton.trulyrandom.tracker.trade.TradeTracker;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -18,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+
 import java.util.List;
 
 @Mixin(Player.class)
@@ -30,25 +39,43 @@ abstract class PlayerMixin extends LivingEntity implements TeamMember {
     }
 
     @Override
-    public void trulyrandom$joinTeam(@NotNull Team team) {
-        trulyrandom$team = team;
-        if(!team.getOwner().equals(getUUID())) {
-            trulyrandom$team.addPlayer(getUUID());
-        }
-    }
-
-    @Override
-    public void trulyrandom$leaveTeam() {
-        if (trulyrandom$team == null) return;
-
-        trulyrandom$team.removePlayer(getUUID());
-        trulyrandom$team = Team.create(getUUID());
-    }
-
-    @Override
     public @NotNull Team trulyrandom$getTeam() {
-        trulyrandom$team = trulyrandom$team == null ? Team.create(getUUID()) : trulyrandom$team;
+        if (this.level() instanceof ServerLevel level) {
+            trulyrandom$team = trulyrandom$team == null ? TrulyRandom.getTeams(level.getServer()).getOrCreate(getUUID()) : trulyrandom$team;
+        } else if (trulyrandom$team == null) {
+            return Team.create(getUUID());
+        }
         return trulyrandom$team;
+    }
+
+    @Override
+    public void trulyrandom$setTeam(Team team) {
+        trulyrandom$team = team;
+
+        if (this.level() instanceof ServerLevel level) {
+            ServerRandomiser randomiser = TrulyRandom.getRandomiser(level.getServer());
+
+            Team currentTeam = trulyrandom$getTeam();
+            LootTableTracker lootTableTracker = randomiser.getLootRandomiser().getTracker(currentTeam);
+            RecipeTracker recipeTracker = randomiser.getRecipeRandomiser().getTracker(currentTeam);
+            TradeTracker tradeTracker = randomiser.getTradeRandomiser().getTracker(currentTeam);
+
+            if (lootTableTracker != null) {
+                lootTableTracker.markDirty();
+            }
+
+            if (recipeTracker != null) {
+                recipeTracker.markDirty();
+            }
+
+            if (tradeTracker != null) {
+                tradeTracker.markDirty();
+            }
+
+            if ((Object) this instanceof ServerPlayer serverPlayer) {
+                ServerPlayNetworking.send(serverPlayer, new ClientboundChangeTeamPacket(currentTeam));
+            }
+        }
     }
 
     @WrapOperation(
@@ -58,9 +85,9 @@ abstract class PlayerMixin extends LivingEntity implements TeamMember {
                     target = "Lnet/minecraft/world/entity/Entity;interact(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/InteractionResult;"
             )
     )
-    private InteractionResult trackCause(Entity instance, Player mob, InteractionHand anyLeashed, Vec3 mobsToLeash, Operation<InteractionResult> original) {
+    private InteractionResult trackCause(Entity instance, Player player, InteractionHand hand, Vec3 location, Operation<InteractionResult> original) {
         LootTableTracker.LOOT_CAUSERS.set(List.of(trulyrandom$getTeam()));
-        InteractionResult result = original.call(instance, mob, anyLeashed, mobsToLeash);
+        InteractionResult result = original.call(instance, player, hand, location);
         LootTableTracker.LOOT_CAUSERS.remove();
         return result;
     }

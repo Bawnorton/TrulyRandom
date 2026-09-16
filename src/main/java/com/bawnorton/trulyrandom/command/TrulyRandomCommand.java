@@ -70,8 +70,8 @@ public class TrulyRandomCommand {
 
     public void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext buildContext) {
         dispatcher.register(Commands.literal("trulyrandom")
-                .requires(Commands.hasPermission(Commands.LEVEL_MODERATORS))
                 .then(Commands.literal("settings")
+                        .requires(Commands.hasPermission(Commands.LEVEL_MODERATORS))
                         .then(Commands.argument("selection", SetStringArgumentType.of("server", "all"))
                                 .executes(context -> execute(context, Selection.SERVER))
                         )
@@ -79,7 +79,9 @@ public class TrulyRandomCommand {
                                 .executes(context -> execute(context, Selection.PLAYER))
                         )
                 )
+                .then(new TeamCommand().create())
                 .then(Commands.literal("drop")
+                        .requires(Commands.hasPermission(Commands.LEVEL_MODERATORS))
                         .then(Commands.argument("loot_table", ResourceOrIdArgument.lootTable(buildContext))
                                 .executes(context -> {
                                     CommandSourceStack source = context.getSource();
@@ -105,6 +107,7 @@ public class TrulyRandomCommand {
                         )
                 )
                 .then(Commands.literal("recipe")
+                        .requires(Commands.hasPermission(Commands.LEVEL_MODERATORS))
                         .then(Commands.argument("recipe", ItemArgument.item(buildContext))
                                 .executes(context -> {
                                     CommandSourceStack source = context.getSource();
@@ -133,6 +136,7 @@ public class TrulyRandomCommand {
                         )
                 )
                 .then(Commands.literal("test")
+                        .requires(Commands.hasPermission(Commands.LEVEL_MODERATORS))
                         .then(Commands.literal("drops")
                                 .executes(context -> {
                                     context.getSource()

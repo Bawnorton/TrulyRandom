@@ -14,12 +14,8 @@ import org.jungrapht.visualization.layout.event.LayoutStateChange;
 import org.jungrapht.visualization.layout.model.LayoutModel;
 import org.jungrapht.visualization.layout.model.Point;
 import org.jungrapht.visualization.layout.model.Rectangle;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -40,10 +36,14 @@ public class TrackingGraph {
     @SuppressWarnings("unchecked")
     private Map<GraphElement, Vector2f> layout() {
         HierarchicalMinCrossLayoutAlgorithm<GraphElement, DefaultEdge> algorithm = HierarchicalMinCrossLayoutAlgorithm.<GraphElement, DefaultEdge>edgeAwareBuilder()
-                .vertexBoundsFunction(vertex -> new Rectangle(0, 0, 64, 64))
-                .layering(Layering.LONGEST_PATH)
+                .layering(Layering.NETWORK_SIMPLEX)
+                .vertexBoundsFunction(_ -> Rectangle.of(64, 64))
                 .straightenEdges(true)
+                .postStraighten(true)
+                .transposeLimit(10)
+                .transpose(true)
                 .threaded(true)
+                .separateComponents(true)
                 .build();
         LayoutModel<GraphElement> layoutModel = LayoutModel.<GraphElement>builder()
                 .graph(graph)

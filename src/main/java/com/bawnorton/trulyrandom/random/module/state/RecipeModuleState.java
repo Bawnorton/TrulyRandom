@@ -16,7 +16,7 @@ public class RecipeModuleState extends StandardModuleState {
     private final Map<RecipeType<?>, Boolean> enabledRecipeTypes;
 
     public static final MapCodec<RecipeModuleState> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            StandardModuleState.CODEC.fieldOf("standard").forGetter(recipeModule -> recipeModule),
+            StandardModuleState.CODEC.forGetter(recipeModule -> recipeModule),
             Codec.unboundedMap(BuiltInRegistries.RECIPE_TYPE.byNameCodec(), Codec.BOOL).fieldOf("enabled_recipe_types").forGetter(moduleState -> moduleState.enabledRecipeTypes)
     ).apply(instance, RecipeModuleState::new));
 

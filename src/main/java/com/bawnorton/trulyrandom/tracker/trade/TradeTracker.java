@@ -1,6 +1,6 @@
 package com.bawnorton.trulyrandom.tracker.trade;
 
-import com.bawnorton.trulyrandom.tracker.Team;
+import com.bawnorton.trulyrandom.team.Team;
 import com.bawnorton.trulyrandom.tracker.Tracker;
 import com.bawnorton.trulyrandom.util.collection.UnaryHashMap;
 import com.bawnorton.trulyrandom.util.collection.UnaryMap;

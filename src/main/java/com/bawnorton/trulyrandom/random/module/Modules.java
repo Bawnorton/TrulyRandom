@@ -1,16 +1,14 @@
 package com.bawnorton.trulyrandom.random.module;
 
+import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.random.module.state.ModuleState;
 import com.mojang.serialization.Codec;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.NotNull;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 
 public class Modules implements Iterable<Module> {
     public static final Codec<Modules> CODEC = Codec.unboundedMap(Module.CODEC, ModuleState.CODEC)
@@ -23,7 +21,7 @@ public class Modules implements Iterable<Module> {
     private final Map<Module, Long> seedMemento = new HashMap<>();
 
     public Modules() {
-        moduleStates = new HashMap<>();
+        moduleStates = new LinkedHashMap<>();
         for (Module module : Module.values()) {
             moduleStates.put(module, module.newModuleState());
         }
@@ -36,7 +34,10 @@ public class Modules implements Iterable<Module> {
                 moduleStates.put(module, module.newModuleState());
             }
         }
-        this.moduleStates = moduleStates;
+        this.moduleStates = new LinkedHashMap<>();
+        for (Module module : Module.values()) {
+            this.moduleStates.put(module, moduleStates.getOrDefault(module, module.newModuleState()));
+        }
     }
 
     public boolean isEnabled(Module module) {
@@ -89,12 +90,12 @@ public class Modules implements Iterable<Module> {
         moduleStates.get(module).disable();
     }
 
-    public void randomSeed(Module module) {
-        moduleStates.get(module).randomSeed();
+    public void newRandomSeed(Module module) {
+        moduleStates.get(module).newRandomSeed();
     }
 
-    public void randomSeedAll() {
-        moduleStates.forEach((_, state) -> state.randomSeed());
+    public void newRandomSeedAll() {
+        moduleStates.forEach((_, state) -> state.newRandomSeed());
     }
 
     public void enableAll() {
@@ -124,7 +125,22 @@ public class Modules implements Iterable<Module> {
     }
 
     public <T extends ModuleState> T getState(Module module, Class<T> stateClass) {
-        return stateClass.cast(moduleStates.get(module));
+        ModuleState state = moduleStates.get(module);
+        if (stateClass.isInstance(state)) {
+            return stateClass.cast(state);
+        }
+
+        TrulyRandom.LOGGER.error("Tried to parse '{}' module state as '{}', but found '{}'. Was 'type' set correctly? Proceeding with default state settings.", module.name(), stateClass.getSimpleName(), state.getClass().getSimpleName());
+        ModuleState expectedState = module.newModuleState();
+        expectedState.setSeed(state.getSeed());
+        if(state.isEnabled()) {
+            expectedState.enable();
+        }
+        if (state.isVisible()) {
+            expectedState.show();
+        }
+        moduleStates.put(module, expectedState);
+        return stateClass.cast(expectedState);
     }
 
     public Modules copy() {

@@ -15,7 +15,7 @@ public final class TrulyRandomApi {
     public static void randomiseBlockModels(ServerPlayer player, boolean randomSeed) {
         Randomiser randomiser = TrulyRandom.getClientRandomiser(player.level().getServer(), player.getUUID());
         Modules modules = randomiser.getCopiedModules();
-        if(randomSeed) modules.randomSeed(Module.BLOCK_MODELS);
+        if(randomSeed) modules.newRandomSeed(Module.BLOCK_MODELS);
         modules.setEnabled(Module.BLOCK_MODELS);
         updateClient(player, modules);
     }
@@ -30,7 +30,7 @@ public final class TrulyRandomApi {
     public static void randomiseItemModels(ServerPlayer player, boolean randomSeed) {
         Randomiser randomiser = TrulyRandom.getClientRandomiser(player.level().getServer(), player.getUUID());
         Modules modules = randomiser.getCopiedModules();
-        if(randomSeed) modules.randomSeed(Module.ITEM_MODELS);
+        if(randomSeed) modules.newRandomSeed(Module.ITEM_MODELS);
         modules.setEnabled(Module.ITEM_MODELS);
         updateClient(player, modules);
     }
@@ -46,8 +46,8 @@ public final class TrulyRandomApi {
         Randomiser randomiser = TrulyRandom.getClientRandomiser(player.level().getServer(), player.getUUID());
         Modules modules = randomiser.getCopiedModules();
         if(randomSeed) {
-            modules.randomSeed(Module.BLOCK_MODELS);
-            modules.randomSeed(Module.ITEM_MODELS);
+            modules.newRandomSeed(Module.BLOCK_MODELS);
+            modules.newRandomSeed(Module.ITEM_MODELS);
         }
         modules.setEnabled(Module.BLOCK_MODELS);
         modules.setEnabled(Module.ITEM_MODELS);
@@ -64,7 +64,7 @@ public final class TrulyRandomApi {
 
     public static void randomiseServerBlockModels(MinecraftServer server, boolean randomSeed) {
         ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
-        if(randomSeed) randomiser.getModules().randomSeed(Module.BLOCK_MODELS);
+        if(randomSeed) randomiser.getModules().newRandomSeed(Module.BLOCK_MODELS);
         randomiser.getModules().setEnabled(Module.BLOCK_MODELS);
         randomiser.updateClients(server);
     }
@@ -77,7 +77,7 @@ public final class TrulyRandomApi {
 
     public static void randomiseServerItemModels(MinecraftServer server, boolean randomSeed) {
         ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
-        if(randomSeed) randomiser.getModules().randomSeed(Module.ITEM_MODELS);
+        if(randomSeed) randomiser.getModules().newRandomSeed(Module.ITEM_MODELS);
         randomiser.getModules().setEnabled(Module.ITEM_MODELS);
         randomiser.updateClients(server);
     }
@@ -91,8 +91,8 @@ public final class TrulyRandomApi {
     public static void randomiseAllServerModels(MinecraftServer server, boolean randomSeed) {
         ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
         if(randomSeed) {
-            randomiser.getModules().randomSeed(Module.BLOCK_MODELS);
-            randomiser.getModules().randomSeed(Module.ITEM_MODELS);
+            randomiser.getModules().newRandomSeed(Module.BLOCK_MODELS);
+            randomiser.getModules().newRandomSeed(Module.ITEM_MODELS);
         }
         randomiser.getModules().setEnabled(Module.BLOCK_MODELS);
         randomiser.getModules().setEnabled(Module.ITEM_MODELS);
@@ -108,7 +108,7 @@ public final class TrulyRandomApi {
 
     public static void randomiseServerRecipes(MinecraftServer server, boolean randomSeed) {
         ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
-        if(randomSeed) randomiser.getModules().randomSeed(Module.RECIPES);
+        if(randomSeed) randomiser.getModules().newRandomSeed(Module.RECIPES);
         randomiser.getModules().setEnabled(Module.RECIPES);
         randomiser.updateRecipes(server, randomSeed);
     }
@@ -121,7 +121,7 @@ public final class TrulyRandomApi {
 
     public static void randomiseServerLootTables(MinecraftServer server, boolean randomSeed) {
         ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
-        if(randomSeed) randomiser.getModules().randomSeed(Module.LOOT_TABLES);
+        if(randomSeed) randomiser.getModules().newRandomSeed(Module.LOOT_TABLES);
         randomiser.getModules().setEnabled(Module.LOOT_TABLES);
         randomiser.updateLoot(server, randomSeed);
     }
@@ -134,7 +134,7 @@ public final class TrulyRandomApi {
 
     public static void randomiseServerTrades(MinecraftServer server, boolean randomSeed) {
         ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
-        if(randomSeed) randomiser.getModules().randomSeed(Module.TRADES);
+        if(randomSeed) randomiser.getModules().newRandomSeed(Module.TRADES);
         randomiser.getModules().setEnabled(Module.TRADES);
         randomiser.updateTrades(server, randomSeed);
     }
@@ -147,7 +147,7 @@ public final class TrulyRandomApi {
 
     public static void randomiseAllServer(MinecraftServer server, boolean randomSeed) {
         ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
-        if(randomSeed) randomiser.getModules().randomSeedAll();
+        if(randomSeed) randomiser.getModules().newRandomSeedAll();
         randomiser.getModules().enableAll();
         randomiser.updateClients(server);
         randomiser.updateRecipes(server, randomSeed);

@@ -4,7 +4,6 @@ import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.extend.RecipeBookScreenExtender;
 import com.bawnorton.trulyrandom.client.mixin.accessor.InventoryScreenAccessor;
 import com.bawnorton.trulyrandom.client.screen.lootbook.LootBookWidget;
-import com.bawnorton.trulyrandom.random.module.Module;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -60,7 +59,7 @@ abstract class AbstractRecipeBookScreenMixin extends AbstractContainerScreenMixi
     @Override
     public void trulyrandom$refreshResults() {
         if(lootBook.isOpen()) {
-            lootBook.refreshResults();
+            lootBook.refreshResults(false);
         }
     }
 

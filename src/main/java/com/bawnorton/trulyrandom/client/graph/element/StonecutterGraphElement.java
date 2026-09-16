@@ -21,20 +21,14 @@ public class StonecutterGraphElement extends CraftingStationGraphElement {
         graphics.blitSprite(
                 RenderPipelines.GUI_TEXTURED,
                 STONECUTTER,
-                mouseX + (BACKGROUND_WIDTH - 41) / 2,
-                mouseY + (BACKGROUND_HEIGHT - 13) / 2,
-                41,
-                13
+                mouseX + (BACKGROUND_WIDTH - 82) / 2,
+                mouseY + (BACKGROUND_HEIGHT - 26) / 2,
+                82,
+                26
         );
         if(recipe.value() instanceof StonecutterRecipe stonecutterRecipe) {
-            Matrix3x2fStack matrices = graphics.pose();
-            matrices.pushMatrix();
-            matrices.scale(0.5f, 0.5f);
-            int x = mouseX * 2;
-            int y = mouseY * 2;
-            extractIngredient(graphics, stonecutterRecipe.input(), x + 38, y + 25, true);
-            extractOutput(graphics, x + 94, y + 25);
-            matrices.popMatrix();
+            extractIngredient(graphics, stonecutterRecipe.input(), mouseX + 38, mouseY + 25, true);
+            extractOutput(graphics, mouseX + 95, mouseY + 25);
         }
     }
 }

@@ -49,7 +49,7 @@ abstract class CreateWorldScreenMixin extends Screen implements ModulesHolder {
             method = "createLevelSettings",
             at = @At("HEAD")
     )
-    private void attachModules(boolean debugWorld, CallbackInfoReturnable<LevelSettings> cir) {
+    private void attachModules(boolean isDebug, CallbackInfoReturnable<LevelSettings> cir) {
         ((ModulesHolder) (Object) uiState.getSettings().dataConfiguration()).trulyrandom$setRandomiserModules(trulyrandom$modules);
         ((ModulesHolder) minecraft).trulyrandom$setRandomiserModules(trulyrandom$modules);
     }

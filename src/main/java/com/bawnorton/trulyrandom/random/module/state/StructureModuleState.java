@@ -1,5 +1,6 @@
 package com.bawnorton.trulyrandom.random.module.state;
 
+import com.bawnorton.trulyrandom.serialisation.CodecExtensions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -12,9 +13,9 @@ public class StructureModuleState extends StandardModuleState {
     private boolean nerfElytra;
 
     public static final MapCodec<StructureModuleState> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            StandardModuleState.CODEC.fieldOf("standard").forGetter(moduleState -> moduleState),
-            Codec.BOOL.optionalFieldOf("use_legacy_randomiser", false).forGetter(StructureModuleState::useLegacyRandomiser),
-            Codec.BOOL.optionalFieldOf("nerf_elytra", false).forGetter(StructureModuleState::isNerfElytra)
+            StandardModuleState.CODEC.forGetter(moduleState -> moduleState),
+            CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "use_legacy_randomiser", false).forGetter(StructureModuleState::useLegacyRandomiser),
+            CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "nerf_elytra", false).forGetter(StructureModuleState::isNerfElytra)
     ).apply(instance, StructureModuleState::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, StructureModuleState> STREAM_CODEC = StreamCodec.composite(

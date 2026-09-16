@@ -39,6 +39,7 @@ public class Networking {
         clientboundPlay.register(ClientboundSyncLootTableTrackerPacket.TYPE, ClientboundSyncLootTableTrackerPacket.STREAM_CODEC);
         clientboundPlay.register(ClientboundSyncRecipeTrackerPacket.TYPE, ClientboundSyncRecipeTrackerPacket.STREAM_CODEC);
         clientboundPlay.register(ClientboundSyncLootDropsPacket.TYPE, ClientboundSyncLootDropsPacket.STREAM_CODEC);
+        clientboundPlay.register(ClientboundChangeTeamPacket.TYPE, ClientboundChangeTeamPacket.STREAM_CODEC);
 
         ServerPlayNetworking.registerGlobalReceiver(ServerboundHandshakePacket.TYPE, Networking::handleHandshake);
         ServerPlayNetworking.registerGlobalReceiver(ServerboundProvidedRandomiserPacket.TYPE, Networking::handleProvidedRandomiser);

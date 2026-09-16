@@ -1,21 +1,20 @@
-package com.bawnorton.trulyrandom.client.mixin;
+package com.bawnorton.trulyrandom.mixin;
 
 import com.bawnorton.trulyrandom.extend.ModulesHolder;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.mojang.datafixers.kinds.App;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import dev.kikugie.fletching_table.annotation.MixinEnvironment;
 import net.minecraft.world.level.WorldDataConfiguration;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+
 import java.util.Optional;
 import java.util.function.Function;
 
-@MixinEnvironment("client")
 @Mixin(WorldDataConfiguration.class)
-abstract class DataConfigurationMixin implements ModulesHolder {
+abstract class WorldDataConfigurationMixin implements ModulesHolder {
     @Unique
     private Modules trulyrandom$randomiserModules;
 

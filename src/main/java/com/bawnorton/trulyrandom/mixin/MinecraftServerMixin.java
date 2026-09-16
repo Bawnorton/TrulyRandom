@@ -17,21 +17,27 @@ abstract class MinecraftServerMixin {
     @Unique
     private static final ThreadLocal<Modules> trulyrandom$MODULES = new ThreadLocal<>();
 
+    @SuppressWarnings("ConstantValue")
     @Inject(
             method = "configurePackRepository",
             at = @At("HEAD")
     )
     private static void captureModules(PackRepository packRepository, WorldDataConfiguration initialDataConfig, boolean initMode, boolean safeMode, CallbackInfoReturnable<WorldDataConfiguration> cir) {
-        trulyrandom$MODULES.set(((ModulesHolder) (Object) initialDataConfig).trulyrandom$getRandomiserModules());
+        if ((Object) initialDataConfig instanceof ModulesHolder modulesHolder) {
+            trulyrandom$MODULES.set(modulesHolder.trulyrandom$getRandomiserModules());
+        }
     }
 
+    @SuppressWarnings("ConstantValue")
     @ModifyReturnValue(
             method = "configureRepositoryWithSelection",
             at = @At("TAIL")
     )
     private static WorldDataConfiguration attachModules(WorldDataConfiguration original) {
-        ((ModulesHolder) (Object) original).trulyrandom$setRandomiserModules(trulyrandom$MODULES.get());
-        trulyrandom$MODULES.remove();
+        if ((Object) original instanceof ModulesHolder modulesHolder) {
+            modulesHolder.trulyrandom$setRandomiserModules(trulyrandom$MODULES.get());
+            trulyrandom$MODULES.remove();
+        }
         return original;
     }
 }

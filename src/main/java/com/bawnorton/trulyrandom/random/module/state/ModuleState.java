@@ -36,7 +36,7 @@ public interface ModuleState {
 
     void setSeed(long seed);
 
-    void randomSeed();
+    void newRandomSeed();
 
     ModuleState copy();
 

@@ -1,5 +1,6 @@
 package com.bawnorton.trulyrandom.random.module.state;
 
+import com.bawnorton.trulyrandom.serialisation.CodecExtensions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -11,8 +12,8 @@ public class LootModuleState extends StandardModuleState {
     private boolean useOtherLootTables;
 
     public static final MapCodec<LootModuleState> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            StandardModuleState.CODEC.fieldOf("standard").forGetter(moduleState -> moduleState),
-            Codec.BOOL.optionalFieldOf("useOtherLootTables", true).forGetter(LootModuleState::useOtherLootTables)
+            StandardModuleState.CODEC.forGetter(moduleState -> moduleState),
+            CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "use_other_loot_tables", true).forGetter(LootModuleState::useOtherLootTables)
     ).apply(instance, LootModuleState::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, LootModuleState> STREAM_CODEC = StreamCodec.composite(

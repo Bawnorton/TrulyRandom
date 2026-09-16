@@ -1,5 +1,6 @@
 package com.bawnorton.trulyrandom.random.module.state;
 
+import com.bawnorton.trulyrandom.serialisation.CodecExtensions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -13,10 +14,10 @@ public class BlockModelModuleState extends StandardModuleState {
     private boolean ignoreStateProprties;
 
     public static final MapCodec<BlockModelModuleState> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            StandardModuleState.CODEC.fieldOf("standard").forGetter(moduleState -> moduleState),
-            Codec.BOOL.optionalFieldOf("force_states_to_use_same_model", false).forGetter(BlockModelModuleState::isForcingStatesToUseSameModel),
-            Codec.BOOL.optionalFieldOf("ignore_model_occlusion", false).forGetter(BlockModelModuleState::isIgnoreModelOcclusion),
-            Codec.BOOL.optionalFieldOf("ignore_state_properties", false).forGetter(BlockModelModuleState::isIgnoreStateProperties)
+            StandardModuleState.CODEC.forGetter(moduleState -> moduleState),
+            CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "force_states_to_use_same_model", false).forGetter(BlockModelModuleState::isForcingStatesToUseSameModel),
+            CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "ignore_model_occlusion", false).forGetter(BlockModelModuleState::isIgnoreModelOcclusion),
+            CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "ignore_state_properties", false).forGetter(BlockModelModuleState::isIgnoreStateProperties)
     ).apply(instance, BlockModelModuleState::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, BlockModelModuleState> STREAM_CODEC = StreamCodec.composite(

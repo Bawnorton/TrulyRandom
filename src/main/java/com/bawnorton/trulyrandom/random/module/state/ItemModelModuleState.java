@@ -1,5 +1,6 @@
 package com.bawnorton.trulyrandom.random.module.state;
 
+import com.bawnorton.trulyrandom.serialisation.CodecExtensions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -11,8 +12,8 @@ public class ItemModelModuleState extends StandardModuleState {
     private boolean matchBlockModelRandomisation;
 
     public static final MapCodec<ItemModelModuleState> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            StandardModuleState.CODEC.fieldOf("standard").forGetter(moduleState -> moduleState),
-            Codec.BOOL.optionalFieldOf("match_block_model_randomisation", false).forGetter(ItemModelModuleState::isMatchingBlockModelRandomisation)
+            StandardModuleState.CODEC.forGetter(moduleState -> moduleState),
+            CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "match_block_model_randomisation", false).forGetter(ItemModelModuleState::isMatchingBlockModelRandomisation)
     ).apply(instance, ItemModelModuleState::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, ItemModelModuleState> STREAM_CODEC = StreamCodec.composite(

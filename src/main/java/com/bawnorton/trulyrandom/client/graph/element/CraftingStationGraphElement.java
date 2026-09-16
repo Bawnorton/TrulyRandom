@@ -2,6 +2,8 @@ package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.client.util.Cycler;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -10,21 +12,22 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import org.joml.Matrix3x2fStack;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public abstract class CraftingStationGraphElement extends GraphElement {
     protected static final Identifier RECIPE_BACKGROUND = TrulyRandom.id("loot_book/background");
-    protected static final int BACKGROUND_WIDTH = 75;
-    protected static final int BACKGROUND_HEIGHT = 33;
+    protected static final int BACKGROUND_WIDTH = 150;
+    protected static final int BACKGROUND_HEIGHT = 66;
 
     private final RecipeHolder<?> recipe;
     private final Item station;
+    private final Long2ObjectMap<Cycler<Item>> cyclers = new Long2ObjectOpenHashMap<>();
 
     protected CraftingStationGraphElement(RecipeHolder<?> recipe, Item station) {
         this.station = station;
@@ -63,8 +66,14 @@ public abstract class CraftingStationGraphElement extends GraphElement {
 
     @Override
     public void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        Matrix3x2fStack pose = graphics.pose();
+        pose.pushMatrix();
+        pose.scale(0.75F, 0.75F);
+        mouseX = (int) (mouseX / 0.75F);
+        mouseY = (int) (mouseY / 0.75F);
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, RECIPE_BACKGROUND, mouseX, mouseY, BACKGROUND_WIDTH, BACKGROUND_HEIGHT);
         extractRecipeTooltip(graphics, recipe, mouseX, mouseY);
+        pose.popMatrix();
     }
 
     protected boolean hasEncountered(Item item) {
@@ -79,12 +88,14 @@ public abstract class CraftingStationGraphElement extends GraphElement {
     }
 
     protected void extractIngredient(GuiGraphicsExtractor graphics, Ingredient ingredient, int x, int y, boolean filter) {
-        List<Item> slotItems = ingredient.items()
-                .sorted(Comparator.comparing(entry -> entry.unwrapKey().orElseThrow().identifier()))
+        List<Item> items = ingredient.items()
+                .sorted(Comparator.comparing(entry -> entry.unwrapKey().map(ResourceKey::identifier).orElse(TrulyRandom.id("missing"))))
                 .map(Holder::value)
                 .filter(item -> !filter || hasEncountered(item))
                 .toList();
-        Item item = Cycler.one(slotItems);
+
+        Cycler<Item> cycler = cyclers.computeIfAbsent(items.hashCode(), _ -> new Cycler<>(items));
+        Item item = cycler.current();
         if (item == null) return;
 
         graphics.fakeItem(item.getDefaultInstance(), x, y);

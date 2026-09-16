@@ -1,5 +1,6 @@
 package com.bawnorton.trulyrandom.random.module.state;
 
+import com.bawnorton.trulyrandom.serialisation.CodecExtensions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -10,9 +11,9 @@ import java.util.Random;
 
 public class StandardModuleState implements ModuleState {
     public static final MapCodec<StandardModuleState> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
-            Codec.BOOL.optionalFieldOf("enabled", false).forGetter(StandardModuleState::isEnabled),
+            CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "enabled", true).forGetter(StandardModuleState::isEnabled),
             Codec.BOOL.optionalFieldOf("visible", true).forGetter(StandardModuleState::isVisible),
-            Codec.LONG.optionalFieldOf("seed", new Random().nextLong()).forGetter(StandardModuleState::getSeed)
+            CodecExtensions.fwOptionalFieldOf(Codec.LONG, "seed", new Random().nextLong()).forGetter(StandardModuleState::getSeed)
     ).apply(instance, StandardModuleState::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, StandardModuleState> STREAM_CODEC = StreamCodec.composite(
@@ -75,7 +76,8 @@ public class StandardModuleState implements ModuleState {
         this.seed = seed;
     }
 
-    public void randomSeed() {
+    @Override
+    public void newRandomSeed() {
         seed = new Random().nextLong();
     }
 

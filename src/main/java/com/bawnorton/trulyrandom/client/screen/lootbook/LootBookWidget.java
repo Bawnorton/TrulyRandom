@@ -5,10 +5,12 @@ import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
 import com.bawnorton.trulyrandom.client.graph.TrackingGraphBookController;
 import com.bawnorton.trulyrandom.client.mixin.accessor.RecipeBookComponentAccessor;
+import com.bawnorton.trulyrandom.extend.TeamMember;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.PlayerFaceExtractor;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -17,6 +19,9 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -25,6 +30,7 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class LootBookWidget implements Renderable, GuiEventListener, NarratableEntry {
@@ -53,6 +59,7 @@ public class LootBookWidget implements Renderable, GuiEventListener, NarratableE
     private boolean narrow;
     private boolean isShort;
     private String searchedText;
+    private PlayerInfo teamOwner;
 
     public void initialize(int parentWidth, int parentHeight, Minecraft minecraft, boolean narrow, boolean isShort) {
         this.minecraft = minecraft;
@@ -78,7 +85,7 @@ public class LootBookWidget implements Renderable, GuiEventListener, NarratableE
         int x = (parentWidth - 147) / 2 + rightOffset;
         int y = (parentHeight - 166) / 2;
         String search = searchField == null ? "" : searchField.getValue();
-        searchField = new EditBox(minecraft.font, x + 25, y + 13 + topOffset, 81, minecraft.font.lineHeight + 5, Component.translatable("itemGroup.trulyrandom.search"));
+        searchField = new EditBox(minecraft.font, x + 25, y + 13 + topOffset, 91, minecraft.font.lineHeight + 5, Component.translatable("itemGroup.trulyrandom.search"));
         searchField.setMaxLength(50);
         searchField.setVisible(true);
         searchField.setTextColor(-1);
@@ -90,7 +97,7 @@ public class LootBookWidget implements Renderable, GuiEventListener, NarratableE
         if(((MinecraftClientExtender) minecraft).trulyrandom$isResizing()) {
             graph.moveToRoot();
         }
-        refreshResults();
+        refreshResults(false);
     }
 
     public void registerGraphListener(Consumer<LootBookGraph> openListener, Consumer<LootBookGraph> closeListener) {
@@ -127,13 +134,21 @@ public class LootBookWidget implements Renderable, GuiEventListener, NarratableE
     private void refreshSearchResults() {
         String searched = searchField.getValue().toLowerCase(Locale.ENGLISH);
         if(!searched.equals(searchedText)) {
-            refreshResults();
+            refreshResults(true);
             searchedText = searched;
         }
     }
 
-    public void refreshResults() {
+    public void refreshResults(boolean fromSearch) {
         lootArea.refreshTrackers();
+
+        if (!minecraft.hasSingleplayerServer()) {
+            var player = (LocalPlayer & TeamMember) minecraft.player;
+            UUID teamOwnerId = player.trulyrandom$getTeam().getOwner();
+            ClientPacketListener connection = player.connection;
+            teamOwner = connection.getPlayerInfo(teamOwnerId);
+        }
+
         List<Item> items = new ArrayList<>(lootArea.getAllItems());
         String search = searchField.getValue();
         if(!search.isEmpty()) {
@@ -147,6 +162,10 @@ public class LootBookWidget implements Renderable, GuiEventListener, NarratableE
         }
 
         lootArea.setResults(items, false);
+
+        if(graph.isOpen() && !fromSearch) {
+            graph.refresh();
+        }
     }
 
     private void openGraph(Item lastClickedItem) {
@@ -189,6 +208,16 @@ public class LootBookWidget implements Renderable, GuiEventListener, NarratableE
             graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND_TEXTURE, x, y, 1.0F, 1.0F, 147, 166, 256, 256);
             searchField.extractRenderState(graphics, mouseX, mouseY, a);
             lootArea.extractRenderState(graphics, x, y, mouseX, mouseY, a);
+
+            if (teamOwner != null) {
+                PlayerFaceExtractor.extractRenderState(
+                        graphics,
+                        teamOwner.getSkin(),
+                        searchField.getX() + searchField.getWidth() + 4,
+                        searchField.getY() - 2,
+                        16
+                );
+            }
         }
         extractGraphRenderState(graphics, mouseX, mouseY, a);
     }
@@ -202,6 +231,20 @@ public class LootBookWidget implements Renderable, GuiEventListener, NarratableE
 
         graph.extractTooltip(graphics, mouseX, mouseY);
         lootArea.extractTooltip(graphics, mouseX, mouseY);
+
+        if (teamOwner != null) {
+            int minX = searchField.getX() + searchField.getWidth() + 4;
+            int maxX = minX + 16;
+            int minY = searchField.getY() - 2;
+            int maxY = minY + 16;
+            if (mouseX >= minX && mouseX <= maxX && mouseY >= minY && mouseY <= maxY) {
+                Component playerName = teamOwner.getTabListDisplayName();
+                if (playerName == null) {
+                    playerName = Component.literal(teamOwner.getProfile().name());
+                }
+                graphics.setTooltipForNextFrame(Component.translatable("trulyrandom.loot_book.on_team", playerName), mouseX, mouseY);
+            }
+        }
     }
 
     @Override

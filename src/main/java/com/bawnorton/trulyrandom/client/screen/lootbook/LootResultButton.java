@@ -1,5 +1,6 @@
 package com.bawnorton.trulyrandom.client.screen.lootbook;
 
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Tooltip;
@@ -38,6 +39,9 @@ public class LootResultButton extends AbstractWidget {
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_TEXTURE, getX(), getY(), width, height);
         ItemStack stack = drop.getDefaultInstance();
         graphics.fakeItem(stack, getX() + 4, getY() + 4);
+        if (isHovered()) {
+            graphics.requestCursor(CursorTypes.POINTING_HAND);
+        }
     }
 
     @Override
