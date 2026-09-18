@@ -102,7 +102,8 @@ public class BlockModelModuleSettings extends Screen {
 
     @Override
     public void onClose() {
-        minecraft.setScreen(parent);
+        //~ if <=26.1.2 'gui.setScreen' -> 'setScreen'
+        minecraft.gui.setScreen(parent);
     }
 
     public void applyAndClose() {

@@ -8,6 +8,7 @@ import com.bawnorton.trulyrandom.team.Team;
 import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import com.bawnorton.trulyrandom.util.collection.UnaryBiMap;
 import com.bawnorton.trulyrandom.util.collection.UnaryHashBiMap;
+import com.google.common.collect.Streams;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Registry;
@@ -18,17 +19,23 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+//? if <=26.1.2 {
+//import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+//?} else {
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
+//?}
 
 public class LootRandomiser extends ServerRandomiserModule {
     private final Map<UUID, LootTableTracker> trackers = new HashMap<>();
@@ -38,7 +45,8 @@ public class LootRandomiser extends ServerRandomiserModule {
 
     private RandomSource randomSource;
 
-    private final Set<ResourceKey<LootTable>> blacklist = Stream.of(
+    //? if <=26.1.2 {
+    /*private final Set<ResourceKey<LootTable>> blacklist = Stream.of(
             Blocks.SHULKER_BOX.getLootTable(),
             Blocks.WHITE_SHULKER_BOX.getLootTable(),
             Blocks.ORANGE_SHULKER_BOX.getLootTable(),
@@ -57,6 +65,12 @@ public class LootRandomiser extends ServerRandomiserModule {
             Blocks.RED_SHULKER_BOX.getLootTable(),
             Blocks.BLACK_SHULKER_BOX.getLootTable()
     ).map(Optional::orElseThrow).collect(Collectors.toSet());
+    *///?} else {
+    private final Set<ResourceKey<LootTable>> blacklist = Streams.concat(
+            Stream.of(Blocks.SHULKER_BOX.getLootTable()),
+            Blocks.DYED_SHULKER_BOX.asList().stream().map(Block::getLootTable)
+    ).map(Optional::orElseThrow).collect(Collectors.toSet());
+    //?}
 
     public LootRandomiser(MinecraftServer server) {
         lootTableRegistry = (Registry<LootTable>) server.reloadableRegistries()
@@ -121,7 +135,8 @@ public class LootRandomiser extends ServerRandomiserModule {
         return LootTable.lootTable()
                 .withPool(LootPool.lootPool()
                         .add(LootItem.lootTableItem(item))
-                        .setRolls(ConstantValue.exactly(randomSource.nextInt(1, Math.max(2, item.getDefaultMaxStackSize())))))
+                        //~ if <=26.1.2 'ContextIntProviders' -> 'ConstantValue'
+                        .setRolls(ContextIntProviders.exactly(randomSource.nextInt(1, Math.max(2, item.getDefaultMaxStackSize())))))
                 .build();
     }
 

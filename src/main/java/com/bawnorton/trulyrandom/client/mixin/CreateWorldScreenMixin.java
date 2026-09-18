@@ -4,7 +4,7 @@ import com.bawnorton.trulyrandom.extend.ModulesHolder;
 import com.bawnorton.trulyrandom.client.screen.TrulyRandomSettingsScreen;
 import com.bawnorton.trulyrandom.random.module.Modules;
 import com.llamalad7.mixinextras.sugar.Local;
-import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import dev.kikugie.fletching_table.mixin.MixinEnvironment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.tabs.GridLayoutTab;
@@ -78,7 +78,10 @@ abstract class CreateWorldScreenMixin extends Screen implements ModulesHolder {
         private void openTrulyRandomSettings() {
             Minecraft minecraft = Minecraft.getInstance();
             Modules modules = ((ModulesHolder) this$0).trulyrandom$getRandomiserModules();
-            minecraft.setScreen(new TrulyRandomSettingsScreen(minecraft.screen, modules, newModules -> ((ModulesHolder) this$0).trulyrandom$setRandomiserModules(newModules)));
+
+            //~ if <=26.1.2 'gui.setScreen' -> 'setScreen'
+            //~ if <=26.1.2 'gui.screen()' -> 'screen'
+            minecraft.gui.setScreen(new TrulyRandomSettingsScreen(minecraft.gui.screen(), modules, newModules -> ((ModulesHolder) this$0).trulyrandom$setRandomiserModules(newModules)));
         }
     }
 }

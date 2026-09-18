@@ -1,6 +1,6 @@
 package com.bawnorton.trulyrandom.client.mixin.accessor;
 
-import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import dev.kikugie.fletching_table.mixin.MixinEnvironment;
 import net.minecraft.world.entity.animal.feline.Cat;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;

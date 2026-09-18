@@ -19,7 +19,7 @@ public class BlockPaletteModuleState extends StandardModuleState {
             CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "ignore_state_properties", false).forGetter(BlockPaletteModuleState::isIgnoreStateProperties),
             CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "ignore_collision_shape", false).forGetter(BlockPaletteModuleState::isIgnoreCollisionShape),
             CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "ignore_occlusion_shape", false).forGetter(BlockPaletteModuleState::isIgnoreOcclusionShape),
-            CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "keep_stone_as_stone", false).forGetter(BlockPaletteModuleState::isKeepStoneAsStone)
+            CodecExtensions.fwOptionalFieldOf(Codec.BOOL, "keep_stone_as_stone", true).forGetter(BlockPaletteModuleState::isKeepStoneAsStone)
     ).apply(instance, BlockPaletteModuleState::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, BlockPaletteModuleState> STREAM_CODEC = StreamCodec.composite(
@@ -49,7 +49,7 @@ public class BlockPaletteModuleState extends StandardModuleState {
         this.ignoreStateProprties = false;
         this.ignoreCollisionShape = false;
         this.ignoreOcclusionShape = false;
-        this.keepStoneAsStone = false;
+        this.keepStoneAsStone = true;
     }
 
     @Override

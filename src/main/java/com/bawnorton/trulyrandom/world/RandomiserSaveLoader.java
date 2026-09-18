@@ -26,7 +26,7 @@ public class RandomiserSaveLoader extends SavedData {
 
     public static SavedDataType<RandomiserSaveLoader> TYPE;
 
-    private Teams teams;
+    private final Teams teams;
     private ServerRandomiser serverRandomiser;
     private HashMap<UUID, Modules> clientRandomisers;
 
@@ -93,10 +93,6 @@ public class RandomiserSaveLoader extends SavedData {
 
     public static void setWorldGenHolder(@NotNull WorldGenHolder worldGenHolder) {
         Objects.requireNonNull(worldGenHolder, "Attempted to set a null worldgen holder, this is not allowed");
-        if (RandomiserSaveLoader.worldGenHolder != null) {
-            TrulyRandom.LOGGER.error("Attempted to replace an existing worldgen holder, this is not allowed", new IllegalStateException());
-            return;
-        }
         RandomiserSaveLoader.worldGenHolder = worldGenHolder;
     }
 

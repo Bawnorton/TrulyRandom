@@ -1,0 +1,39 @@
+{
+  "parent": "trulyrandom:root",
+  "criteria": {
+    "deb": {
+      "conditions": {
+        "key": {
+          "A": "#minecraft:planks",
+          "B": "#minecraft:wool"
+        },
+        "pattern": [
+          "AAA",
+          "BBB"
+        ]
+      },
+      "trigger": "trulyrandom:crafting"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.trulyrandom.deb.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "id": "minecraft:red_bed"
+    },
+    "title": {
+      "translate": "advancements.trulyrandom.deb.title"
+    }
+  },
+  "requirements": [
+    [
+      "deb"
+    ]
+  ],
+  "rewards": {
+    "experience": 100
+  },
+  "sends_telemetry_event": true
+}

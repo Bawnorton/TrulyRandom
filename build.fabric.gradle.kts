@@ -1,4 +1,3 @@
-import dev.kikugie.fletching_table.annotation.MixinEnvironment
 import trulyrandom.utils.*
 
 plugins {
@@ -7,9 +6,10 @@ plugins {
     id("trulyrandom.common")
     id("net.fabricmc.fabric-loom")
     id("me.modmuss50.mod-publish-plugin")
-    id("com.google.devtools.ksp") version "2.2.0-2.0.2"
-    id("dev.kikugie.fletching-table.fabric") version "0.1.0-alpha.15"
     id("dev.isxander.secrets") version "0.1.0"
+
+    alias(ft.plugins.mixin)
+    alias(ft.plugins.fabric)
 }
 
 repositories {
@@ -27,9 +27,10 @@ dependencies {
 
     implementation("net.fabricmc:fabric-loader:0.18.4")
 
+    deps("iris") { implementation("maven.modrinth:iris:$it-$loader") }
+    deps("sodium") { implementation("net.caffeinemc:sodium-$loader:$it") }
+
     implementation("net.fabricmc.fabric-api:fabric-api:${deps("fabric_api")}")
-    implementation("net.caffeinemc:sodium-fabric:${deps("sodium")}+mc$minecraft")
-    implementation("maven.modrinth:iris:${deps("iris")}+$minecraft-$loader")
 
     include(implementation("com.github.tomnelson:jungrapht-visualization:1.4")!!)
     include(implementation("com.github.tomnelson:jungrapht-layout:1.4")!!)
@@ -81,9 +82,18 @@ loom {
 tasks {
     register<Copy>("buildAndCollect") {
         group = "build"
+        description = "Builds versioned libs and moves them to the build/libs directory"
         from(jar.map { it.archiveFile })
         into(rootProject.layout.buildDirectory.file("libs/${mod("version")}"))
         dependsOn("build")
+    }
+
+    build {
+        dependsOn("runDatagen")
+    }
+
+    named("sourcesJar") {
+        dependsOn("runDatagen")
     }
 
     processResources {
@@ -92,16 +102,14 @@ tasks {
 }
 
 fletchingTable {
-    fabric {
-        entrypointMappings.put("main", "net.fabricmc.api.ModInitializer")
-        entrypointMappings.put("client", "net.fabricmc.api.ClientModInitializer")
-        entrypointMappings.put("fabric-datagen", "net.fabricmc.fabric.api.datagen.v1.FabricDataGeneratorEntrypoint")
+    fabric.configure(sourceSets.main) {
+        entrypoint("fabric-datagen", "net.fabricmc.fabric.api.datagen.v1.FabricDataGeneratorEntrypoint")
     }
 
-    mixins.register("main") {
-        mixin("default", "${mod("id")}.mixins.json")
-        mixin("client", "${mod("id")}.client.mixins.json") {
-            environment = MixinEnvironment.Env.CLIENT
+    mixins.configure(sourceSets.main) {
+        mixin("${mod("id")}.mixins.json")
+        mixin("${mod("id")}.client.mixins.json", "client") {
+            env("CLIENT")
         }
     }
 }

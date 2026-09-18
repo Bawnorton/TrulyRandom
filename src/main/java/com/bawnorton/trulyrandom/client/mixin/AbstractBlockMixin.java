@@ -4,7 +4,7 @@ import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.AbstractBlockAccessor;
 import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import dev.kikugie.fletching_table.mixin.MixinEnvironment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;

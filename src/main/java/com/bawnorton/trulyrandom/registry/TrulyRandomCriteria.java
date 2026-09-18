@@ -3,9 +3,11 @@ package com.bawnorton.trulyrandom.registry;
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.data.advancement.criterion.CraftingCriterion;
 import com.bawnorton.trulyrandom.data.advancement.criterion.ModuleEnabledCriterion;
-import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+
+//~ if <=26.1.2 'advancements.triggers' -> 'advancements'
+import net.minecraft.advancements.triggers.CriterionTrigger;
 
 public final class TrulyRandomCriteria {
     public static final CraftingCriterion CRAFTING = register("crafting", new CraftingCriterion());

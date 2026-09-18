@@ -7,33 +7,28 @@ import com.bawnorton.trulyrandom.server.ServerSettings;
 import com.llamalad7.mixinextras.expression.Definition;
 import com.llamalad7.mixinextras.expression.Expression;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.mojang.datafixers.DataFixer;
-import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import dev.kikugie.fletching_table.mixin.MixinEnvironment;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
 import joptsimple.util.PathConverter;
 import net.minecraft.server.Main;
-import net.minecraft.server.Services;
 import net.minecraft.server.WorldLoader;
 import net.minecraft.server.WorldStem;
-import net.minecraft.server.dedicated.DedicatedServer;
-import net.minecraft.server.dedicated.DedicatedServerSettings;
-import net.minecraft.server.packs.repository.PackRepository;
-import net.minecraft.world.level.storage.LevelStorageSource;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.function.Function;
 
+@SuppressWarnings("ConstantValue")
 @MixinEnvironment(type = MixinEnvironment.Env.SERVER)
 @Mixin(Main.class)
 abstract class MainMixin {
@@ -51,7 +46,6 @@ abstract class MainMixin {
         trulyrandom$settingsPath = parser.accepts("trulyrandom").withRequiredArg().withValuesConvertedBy(new PathConverter());
     }
 
-    @SuppressWarnings("ConstantValue")
     @Definition(id = "WorldStem", type = WorldStem.class)
     @Expression("? = @((WorldStem) ?)")
     @ModifyExpressionValue(
@@ -69,18 +63,19 @@ abstract class MainMixin {
         return original;
     }
 
-    @SuppressWarnings("ConstantValue")
-    @WrapOperation(
-            method = "lambda$main$3",
+    @ModifyArg(
+            method = "main",
             at = @At(
-                    value = "NEW",
-                    target = "(Ljava/lang/Thread;Lnet/minecraft/world/level/storage/LevelStorageSource$LevelStorageAccess;Lnet/minecraft/server/packs/repository/PackRepository;Lnet/minecraft/server/WorldStem;Ljava/util/Optional;Lnet/minecraft/server/dedicated/DedicatedServerSettings;Lcom/mojang/datafixers/DataFixer;Lnet/minecraft/server/Services;)Lnet/minecraft/server/dedicated/DedicatedServer;"
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/server/MinecraftServer;spin(Ljava/util/function/Function;)Lnet/minecraft/server/MinecraftServer;"
             )
     )
-    private static DedicatedServer attachModules(Thread serverThread, LevelStorageSource.LevelStorageAccess levelStorageSource, PackRepository packRepository, WorldStem worldStem, Optional gameRules, DedicatedServerSettings settings, DataFixer fixerUpper, Services services, Operation<DedicatedServer> original) {
-        if ((Object) worldStem instanceof ModulesHolder modulesHolder) {
-            TrulyRandom.setWorldGenModules(modulesHolder.trulyrandom$getRandomiserModules());
-        }
-        return original.call(serverThread, levelStorageSource, packRepository, worldStem, gameRules, settings, fixerUpper, services);
+    private static <S> Function<Thread, S> attachModules(Function<Thread, S> factory, @Local WorldStem worldStem) {
+        return thread -> {
+            if ((Object) worldStem instanceof ModulesHolder modulesHolder) {
+                TrulyRandom.setWorldGenModules(modulesHolder.trulyrandom$getRandomiserModules());
+            }
+            return factory.apply(thread);
+        };
     }
 }

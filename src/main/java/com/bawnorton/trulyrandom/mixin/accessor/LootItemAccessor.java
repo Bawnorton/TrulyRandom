@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(LootItem.class)
-public interface ItemEntryAccessor extends LootPoolEntryContainerAccessor {
+public interface LootItemAccessor extends LootPoolEntryContainerAccessor {
     @Accessor("item")
     Holder<Item> trulyrandom$item();
 }

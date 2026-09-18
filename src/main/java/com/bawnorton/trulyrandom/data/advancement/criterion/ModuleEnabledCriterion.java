@@ -5,13 +5,21 @@ import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.registry.TrulyRandomCriteria;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancements.Criterion;
-import net.minecraft.advancements.criterion.ContextAwarePredicate;
-import net.minecraft.advancements.criterion.EntityPredicate;
-import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.util.Optional;
+
+//? if <=26.1.2 {
+/*import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
+*///?} else {
+import net.minecraft.advancements.triggers.Criterion;
+import net.minecraft.advancements.triggers.SimpleCriterionTrigger;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+//?}
 
 public final class ModuleEnabledCriterion extends SimpleCriterionTrigger<ModuleEnabledCriterion.Conditions> {
 
@@ -24,10 +32,12 @@ public final class ModuleEnabledCriterion extends SimpleCriterionTrigger<ModuleE
         trigger(player, conditions -> TrulyRandom.getRandomiser(player.level().getServer()).getModules().isEnabled(conditions.module));
     }
 
-    public record Conditions(Optional<ContextAwarePredicate> player, Module module) implements SimpleCriterionTrigger.SimpleInstance {
+    //~ if <=26.1.2 'Holder<LootItemCondition>' -> 'ContextAwarePredicate'
+    public record Conditions(Optional<Holder<LootItemCondition>> player, Module module) implements SimpleCriterionTrigger.SimpleInstance {
         public static final Codec<ModuleEnabledCriterion.Conditions> CODEC = RecordCodecBuilder.create(
                 instance -> instance.group(
-                        EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(ModuleEnabledCriterion.Conditions::player),
+                        //~ if <=26.1.2 'LootItemCondition.CODEC' -> 'EntityPredicate.ADVANCEMENT_CODEC'
+                        LootItemCondition.CODEC.optionalFieldOf("player").forGetter(ModuleEnabledCriterion.Conditions::player),
                         Module.CODEC.fieldOf("module").forGetter(ModuleEnabledCriterion.Conditions::module)
                 ).apply(instance, ModuleEnabledCriterion.Conditions::new)
         );

@@ -21,9 +21,13 @@ import org.spongepowered.asm.mixin.injection.At;
 
 import java.util.function.Function;
 
+//? if >=26.3
+import net.minecraft.world.level.levelgen.placement.FeaturePlacer;
+
 @Mixin(ChunkGenerator.class)
 abstract class ChunkGeneratorMixin {
-    @WrapOperation(
+    //? if <=26.1.2 {
+    /*@WrapOperation(
             method = "applyBiomeDecoration",
             at = @At(
                     value = "INVOKE",
@@ -43,4 +47,26 @@ abstract class ChunkGeneratorMixin {
             return feature.place(level, generator, random, origin);
         }
     }
+    *///?} else {
+    @WrapOperation(
+            method = "applyBiomeDecoration",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/level/levelgen/placement/FeaturePlacer;placeWithBiomeCheck(Lnet/minecraft/world/level/levelgen/placement/PlacedFeature;Lnet/minecraft/util/RandomSource;Lnet/minecraft/core/BlockPos;)Z"
+            )
+    )
+    private boolean randomiseFeatures(FeaturePlacer instance, PlacedFeature placedFeature, RandomSource random, BlockPos origin, Operation<Boolean> original, WorldGenLevel level) {
+        WorldGenHolder worldGenHolder = RandomiserSaveLoader.getWorldGenHolder();
+        Modules modules = worldGenHolder.modules();
+        if (!modules.isEnabled(Module.FEATURES)) {
+            return original.call(instance, placedFeature, random, origin);
+        } else {
+            Registry<PlacedFeature> lookup = level.registryAccess().lookupOrThrow(Registries.PLACED_FEATURE);
+            FeatureRandomiser randomiser = worldGenHolder.featureRandomiser();
+            Holder.Reference<PlacedFeature> randomFeature = lookup.getRandom(randomiser.getRandom(ChunkPos.containing(origin))).orElseThrow();
+            PlacedFeature feature = randomFeature.unwrap().map(lookup::getValueOrThrow, Function.identity());
+            return feature.place(level, (ChunkGenerator) (Object) this, random, origin);
+        }
+    }
+    //?}
 }

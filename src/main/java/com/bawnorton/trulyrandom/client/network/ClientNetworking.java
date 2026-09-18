@@ -28,6 +28,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+//~ if <=26.1.2 'gui.setScreen' -> 'setScreen' as _
+//~ if <=26.1.2 'gui.screen()' -> 'screen' as _
+
 public class ClientNetworking {
     private static final Map<CustomPacketPayload.Type<?>, RunOnce> recievedCallback = new HashMap<>();
 
@@ -69,7 +72,7 @@ public class ClientNetworking {
     private static void handleOpenRandomiserScreen(ClientboundOpenRandomiserScreenPacket packet, ClientPlayNetworking.Context context) {
         Minecraft minecraft = Minecraft.getInstance();
 
-        minecraft.setScreen(new TrulyRandomSettingsScreen(minecraft.screen, packet.modules(), (modules) -> context.responseSender().sendPacket(new ServerboundSetServerRandomiserPacket(modules))));
+        minecraft.gui.setScreen(new TrulyRandomSettingsScreen(minecraft.gui.screen(), packet.modules(), (modules) -> context.responseSender().sendPacket(new ServerboundSetServerRandomiserPacket(modules))));
         runCallback(ClientboundOpenRandomiserScreenPacket.TYPE);
     }
 
@@ -81,7 +84,7 @@ public class ClientNetworking {
         if (minecraft.level == null) throw new IllegalStateException("Client world is null");
 
         target = minecraft.level.getPlayerByUUID(targetUUID);
-        minecraft.setScreen(new TargetedTrulyRandomSettingsScreen(minecraft.screen, target, packet.modules(), (modules) -> context.responseSender().sendPacket(new ServerboundSetTargetClientRandomiserPacket(modules, targetUUID))));
+        minecraft.gui.setScreen(new TargetedTrulyRandomSettingsScreen(minecraft.gui.screen(), target, packet.modules(), (modules) -> context.responseSender().sendPacket(new ServerboundSetTargetClientRandomiserPacket(modules, targetUUID))));
         runCallback(ClientboundOpenTargetedRandomiserScreenPacket.TYPE);
     }
 
@@ -117,7 +120,7 @@ public class ClientNetworking {
 
     private static void handleSyncLootTableTracker(ClientboundSyncLootTableTrackerPacket packet, ClientPlayNetworking.Context context) {
         TrulyRandomClient.getRandomiser().setLootTableTracker(packet.tracker());
-        if(context.client().screen instanceof RecipeBookScreenExtender extender) {
+        if(context.client().gui.screen() instanceof RecipeBookScreenExtender extender) {
             extender.trulyrandom$refreshResults();
         }
         runCallback(ClientboundSyncLootTableTrackerPacket.TYPE);
@@ -125,7 +128,7 @@ public class ClientNetworking {
 
     private static void handleSyncRecipeTracker(ClientboundSyncRecipeTrackerPacket packet, ClientPlayNetworking.Context context) {
         TrulyRandomClient.getRandomiser().setRecipeTracker(packet.tracker());
-        if(context.client().screen instanceof RecipeBookScreenExtender extender) {
+        if(context.client().gui.screen() instanceof RecipeBookScreenExtender extender) {
             extender.trulyrandom$refreshResults();
         }
         runCallback(ClientboundSyncRecipeTrackerPacket.TYPE);

@@ -9,6 +9,8 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin({
+        //? if >=26.3
+        BrewingRecipe.class,
         DyeRecipe.class,
         BannerDuplicateRecipe.class,
         BookCloningRecipe.class,
@@ -16,7 +18,6 @@ import org.spongepowered.asm.mixin.injection.At;
         FireworkRocketRecipe.class,
         FireworkStarFadeRecipe.class,
         FireworkStarRecipe.class,
-//        MapCloningRecipe.class,
         MapExtendingRecipe.class,
         RepairItemRecipe.class,
         ShieldDecorationRecipe.class,

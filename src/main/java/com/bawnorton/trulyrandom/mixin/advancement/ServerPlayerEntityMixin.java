@@ -11,10 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 abstract class ServerPlayerEntityMixin {
     @Inject(
             method = "tick",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/advancements/criterion/PlayerTrigger;trigger(Lnet/minecraft/server/level/ServerPlayer;)V"
-            )
+            at = @At("TAIL")
     )
     private void triggerModuleEnabled(CallbackInfo ci) {
         TrulyRandomCriteria.MODULE_ENABLED.trigger((ServerPlayer) (Object) this);

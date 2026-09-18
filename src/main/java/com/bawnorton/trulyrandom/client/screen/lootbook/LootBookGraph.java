@@ -1,11 +1,10 @@
 package com.bawnorton.trulyrandom.client.screen.lootbook;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.client.graph.TrackingGraphBookController;
 import com.bawnorton.trulyrandom.client.graph.TrackingGraph;
+import com.bawnorton.trulyrandom.client.graph.TrackingGraphBookController;
 import com.bawnorton.trulyrandom.client.graph.element.GraphElement;
 import com.bawnorton.trulyrandom.client.screen.widget.ItemButton;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.advancements.AdvancementType;
 import net.minecraft.client.Minecraft;
@@ -29,6 +28,11 @@ import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2fStack;
 import org.joml.Vector2f;
+
+import java.util.function.BiConsumer;
+
+//~ if <=26.1.2 'renderpearl.api' -> 'blaze3d'
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 
 public class LootBookGraph implements Renderable, GuiEventListener {
     private static final Identifier BACKGROUND_TEXTURE = TrulyRandom.id("loot_book/graph");
@@ -112,59 +116,110 @@ public class LootBookGraph implements Renderable, GuiEventListener {
                 vertex.onHovered();
             }
         });
-        graph.forEachEdge((source, target) -> {
-            if(source.isHovered()) return;
+        BiConsumer<Boolean, Integer> renderEdges = (isHoveredPass, color) -> {
+            graph.forEachEdge((source, target) -> {
+                if (source.isHovered() != isHoveredPass) return;
 
-            Vector2f sourcePos = graph.getPos(source);
-            Vector2f targetPos = graph.getPos(target);
-            int sourceX = centreX + offsetX + Math.round(sourcePos.x);
-            int sourceY = centreY + offsetY + Math.round(sourcePos.y);
-            int targetX = centreX + offsetX + Math.round(targetPos.x);
-            int targetY = centreY + offsetY + Math.round(targetPos.y);
-            int halfX = sourceX + (targetX - sourceX) / 2;
+                Vector2f sourcePos = graph.getPos(source);
+                Vector2f targetPos = graph.getPos(target);
+                float sourceX = centreX + offsetX + sourcePos.x;
+                float sourceY = centreY + offsetY + sourcePos.y;
+                float targetX = centreX + offsetX + targetPos.x;
+                float targetY = centreY + offsetY + targetPos.y;
+                float halfX = sourceX + (targetX - sourceX) / 2.0f;
 
-            graphics.fill(sourceX, sourceY + 1, halfX, sourceY - 1, CommonColors.WHITE);
-            graphics.fill(halfX - 1, sourceY, halfX + 1, targetY, CommonColors.WHITE);
-            graphics.fill(halfX, targetY + 1, targetX, targetY - 1, CommonColors.WHITE);
-        });
-        graph.forEachEdge((source, target) -> {
-            if(!source.isHovered()) return;
+                ScreenRectangle scissorArea = graphics.scissorStack.peek();
+                graphics.guiRenderState.addGuiElement(new GuiElementRenderState() {
+                    @Override
+                    public @Nullable ScreenRectangle bounds() {
+                        return scissorArea;
+                    }
 
-            Vector2f sourcePos = graph.getPos(source);
-            Vector2f targetPos = graph.getPos(target);
-            int sourceX = centreX + offsetX + Math.round(sourcePos.x);
-            int sourceY = centreY + offsetY + Math.round(sourcePos.y);
-            int targetX = centreX + offsetX + Math.round(targetPos.x);
-            int targetY = centreY + offsetY + Math.round(targetPos.y);
-            int halfX = sourceX + (targetX - sourceX) / 2;
+                    @Override
+                    public void buildVertices(VertexConsumer vertexConsumer) {
+                        int segments = 50;
+                        float thickness = 2.0f;
 
-            graphics.fill(sourceX, sourceY + 1, halfX, sourceY - 1, CommonColors.GREEN);
-            graphics.fill(halfX - 1, sourceY, halfX + 1, targetY, CommonColors.GREEN);
-            graphics.fill(halfX, targetY + 1, targetX, targetY - 1, CommonColors.GREEN);
+                        float prevX = sourceX;
+                        float prevY = sourceY;
 
-            // draw arrow head
-            ScreenRectangle scissorArea = graphics.scissorStack.peek();
-            graphics.guiRenderState.addGuiElement(new GuiElementRenderState() {
-                @Override
-                public @Nullable ScreenRectangle bounds() {
-                    return scissorArea;
-                }
+                        float arrowTipX = targetX;
+                        float arrowTipY = targetY;
+                        float arrowDx = targetX - sourceX;
+                        float arrowDy = targetY - sourceY;
 
-                @Override
-                public void buildVertices(VertexConsumer vertexConsumer) {
-                    float scaledX = scale * (targetX - 20);
-                    float scaledY = scale * targetY;
-                    vertexConsumer.addVertexWith2DPose(matrices, scaledX, scaledY - 6 * scale).setColor(CommonColors.GREEN);
-                    vertexConsumer.addVertexWith2DPose(matrices, scaledX, scaledY + 6 * scale).setColor(CommonColors.GREEN);
-                    vertexConsumer.addVertexWith2DPose(matrices, scaledX + 6 * scale, scaledY).setColor(CommonColors.GREEN);
-                    vertexConsumer.addVertexWith2DPose(matrices, scaledX, scaledY - 6 * scale).setColor(CommonColors.GREEN);
-                }
+                        for (int i = 1; i <= segments; i++) {
+                            float t = (float) i / segments;
+                            float u = 1.0f - t;
 
-                public RenderPipeline pipeline() { return RenderPipelines.GUI; }
-                public TextureSetup textureSetup() { return TextureSetup.noTexture(); }
-                public @Nullable ScreenRectangle scissorArea() { return scissorArea; }
+                            float currX = (u*u*u * sourceX) + (3*u*u*t * halfX) + (3*u*t*t * halfX) + (t*t*t * targetX);
+                            float currY = (u*u*u * sourceY) + (3*u*u*t * sourceY) + (3*u*t*t * targetY) + (t*t*t * targetY);
+
+                            if (Math.abs(currX - targetX) <= 16 && Math.abs(currY - targetY) <= 16) {
+                                arrowTipX = currX;
+                                arrowTipY = currY;
+                                arrowDx = currX - prevX;
+                                arrowDy = currY - prevY;
+                                break;
+                            }
+
+                            float dx = currX - prevX;
+                            float dy = currY - prevY;
+                            float len = (float) Math.sqrt(dx * dx + dy * dy);
+
+                            if (len > 0) {
+                                float nx = (-dy / len) * (thickness / 2.0f);
+                                float ny = (dx / len) * (thickness / 2.0f);
+
+                                float sx1 = prevX * scale, sy1 = prevY * scale;
+                                float sx2 = currX * scale, sy2 = currY * scale;
+                                float snx = nx * scale, sny = ny * scale;
+
+                                vertexConsumer.addVertexWith2DPose(matrices, sx1 - snx, sy1 - sny).setColor(color);
+                                vertexConsumer.addVertexWith2DPose(matrices, sx1 + snx, sy1 + sny).setColor(color);
+                                vertexConsumer.addVertexWith2DPose(matrices, sx2 + snx, sy2 + sny).setColor(color);
+                                vertexConsumer.addVertexWith2DPose(matrices, sx2 - snx, sy2 - sny).setColor(color);
+                            }
+                            prevX = currX;
+                            prevY = currY;
+                        }
+
+                        float dirLen = (float) Math.sqrt(arrowDx * arrowDx + arrowDy * arrowDy);
+                        if (dirLen > 0) {
+                            arrowDx /= dirLen;
+                            arrowDy /= dirLen;
+                        }
+
+                        int arrowLength = 6;
+                        int arrowHalfHeight = 6;
+
+                        float bx = arrowTipX - arrowDx * arrowLength;
+                        float by = arrowTipY - arrowDy * arrowLength;
+
+                        float nx = -arrowDy * arrowHalfHeight;
+                        float ny = arrowDx * arrowHalfHeight;
+
+                        float pLeftX = bx + nx;
+                        float pLeftY = by + ny;
+                        float pRightX = bx - nx;
+                        float pRightY = by - ny;
+
+                        vertexConsumer.addVertexWith2DPose(matrices, pRightX * scale, pRightY * scale).setColor(color);
+                        vertexConsumer.addVertexWith2DPose(matrices, pLeftX * scale, pLeftY * scale).setColor(color);
+                        vertexConsumer.addVertexWith2DPose(matrices, arrowTipX * scale, arrowTipY * scale).setColor(color);
+                        vertexConsumer.addVertexWith2DPose(matrices, pRightX * scale, pRightY * scale).setColor(color);
+                    }
+
+                    public RenderPipeline pipeline() { return RenderPipelines.GUI; }
+                    public TextureSetup textureSetup() { return TextureSetup.noTexture(); }
+                    public @Nullable ScreenRectangle scissorArea() { return scissorArea; }
+                });
             });
-        });
+        };
+
+        renderEdges.accept(false, CommonColors.WHITE);
+        renderEdges.accept(true, CommonColors.GREEN);
+
         matrices.pushMatrix();
         graph.forEachVertex(vertex -> {
             Vector2f pos = graph.getPos(vertex);
@@ -184,7 +239,7 @@ public class LootBookGraph implements Renderable, GuiEventListener {
     }
 
     public void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        if(item == null) return;
+        if(item == null || graph == null) return;
 
         int centreX = x + WIDTH / 2;
         int centreY = y + HEIGHT / 2;
@@ -235,7 +290,7 @@ public class LootBookGraph implements Renderable, GuiEventListener {
     public boolean mouseDragged(MouseButtonEvent event, double deltaX, double deltaY) {
         if(item == null) return false;
 
-        if(event.button() == 0 && inBounds(event.x(), event.y())) {
+        if(inBounds(event.x(), event.y())) {
             moveTo(offsetX + (int) (deltaX / scale), offsetY + (int) (deltaY / scale));
             return true;
         }
@@ -309,9 +364,7 @@ public class LootBookGraph implements Renderable, GuiEventListener {
     }
 
     public void moveToRoot() {
-        if (graph == null) {
-            return;
-        }
+        if (graph == null) return;
 
         graph.addListener(g -> {
             Vector2f newPos = g.getRootPos();

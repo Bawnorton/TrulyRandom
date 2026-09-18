@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 @Mixin(ChunkStatusTasks.class)
 abstract class ChunkStatusTaskMixin {
     @ModifyReturnValue(
-            method = "full",
+            method = "generateFeatures",
             at = @At("RETURN")
     )
     private static CompletableFuture<ChunkAccess> clearStructureModule(CompletableFuture<ChunkAccess> original, WorldGenContext context) {

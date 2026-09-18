@@ -4,11 +4,9 @@ import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.data.advancement.criterion.CraftingCriterion;
 import com.bawnorton.trulyrandom.data.advancement.criterion.ModuleEnabledCriterion;
 import com.bawnorton.trulyrandom.random.module.Module;
-import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
+import com.google.common.collect.Streams;import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricAdvancementProvider;
 import net.minecraft.advancements.*;
-import net.minecraft.advancements.criterion.InventoryChangeTrigger;
-import net.minecraft.advancements.criterion.PlayerTrigger;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -16,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 
@@ -26,6 +25,15 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+
+//~ if <=26.1.2 'triggers' -> 'criterion' {
+import net.minecraft.advancements.triggers.InventoryChangeTrigger;
+import net.minecraft.advancements.triggers.PlayerTrigger;
+//~ }
+
+//? if >26.1.2
+import net.minecraft.advancements.triggers.Criterion;
+
 public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementProvider {
     public TrulyRandomTabAdvancementProvider(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> lookup) {
         super(output, lookup);
@@ -35,8 +43,9 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
     public void generateAdvancement(HolderLookup.Provider lookup, Consumer<AdvancementHolder> exporter) {
         HolderLookup.RegistryLookup<Item> itemRegistry = lookup.lookupOrThrow(Registries.ITEM);
         AdvancementHolder root = Advancement.Builder.advancement()
-                .display(
-                        Items.DIAMOND,
+                //~ if <=26.1.2 'rootDisplay' -> 'display'
+                .rootDisplay(
+                        new ItemStackTemplate(Items.DIAMOND),
                         Component.translatable("advancements.trulyrandom.root.title"),
                         Component.translatable("advancements.trulyrandom.root.description"),
                         Identifier.withDefaultNamespace("gui/advancements/backgrounds/adventure"),
@@ -46,7 +55,8 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                         false
                 )
                 .addCriterion("tick", PlayerTrigger.TriggerInstance.tick())
-                .save(exporter, TrulyRandom.sid("root"));
+                //~ if <=26.1.2 'id' -> 'sid'
+                .save(exporter, TrulyRandom.id("root"));
         createChallengeEntry(
                 root,
                 Items.BOW,
@@ -69,7 +79,8 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
         );
         createChallengeEntry(
                 root,
-                Items.RED_BED,
+                //~ if <=26.1.2 'BED.red()' -> 'RED_BED'
+                Items.BED.red(),
                 "deb",
                 Map.of(
                         "deb",
@@ -118,7 +129,8 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                 root,
                 Items.CANDLE,
                 "i_didnt_wax_for_this",
-                Stream.of(
+                //? if <=26.1.2 {
+                /*Stream.of(
                         Items.CANDLE,
                         Items.WHITE_CANDLE,
                         Items.ORANGE_CANDLE,
@@ -136,14 +148,20 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                         Items.GREEN_CANDLE,
                         Items.RED_CANDLE,
                         Items.BLACK_CANDLE
-                ).collect(HashMap::new, (map, item) -> map.put(BuiltInRegistries.ITEM.getKey(item).getPath(), InventoryChangeTrigger.TriggerInstance.hasItems(item)), HashMap::putAll),
+                )
+                *///?} else {
+                Streams.concat(Stream.of(Items.CANDLE), Items.DYED_CANDLE.asList().stream())
+                //?}
+                    .collect(HashMap::new, (map, item) -> map.put(BuiltInRegistries.ITEM.getKey(item).getPath(), InventoryChangeTrigger.TriggerInstance.hasItems(item)), HashMap::putAll),
                 exporter
         );
         createChallengeEntry(
                 root,
-                Items.WHITE_WOOL,
+                //~ if <=26.1.2 'WOOL.white()' -> 'WHITE_WOOL'
+                Items.WOOL.white(),
                 "woold_you_look_at_that",
-                Stream.of(
+                //? if <=26.1.2 {
+                /*Stream.of(
                         Items.WHITE_WOOL,
                         Items.ORANGE_WOOL,
                         Items.MAGENTA_WOOL,
@@ -160,7 +178,11 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                         Items.GREEN_WOOL,
                         Items.RED_WOOL,
                         Items.BLACK_WOOL
-                ).collect(HashMap::new, (map, item) -> map.put(BuiltInRegistries.ITEM.getKey(item).getPath(), InventoryChangeTrigger.TriggerInstance.hasItems(item)), HashMap::putAll),
+                )
+                *///?} else {
+                Items.WOOL.asList().stream()
+                //?}
+                    .collect(HashMap::new, (map, item) -> map.put(BuiltInRegistries.ITEM.getKey(item).getPath(), InventoryChangeTrigger.TriggerInstance.hasItems(item)), HashMap::putAll),
                 exporter
         );
     }
@@ -180,7 +202,8 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                         displayItem,
                         Component.translatable("advancements.trulyrandom.%s.title".formatted(name)),
                         Component.translatable("advancements.trulyrandom.%s.description".formatted(name)),
-                        null,
+                        //? if <=26.1.2
+                        //null,
                         frame,
                         toast,
                         chat,
@@ -188,6 +211,7 @@ public final class TrulyRandomTabAdvancementProvider extends FabricAdvancementPr
                 )
                 .rewards(AdvancementRewards.Builder.experience(xp));
         criterion.forEach(builder::addCriterion);
-        return builder.save(exporter, TrulyRandom.id(name).toString());
+        //~ if <=26.1.2 'id' -> 'sid'
+        return builder.save(exporter, TrulyRandom.id(name));
     }
 }

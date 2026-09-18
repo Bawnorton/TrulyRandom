@@ -6,7 +6,7 @@ plugins {
   id("me.modmuss50.mod-publish-plugin") version "1.1.+" apply false
 }
 
-stonecutter active "26.1-fabric"
+stonecutter active "26.3-fabric"
 
 stonecutter tasks {
   order("publishModrinth")

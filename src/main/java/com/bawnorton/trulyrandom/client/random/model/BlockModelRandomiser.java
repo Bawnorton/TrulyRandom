@@ -4,7 +4,6 @@ import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.client.event.ClientRandomiseEvents;
 import com.bawnorton.trulyrandom.client.extend.ModelShuffler;
 import com.bawnorton.trulyrandom.client.mixin.accessor.ClientChunkCacheAccessor;
-import com.bawnorton.trulyrandom.client.mixin.accessor.LevelRendererAccessor;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.util.collection.UnaryMap;
 import net.minecraft.client.Minecraft;
@@ -14,6 +13,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 
 import java.util.concurrent.atomic.AtomicReferenceArray;
+
+//~ if <=26.1.2 'LevelExtractor' -> 'LevelRenderer'
+import com.bawnorton.trulyrandom.client.mixin.accessor.LevelExtractorAccessor;
 
 public class BlockModelRandomiser extends ModelRandomiser<BlockState> {
     @Override
@@ -49,7 +51,11 @@ public class BlockModelRandomiser extends ModelRandomiser<BlockState> {
         for (ChunkPos chunkPos : chunkPositions) {
             if (chunkPos != null) {
                 for (int y = minecraft.level.getMinSectionY(); y < minecraft.level.getMaxSectionY(); y++) {
-                    ((LevelRendererAccessor) minecraft.levelRenderer).trulyrandom$setSectionDirtyWithNeighbors(chunkPos.x(), y, chunkPos.z(), true);
+                    //? if <=26.1.2 {
+                    //((LevelRendererAccessor) minecraft.levelRenderer).trulyrandom$setSectionDirty(chunkPos.x(), y, chunkPos.z(), true);
+                    //?} else {
+                    ((LevelExtractorAccessor) minecraft.levelExtractor).trulyrandom$setSectionDirty(chunkPos.x(), y, chunkPos.z(), true);
+                    //?}
                 }
             }
         }

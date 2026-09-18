@@ -1,17 +1,9 @@
 package com.bawnorton.trulyrandom.tracker.loot;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
-import com.bawnorton.trulyrandom.mixin.accessor.CompositeEntryBaseAccessor;
-import com.bawnorton.trulyrandom.mixin.accessor.DynamicLootAccessor;
-import com.bawnorton.trulyrandom.mixin.accessor.EnchantmentsPredicateAccessor;
-import com.bawnorton.trulyrandom.mixin.accessor.ItemEntryAccessor;
-import com.bawnorton.trulyrandom.mixin.accessor.LootTableAccessor;
-import com.bawnorton.trulyrandom.mixin.accessor.NestedLootTableAccessor;
-import com.bawnorton.trulyrandom.mixin.accessor.TagEntryAccessor;
+import com.bawnorton.trulyrandom.mixin.accessor.*;
 import com.bawnorton.trulyrandom.tracker.loot.drop.SilkQuery;
 import com.mojang.datafixers.util.Either;
-import net.minecraft.advancements.criterion.EnchantmentPredicate;
-import net.minecraft.advancements.criterion.ItemPredicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
@@ -37,7 +29,14 @@ import net.minecraft.world.level.storage.loot.predicates.MatchTool;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+
+//~ if <=26.1.2 'predicates' -> 'criterion' {
+import net.minecraft.advancements.predicates.EnchantmentPredicate;
+import net.minecraft.advancements.predicates.ItemPredicate;
+//~}
 
 public class LootTableReader {
     public static List<Item> read(Registry<LootTable> lootTableRegistry, LootTable lootTable) {
@@ -55,39 +54,47 @@ public class LootTableReader {
 
     private static List<Item> readEntry(Registry<LootTable> lootTableRegistry, LootPoolEntryContainer entry) {
         return switch (entry) {
-            case CompositeEntryBase compositeEntryBase -> {
-                CompositeEntryBaseAccessor accessor = (CompositeEntryBaseAccessor) compositeEntryBase;
+            case CompositeEntryBaseAccessor compositeEntry -> {
                 List<Item> items = new ArrayList<>();
-                for(LootPoolEntryContainer lootPoolEntry : accessor.trulyrandom$children()) {
+                for(LootPoolEntryContainer lootPoolEntry : compositeEntry.trulyrandom$children()) {
                     items.addAll(readEntry(lootTableRegistry, lootPoolEntry));
                 }
                 yield items;
             }
-            case LootPoolSingletonContainer singletonContainer -> switch (singletonContainer) {
-                case DynamicLootAccessor dynamicEntry -> {
-                    Identifier name = dynamicEntry.trulyrandom$name();
-                    if(name.equals(DecoratedPotBlock.SHERDS_DYNAMIC_DROP_ID)) {
-                        yield List.of(Items.DECORATED_POT);
-                    } else if (name.equals(ShulkerBoxBlock.CONTENTS)) {
-                        yield List.of(Items.SHULKER_BOX);
-                    }
-                    yield List.of();
+            case NestedLootTableAccessor lootTableEntry -> {
+                //? if <=26.1.2 {
+                /*Either<ResourceKey<LootTable>, LootTable> contents = lootTableEntry.trulyrandom$contents();
+                LootTable table = contents.map(lootTableRegistry::getValueOrThrow, Function.identity());
+                yield read(lootTableRegistry, table);
+                *///?} else {
+                HolderSet<LootTable> contents = lootTableEntry.trulyrandom$value();
+                List<Item> items = new ArrayList<>();
+                contents.stream().map(Holder::value).forEach(table -> items.addAll(read(lootTableRegistry, table)));
+                yield items;
+                //?}
+            }
+            case TagEntryAccessor tagEntry -> {
+                //? if <=26.1.2 {
+                /*TagKey<Item> name = tagEntry.trulyrandom$tag();
+                List<Item> items = new ArrayList<>();
+                BuiltInRegistries.ITEM.getTagOrEmpty(name).forEach(regEntry -> items.add(regEntry.value()));
+                yield items;
+                *///?} else {
+                HolderSet<Item> contents = tagEntry.trulyrandom$tag();
+                yield contents.stream().map(Holder::value).toList();
+                //?}
+            }
+            case DynamicLootAccessor dynamicEntry -> {
+                Identifier name = dynamicEntry.trulyrandom$name();
+                if(name.equals(DecoratedPotBlock.SHERDS_DYNAMIC_DROP_ID)) {
+                    yield List.of(Items.DECORATED_POT);
+                } else if (name.equals(ShulkerBoxBlock.CONTENTS)) {
+                    yield List.of(Items.SHULKER_BOX);
                 }
-                case EmptyLootItem ignored -> List.of();
-                case ItemEntryAccessor itemEntry -> List.of(itemEntry.trulyrandom$item().value());
-                case NestedLootTableAccessor lootTableEntry -> {
-                    Either<ResourceKey<LootTable>, LootTable> contents = lootTableEntry.trulyrandom$contents();
-                    LootTable table = contents.map(lootTableRegistry::getValueOrThrow, Function.identity());
-                    yield read(lootTableRegistry, table);
-                }
-                case TagEntryAccessor tagEntry -> {
-                    TagKey<Item> name = tagEntry.trulyrandom$tag();
-                    List<Item> items = new ArrayList<>();
-                    BuiltInRegistries.ITEM.getTagOrEmpty(name).forEach(regEntry -> items.add(regEntry.value()));
-                    yield items;
-                }
-                default -> throw new IllegalStateException("Unexpected value: " + singletonContainer);
-            };
+                yield List.of();
+            }
+            case EmptyLootItem _, SlotLoot _ -> List.of();
+            case LootItemAccessor itemEntry -> List.of(itemEntry.trulyrandom$item().value());
             default -> throw new IllegalStateException("Unexpected value: " + entry);
         };
     }
@@ -95,11 +102,16 @@ public class LootTableReader {
     public static SilkQuery queryForSilk(HolderGetter<LootTable> lootTableRegistry, LootTable table) {
         SilkQuery query = new SilkQuery();
         for(LootPool pool : ((LootTableAccessor) table).trulyrandom$pools()) {
-            List<LootItemCondition> poolConditions = pool.conditions;
-            boolean poolNeedsSilk = doesAnyConditionNeedSilk(poolConditions);
+            //? if <=26.1.2 {
+            /*List<LootItemCondition> poolConditions = pool.conditions;
+            boolean poolNeedsSilk = poolConditions.stream().anyMatch(LootTableReader::doesConditionNeedSilk);
+            *///?} else {
+            Optional<Holder<LootItemCondition>> poolCondition = pool.condition;
+            boolean poolNeedsSilk = poolCondition.map(holder -> doesConditionNeedSilk(holder.value())).orElse(false);
+            //?}
             for(LootPoolEntryContainer entry : pool.entries) {
                 if(poolNeedsSilk) {
-                    if(!(entry instanceof ItemEntryAccessor itemEntry)) {
+                    if(!(entry instanceof LootItemAccessor itemEntry)) {
                         TrulyRandom.LOGGER.warn("Non item entry: {}", entry.getClass().getSimpleName());
                         continue;
                     }
@@ -122,46 +134,43 @@ public class LootTableReader {
                     query.add(queryForSilk(lootTableRegistry, childEntry));
                 }
             }
-            case LootPoolSingletonContainer leafEntry -> {
-                switch (leafEntry) {
-                    case DynamicLoot ignored -> {}
-                    case EmptyLootItem ignored -> {}
-                    case TagEntry ignored -> {}
-                    case ItemEntryAccessor itemEntry -> {
-                        List<LootItemCondition> conditions = itemEntry.trulyrandom$conditions();
-                        boolean anyConditionRequiresSilk = doesAnyConditionNeedSilk(conditions);
-                        if(anyConditionRequiresSilk) {
-                            query.addNeedsSilk(itemEntry.trulyrandom$item());
-                        } else {
-                            query.addDoesNotNeedSilk(itemEntry.trulyrandom$item());
-                        }
-                    }
-                    case NestedLootTableAccessor lootTableEntry -> {
-                        Either<ResourceKey<LootTable>, LootTable> value = lootTableEntry.trulyrandom$contents();
-                        LootTable table = value.map(key -> lootTableRegistry.getOrThrow(key).value(), Function.identity());
-                        query.add(queryForSilk(lootTableRegistry, table));
-                    }
-                    default -> throw new IllegalStateException("Unexpected value: " + leafEntry);
+            case DynamicLoot _, EmptyLootItem _, TagEntry _, SlotLoot _ -> {}
+            case LootItemAccessor itemEntry -> {
+                //? if <=26.1.2 {
+                /*List<LootItemCondition> conditions = itemEntry.trulyrandom$conditions();
+                boolean anyConditionRequiresSilk = conditions.stream().anyMatch(LootTableReader::doesConditionNeedSilk);
+                *///?} else {
+                Optional<Holder<LootItemCondition>> condition = itemEntry.trulyrandom$condition();
+                boolean anyConditionRequiresSilk = condition.map(holder -> doesConditionNeedSilk(holder.value())).orElse(false);
+                //?}
+                if(anyConditionRequiresSilk) {
+                    query.addNeedsSilk(itemEntry.trulyrandom$item());
+                } else {
+                    query.addDoesNotNeedSilk(itemEntry.trulyrandom$item());
                 }
+            }
+            case NestedLootTableAccessor lootTableEntry -> {
+                //? if <=26.1.2 {
+                /*Either<ResourceKey<LootTable>, LootTable> value = lootTableEntry.trulyrandom$contents();
+                LootTable table = value.map(key -> lootTableRegistry.getOrThrow(key).value(), Function.identity());
+                query.add(queryForSilk(lootTableRegistry, table));
+                *///?} else {
+                HolderSet<LootTable> contents = lootTableEntry.trulyrandom$value();
+                contents.stream().map(Holder::value).forEach(table -> query.add(queryForSilk(lootTableRegistry, table)));
+                //?}
             }
             default -> throw new IllegalStateException("Unexpected value: " + poolEntry);
         }
         return query;
     }
 
-    private static boolean doesAnyConditionNeedSilk(List<LootItemCondition> conditions) {
-        boolean anyConditionRequiresSilk = false;
-        for(LootItemCondition condition : conditions) {
-            if (!(condition instanceof MatchTool matchTool)) continue;
+    private static boolean doesConditionNeedSilk(LootItemCondition condition) {
+        if (!(condition instanceof MatchTool matchTool)) return false;
 
-            if(doesConditionNeedSilk(matchTool)) {
-                anyConditionRequiresSilk = true;
-            }
-        }
-        return anyConditionRequiresSilk;
+        return doesMatchToolNeedSilk(matchTool);
     }
 
-    public static boolean doesConditionNeedSilk(MatchTool matchTool) {
+    public static boolean doesMatchToolNeedSilk(MatchTool matchTool) {
         ItemPredicate predicate = matchTool.predicate().orElse(null);
         if (predicate == null) return false;
 

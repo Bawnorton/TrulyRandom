@@ -67,9 +67,9 @@ public abstract class GraphElement {
             texture = AdvancementWidgetType.OBTAINED.frameSprite(AdvancementType.CHALLENGE);
             color = -1;
         } else {
-            if (isHovered()) {
-                color = CommonColors.GREEN;
-            }
+//            if (isHovered()) {
+//                color = CommonColors.GREEN;
+//            }
             texture = AdvancementWidgetType.UNOBTAINED.frameSprite(AdvancementType.TASK);
         }
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, texture, x, y, width, height, color);

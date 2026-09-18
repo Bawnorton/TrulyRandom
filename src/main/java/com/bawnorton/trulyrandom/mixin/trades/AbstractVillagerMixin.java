@@ -81,7 +81,8 @@ public abstract class AbstractVillagerMixin extends AgeableMob {
         return newOffers;
     }
 
-    @WrapOperation(
+    //? if <=26.1.2 {
+    /*@WrapOperation(
             method = "addAdditionalSaveData",
             at = @At(
                     value = "INVOKE",
@@ -97,4 +98,5 @@ public abstract class AbstractVillagerMixin extends AgeableMob {
         }
         return offers;
     }
+    *///?}
 }

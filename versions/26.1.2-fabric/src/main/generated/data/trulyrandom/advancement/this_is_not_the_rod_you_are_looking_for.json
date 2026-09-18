@@ -3,7 +3,7 @@
   "criteria": {
     "is_loot_tables": {
       "conditions": {
-        "module": "LOOT_TABLES"
+        "module": "loot_tables"
       },
       "trigger": "trulyrandom:module_enabled"
     },
@@ -31,10 +31,10 @@
   },
   "requirements": [
     [
-      "rod"
+      "is_loot_tables"
     ],
     [
-      "is_loot_tables"
+      "rod"
     ]
   ],
   "sends_telemetry_event": true

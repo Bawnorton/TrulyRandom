@@ -6,6 +6,7 @@ import com.bawnorton.trulyrandom.client.extend.MinecraftClientExtender;
 import com.bawnorton.trulyrandom.client.graph.TrackingGraphBookController;
 import com.bawnorton.trulyrandom.client.mixin.accessor.RecipeBookComponentAccessor;
 import com.bawnorton.trulyrandom.extend.TeamMember;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -26,7 +27,6 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
-import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -292,7 +292,7 @@ public class LootBookWidget implements Renderable, GuiEventListener, NarratableE
         if (!isOpen() || minecraft.player.isSpectator()) return false;
 
         int keyCode = keyEvent.key();
-        if(keyCode == GLFW.GLFW_KEY_ESCAPE) {
+        if (keyCode == InputConstants.KEY_ESCAPE) {
             if(narrow) {
                 setOpen(false);
                 return true;
@@ -307,7 +307,7 @@ public class LootBookWidget implements Renderable, GuiEventListener, NarratableE
             return true;
         }
 
-        if(searchField.isFocused() && searchField.isVisible() && keyCode != GLFW.GLFW_KEY_ESCAPE) {
+        if(searchField.isFocused() && searchField.isVisible() && keyCode != InputConstants.KEY_ESCAPE) {
             return true;
         }
 

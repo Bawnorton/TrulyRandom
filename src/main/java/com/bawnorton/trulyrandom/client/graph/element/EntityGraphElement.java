@@ -23,6 +23,7 @@ public class EntityGraphElement extends GraphElement implements LivingEntityGuiR
         Entity entity = entityType.create(minecraft.level, EntitySpawnReason.COMMAND);
         if(!(entity instanceof LivingEntity livingEntity)) return;
 
+        entity.setId(1);
         extractRenderState(graphics, mouseX, mouseY, livingEntity, x, y, scale);
     }
 

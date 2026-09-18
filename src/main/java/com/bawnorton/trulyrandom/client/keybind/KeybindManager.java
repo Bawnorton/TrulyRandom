@@ -19,24 +19,27 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
+
+//~ if <=26.1.2 'gui.setScreen' -> 'setScreen' as _
+//~ if <=26.1.2 'gui.screen()' -> 'screen' as _
 
 public class KeybindManager {
     private static final List<ActionedKeybind> KEYBINDS = new ArrayList<>();
     private static final KeyMapping.Category KEY_CATEGORY = new KeyMapping.Category(TrulyRandom.id("keys"));
 
-    public static final ActionedKeybind OPEN_RANDOMISER_GUI = registerKeybind("key.trulyrandom.open_randomiser_gui", GLFW.GLFW_KEY_G, minecraft -> {
-        ClientNetworking.registerRecievedCallback(ClientboundSetClientRandomiserPacket.TYPE, () -> minecraft.setScreen(new TrulyRandomSettingsScreen(
-                minecraft.screen,
+    public static final ActionedKeybind OPEN_RANDOMISER_GUI = registerKeybind("key.trulyrandom.open_randomiser_gui", InputConstants.KEY_G, minecraft -> {
+        ClientNetworking.registerRecievedCallback(ClientboundSetClientRandomiserPacket.TYPE, () -> minecraft.gui.setScreen(new TrulyRandomSettingsScreen(
+                minecraft.gui.screen(),
                 TrulyRandomClient.getRandomiser().getModules().copy(),
                 (modules) -> ClientPlayNetworking.send(new ServerboundSetServerRandomiserPacket(modules))
         )));
         ClientPlayNetworking.send(ServerboundRequestServerRandomiserPacket.INSTANCE);
     });
-    public static final ActionedKeybind RELOAD_CHUNKS = registerDevOnlyKeybind("key.trulyrandom.reload_chunks", GLFW.GLFW_KEY_KP_0, minecraft -> minecraft.levelRenderer.allChanged());
-    public static final ActionedKeybind QUERY_HAND = registerDevOnlyKeybind("key.trulyrandom.query_hand", GLFW.GLFW_KEY_KP_1, minecraft -> {
+    //~ if <=26.1.2 'resetLevelRenderData' -> 'allChanged'
+    public static final ActionedKeybind RELOAD_CHUNKS = registerDevOnlyKeybind("key.trulyrandom.reload_chunks", InputConstants.KEY_NUMPAD0, minecraft -> minecraft.levelRenderer.resetLevelRenderData());
+    public static final ActionedKeybind QUERY_HAND = registerDevOnlyKeybind("key.trulyrandom.query_hand", InputConstants.KEY_NUMPAD1, minecraft -> {
         Item handItem = minecraft.player.getMainHandItem().getItem();
         ModelShuffler.Items items = (ModelShuffler.Items) minecraft.getModelManager();
         TrulyRandom.LOGGER.info("Hand item: {} ({})", handItem, items.trulyrandom$getRedirectMap().get(handItem));
@@ -54,7 +57,8 @@ public class KeybindManager {
     private static ActionedKeybind registerKeybind(String key, int code, KeybindCallback callback) {
         ActionedKeybind keybind = new ActionedKeybind(KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 key,
-                InputConstants.Type.KEYSYM,
+                //~ if <= 26.1.2 'KEYBOARD' -> 'KEYSYM'
+                InputConstants.Type.KEYBOARD,
                 code,
                 KEY_CATEGORY
         )), callback);

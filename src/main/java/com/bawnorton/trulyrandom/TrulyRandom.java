@@ -4,13 +4,13 @@ import com.bawnorton.trulyrandom.event.EventHandler;
 import com.bawnorton.trulyrandom.network.Networking;
 import com.bawnorton.trulyrandom.random.Randomiser;
 import com.bawnorton.trulyrandom.random.ServerRandomiser;
-import com.bawnorton.trulyrandom.random.module.state.ModuleStateTypes;
 import com.bawnorton.trulyrandom.random.module.Modules;
+import com.bawnorton.trulyrandom.random.module.state.ModuleStateTypes;
 import com.bawnorton.trulyrandom.registry.TrulyRandomCriteria;
 import com.bawnorton.trulyrandom.team.Teams;
 import com.bawnorton.trulyrandom.world.RandomiserSaveLoader;
 import com.bawnorton.trulyrandom.world.WorldGenHolder;
-import dev.kikugie.fletching_table.annotation.fabric.Entrypoint;
+import dev.kikugie.fletching_table.fabric.Entrypoint;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.Version;
@@ -18,9 +18,10 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.UUID;
 
-@Entrypoint("main")
+@Entrypoint
 public class TrulyRandom implements ModInitializer {
     public static final String MOD_ID = "trulyrandom";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);

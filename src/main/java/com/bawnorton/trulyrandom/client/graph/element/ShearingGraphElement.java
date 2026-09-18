@@ -8,7 +8,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.cow.MushroomCow;
 import net.minecraft.world.entity.animal.golem.SnowGolem;
 import net.minecraft.world.entity.animal.sheep.Sheep;
@@ -16,6 +15,10 @@ import net.minecraft.world.entity.monster.skeleton.Bogged;
 import net.minecraft.world.item.Items;
 import org.apache.commons.lang3.StringUtils;
 import org.joml.Matrix3x2fStack;
+
+//~ if <=26.1.2 'EntityTypes' -> 'EntityType' as _
+
+import net.minecraft.world.entity.EntityTypes;
 
 public class ShearingGraphElement extends IdBasedGraphElement implements LivingEntityGuiRenderer {
     public ShearingGraphElement(LootTableIdentifier lootTableId) {
@@ -25,12 +28,12 @@ public class ShearingGraphElement extends IdBasedGraphElement implements LivingE
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, Minecraft minecraft, int mouseX, int mouseY, int x, int y, float scale) {
         if(lootTableId.isBoggedShearing()) {
-            Bogged bogged = EntityType.BOGGED.create(minecraft.level, EntitySpawnReason.COMMAND);
+            Bogged bogged = EntityTypes.BOGGED.create(minecraft.level, EntitySpawnReason.COMMAND);
             if(bogged == null) return;
 
             extractRenderState(graphics, mouseX, mouseY, bogged, x - 5, y, scale);
         } else if (lootTableId.isMooshroomShearing()) {
-            MushroomCow mushroomCow = EntityType.MOOSHROOM.create(minecraft.level, EntitySpawnReason.COMMAND);
+            MushroomCow mushroomCow = EntityTypes.MOOSHROOM.create(minecraft.level, EntitySpawnReason.COMMAND);
             if (mushroomCow == null) return;
 
             if(lootTableId.isRedMooshroomShearing()) {
@@ -40,13 +43,13 @@ public class ShearingGraphElement extends IdBasedGraphElement implements LivingE
             }
             extractRenderState(graphics, mouseX, mouseY, mushroomCow, x - 5, y, scale);
         } else if (lootTableId.isSnowGolemShearing()) {
-            SnowGolem snowGolem = EntityType.SNOW_GOLEM.create(minecraft.level, EntitySpawnReason.COMMAND);
+            SnowGolem snowGolem = EntityTypes.SNOW_GOLEM.create(minecraft.level, EntitySpawnReason.COMMAND);
             if (snowGolem == null) return;
 
             snowGolem.setPumpkin(false);
             extractRenderState(graphics, mouseX, mouseY, snowGolem, x - 5, y, scale);
         } else if (lootTableId.isSheepShearing()) {
-            Sheep sheep = EntityType.SHEEP.create(minecraft.level, EntitySpawnReason.COMMAND);
+            Sheep sheep = EntityTypes   .SHEEP.create(minecraft.level, EntitySpawnReason.COMMAND);
             if (sheep == null) return;
 
             sheep.setSheared(true);

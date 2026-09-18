@@ -3,7 +3,7 @@ package com.bawnorton.trulyrandom.mixin.server;
 import com.bawnorton.trulyrandom.extend.ModulesHolder;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.sugar.Local;
-import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import dev.kikugie.fletching_table.mixin.MixinEnvironment;
 import net.minecraft.server.WorldLoader;
 import net.minecraft.server.WorldStem;
 import net.minecraft.world.level.WorldDataConfiguration;

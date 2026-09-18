@@ -1,6 +1,8 @@
-package com.bawnorton.trulyrandom.client.mixin.accessor;
+//? if <=26.1.2 {
+/*package com.bawnorton.trulyrandom.client.mixin.accessor;
 
-import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+
+import dev.kikugie.fletching_table.mixin.MixinEnvironment;
 import net.minecraft.client.renderer.LevelRenderer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
@@ -9,5 +11,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(LevelRenderer.class)
 public interface LevelRendererAccessor {
     @Invoker("setSectionDirty")
-    void trulyrandom$setSectionDirtyWithNeighbors(int sectionX, int sectionY, int sectionZ, boolean playerChanged);
+    void trulyrandom$setSectionDirty(int sectionX, int sectionY, int sectionZ, boolean playerChanged);
 }
+*///?}

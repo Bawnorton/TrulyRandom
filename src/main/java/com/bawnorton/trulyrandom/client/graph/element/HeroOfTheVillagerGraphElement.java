@@ -13,9 +13,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.npc.villager.Villager;
 import net.minecraft.world.entity.npc.villager.VillagerData;
+
+//? if >=26.3
+import net.minecraft.client.gui.Hud;
+
+//~ if <=26.1.2 'EntityTypes' -> 'EntityType' as _
+
+import net.minecraft.world.entity.EntityTypes;
+
 
 public class HeroOfTheVillagerGraphElement extends GameplayGraphElement implements LivingEntityGuiRenderer {
     private VillagerData villagerData;
@@ -36,13 +43,14 @@ public class HeroOfTheVillagerGraphElement extends GameplayGraphElement implemen
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, Minecraft minecraft, int mouseX, int mouseY, int x, int y, float scale) {
-        Villager villagerEntity = EntityType.VILLAGER.create(minecraft.level, EntitySpawnReason.COMMAND);
+        Villager villagerEntity = EntityTypes.VILLAGER.create(minecraft.level, EntitySpawnReason.COMMAND);
         if(villagerEntity == null) return;
 
         villagerEntity.setVillagerData(villagerData);
         extractRenderState(graphics, mouseX, mouseY, villagerEntity, x - 4, y, scale);
 
-        Identifier sprite = Gui.getMobEffectSprite(MobEffects.HERO_OF_THE_VILLAGE);
+        //~ if <=26.1.2 'Hud' -> 'Gui'
+        Identifier sprite = Hud.getMobEffectSprite(MobEffects.HERO_OF_THE_VILLAGE);
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, x, y, 12, 12);
     }
 

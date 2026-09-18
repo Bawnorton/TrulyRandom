@@ -1,24 +1,27 @@
 package com.bawnorton.trulyrandom.command.argument;
 
 import com.google.gson.JsonObject;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SetStringArgumentTypeSerializer implements ArgumentTypeInfo<SetStringArgumentType, SetStringArgumentTypeSerializer.Properties> {
+    public static final SetStringArgumentTypeSerializer INSTANCE = new SetStringArgumentTypeSerializer();
 
     @Override
     public void serializeToNetwork(Properties properties, FriendlyByteBuf buf) {
-        buf.writeCollection(properties.options, FriendlyByteBuf::writeUtf);
+        Properties.STREAM_CODEC.encode(buf, properties);
     }
 
     @Override
     public Properties deserializeFromNetwork(FriendlyByteBuf buf) {
-        List<String> options = buf.readCollection(ArrayList::new, FriendlyByteBuf::readUtf);
-        return new Properties(options);
+        return Properties.STREAM_CODEC.decode(buf);
     }
 
     @Override
@@ -31,12 +34,12 @@ public class SetStringArgumentTypeSerializer implements ArgumentTypeInfo<SetStri
         return new Properties(argumentType.options());
     }
 
-    public final class Properties implements ArgumentTypeInfo.Template<SetStringArgumentType> {
-        private final List<String> options;
-
-        public Properties(List<String> options) {
-            this.options = options;
-        }
+    public record Properties(List<String> options) implements ArgumentTypeInfo.Template<SetStringArgumentType> {
+        public static final StreamCodec<ByteBuf, Properties> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.collection(ArrayList::new, ByteBufCodecs.STRING_UTF8),
+                Properties::options,
+                Properties::new
+        );
 
         @Override
         public SetStringArgumentType instantiate(CommandBuildContext context) {
@@ -45,7 +48,7 @@ public class SetStringArgumentTypeSerializer implements ArgumentTypeInfo<SetStri
 
         @Override
         public ArgumentTypeInfo<SetStringArgumentType, ?> type() {
-            return SetStringArgumentTypeSerializer.this;
+            return INSTANCE;
         }
     }
 }

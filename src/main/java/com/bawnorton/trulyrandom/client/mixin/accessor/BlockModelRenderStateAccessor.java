@@ -1,6 +1,6 @@
 package com.bawnorton.trulyrandom.client.mixin.accessor;
 
-import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import dev.kikugie.fletching_table.mixin.MixinEnvironment;
 import net.minecraft.client.renderer.block.BlockModelRenderState;
 import net.minecraft.client.renderer.special.SpecialModelRenderer;
 import org.spongepowered.asm.mixin.Mixin;

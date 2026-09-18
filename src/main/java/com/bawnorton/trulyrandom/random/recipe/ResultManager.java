@@ -10,7 +10,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.RegistryLayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.context.ContextMap;
 import net.minecraft.world.item.Item;
@@ -45,11 +44,11 @@ public class ResultManager {
         getters.put(ShieldDecorationRecipe.class, this::getShieldDecorationResult);
         getters.put(ImbueRecipe.class, this::getImbueResult);
         getters.put(DyeRecipe.class, this::getDyeResult);
-//        getters.put(MapCloningRecipe.class, this::getMapCloningResult);
         getters.put(MapExtendingRecipe.class, this::getMapCloningResult);
         getters.put(DecoratedPotRecipe.class, this::getDecoratedPotResult);
         getters.put(RepairItemRecipe.class, this::getRepairItemResult);
         getters.put(TransmuteRecipe.class, this::getTransmuteResult);
+        getters.put(BrewingRecipe.class, this::getBrewingResult);
     }
 
     public void setRandom(long seed) {
@@ -87,7 +86,8 @@ public class ResultManager {
         if(recipe.value() instanceof ResultHolder resultHolder) {
             return resultHolder.trulyrandom$getResult();
         }
-        throw new UnsupportedOperationException("Recipe type \"" + recipe.value().getClass().getSimpleName() + "\" is not supported.");
+        TrulyRandom.LOGGER.error("Recipe type \"{}\" is not supported.", recipe.value().getClass().getSimpleName());
+        return ItemStack.EMPTY;
     }
 
     private ItemStack getBookCloningResult(RecipeHolder<?> recipe, MinecraftServer server) {
@@ -95,7 +95,8 @@ public class ResultManager {
     }
 
     private ItemStack getBannerDuplicateResult(RecipeHolder<?> recipe, MinecraftServer server) {
-        return Items.WHITE_BANNER.getDefaultInstance();
+        //~ if <=26.1.2 'BANNER.white()' -> 'WHITE_BANNER'
+        return Items.BANNER.white().getDefaultInstance();
     }
 
     private ItemStack getFireworkStarFadeResult(RecipeHolder<?> recipe, MinecraftServer server) {
@@ -158,6 +159,11 @@ public class ResultManager {
         return item.getDefaultInstance();
     }
 
+    private ItemStack getBrewingResult(RecipeHolder<?> recipe, MinecraftServer minecraftServer) {
+        BrewingRecipe brewingRecipe = (BrewingRecipe) recipe.value();
+        return brewingRecipe.getOutput().create();
+    }
+
     private class SmithingTrimResultGetter implements ResultGetter {
         private List<ItemStack> bases;
         private List<ItemStack> additions;
@@ -177,7 +183,8 @@ public class ResultManager {
             defaultTrimmed.set(DataComponents.TRIM, new ArmorTrim(defaultMat.orElseThrow(), defaultPat.orElseThrow()));
 
             SmithingTrimRecipeAccessor accessor = (SmithingTrimRecipeAccessor) recipe.value();
-            ContextMap context = new ContextMap.Builder().create(LootContextParamSets.EMPTY);
+            //~ if <=26.1.2 'ContextMap.builder().buildAndValidate' -> 'new ContextMap.Builder().create'
+            ContextMap context = ContextMap.builder().buildAndValidate(LootContextParamSets.EMPTY);
             ItemStack template = accessor.trulyrandom$template().display().resolveForFirstStack(context);
             if (bases == null || bases.isEmpty()) {
                 Ingredient base = accessor.trulyrandom$base();

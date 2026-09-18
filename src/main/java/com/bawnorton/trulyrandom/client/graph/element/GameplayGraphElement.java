@@ -8,7 +8,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.chicken.Chicken;
@@ -20,6 +19,10 @@ import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.item.Items;
 import org.joml.Matrix3x2fStack;
 
+//~ if <=26.1.2 'EntityTypes' -> 'EntityType' as _
+
+import net.minecraft.world.entity.EntityTypes;
+
 public class GameplayGraphElement extends IdBasedGraphElement implements LivingEntityGuiRenderer {
     public GameplayGraphElement(LootTableIdentifier lootTableId) {
         super(lootTableId);
@@ -30,7 +33,7 @@ public class GameplayGraphElement extends IdBasedGraphElement implements LivingE
         if(lootTableId.isFishing()) {
             graphics.fakeItem(Items.FISHING_ROD.getDefaultInstance(), x - 8, y - 8);
         } else if (lootTableId.isPandaSneeze()) {
-            Panda panda = EntityType.PANDA.create(minecraft.level, EntitySpawnReason.COMMAND);
+            Panda panda = EntityTypes.PANDA.create(minecraft.level, EntitySpawnReason.COMMAND);
             if(panda == null) return;
 
             panda.sneeze(true);
@@ -45,37 +48,37 @@ public class GameplayGraphElement extends IdBasedGraphElement implements LivingE
             graphics.fakeItem(Items.SLIME_BALL.getDefaultInstance(), x, y);
             matrices.popMatrix();
         } else if (lootTableId.isCatMorningGift()) {
-            Cat cat = EntityType.CAT.create(minecraft.level, EntitySpawnReason.COMMAND);
+            Cat cat = EntityTypes.CAT.create(minecraft.level, EntitySpawnReason.COMMAND);
             if(cat == null) return;
 
             cat.setLying(true);
             ((CatEntityAccessor) cat).trulyrandom$lieDownAmount(1);
             extractRenderState(graphics, mouseX, mouseY, cat, x, y, scale);
         } else if (lootTableId.isSnifferDigging()) {
-            Sniffer sniffer = EntityType.SNIFFER.create(minecraft.level, EntitySpawnReason.COMMAND);
+            Sniffer sniffer = EntityTypes.SNIFFER.create(minecraft.level, EntitySpawnReason.COMMAND);
             if(sniffer == null) return;
 
             sniffer.transitionTo(Sniffer.State.DIGGING);
             sniffer.tickCount += 60;
             extractRenderState(graphics, mouseX, mouseY, sniffer, x, y, scale);
         } else if (lootTableId.isPiglinBartering()) {
-            Piglin piglin = EntityType.PIGLIN.create(minecraft.level, EntitySpawnReason.COMMAND);
+            Piglin piglin = EntityTypes.PIGLIN.create(minecraft.level, EntitySpawnReason.COMMAND);
             if(piglin == null) return;
 
             piglin.setItemSlot(EquipmentSlot.OFFHAND, Items.GOLD_INGOT.getDefaultInstance());
             extractRenderState(graphics, mouseX, mouseY, piglin, x, y, scale);
         } else if (lootTableId.isChickenLay()) {
-            Chicken chicken = EntityType.CHICKEN.create(minecraft.level, EntitySpawnReason.COMMAND);
+            Chicken chicken = EntityTypes.CHICKEN.create(minecraft.level, EntitySpawnReason.COMMAND);
             if(chicken == null) return;
 
             extractRenderState(graphics, mouseX, mouseY, chicken, x, y, scale);
         } else if (lootTableId.isArmadilloShed()) {
-            Armadillo armadillo = EntityType.ARMADILLO.create(minecraft.level, EntitySpawnReason.COMMAND);
+            Armadillo armadillo = EntityTypes.ARMADILLO.create(minecraft.level, EntitySpawnReason.COMMAND);
             if(armadillo == null) return;
 
             extractRenderState(graphics, mouseX, mouseY, armadillo, x, y, scale);
         } else if (lootTableId.isTurtleGrow()) {
-            Turtle turtle = EntityType.TURTLE.create(minecraft.level, EntitySpawnReason.COMMAND);
+            Turtle turtle = EntityTypes.TURTLE.create(minecraft.level, EntitySpawnReason.COMMAND);
             if(turtle == null) return;
 
             turtle.setBaby(true);

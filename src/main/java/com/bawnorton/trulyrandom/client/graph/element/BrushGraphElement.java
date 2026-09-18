@@ -7,9 +7,12 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.CommonColors;
 import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.item.Items;
+
+//~ if <=26.1.2 'EntityTypes' -> 'EntityType' as _
+
+import net.minecraft.world.entity.EntityTypes;
 
 public class BrushGraphElement extends IdBasedGraphElement implements LivingEntityGuiRenderer {
     public BrushGraphElement(LootTableIdentifier lootTableId) {
@@ -19,7 +22,7 @@ public class BrushGraphElement extends IdBasedGraphElement implements LivingEnti
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, Minecraft minecraft, int mouseX, int mouseY, int x, int y, float scale) {
         if(lootTableId.isArmadilloBrushing()) {
-            Armadillo armadillo = EntityType.ARMADILLO.create(minecraft.level, EntitySpawnReason.COMMAND);
+            Armadillo armadillo = EntityTypes.ARMADILLO.create(minecraft.level, EntitySpawnReason.COMMAND);
             if(armadillo == null) return;
 
             extractRenderState(graphics, mouseX, mouseY, armadillo, x - 5, y, scale);

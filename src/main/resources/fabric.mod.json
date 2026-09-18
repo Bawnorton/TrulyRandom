@@ -19,5 +19,12 @@
     "minecraft": "~${minecraft_dependency}",
     "fabricloader": ">=0.18.0"
   },
-  "accessWidener": "${minecraft_dependency}.classtweaker"
+  "mixins": [
+    "${mod_id}.mixins.json",
+    {
+      "config": "${mod_id}.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "accessWidener": "${minecraft_version}.classtweaker"
 }

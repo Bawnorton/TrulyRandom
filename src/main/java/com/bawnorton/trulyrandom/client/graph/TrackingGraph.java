@@ -9,6 +9,9 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.graph.builder.GraphBuilder;
 import org.joml.Vector2f;
 import org.jungrapht.visualization.layout.algorithms.HierarchicalMinCrossLayoutAlgorithm;
+import org.jungrapht.visualization.layout.algorithms.LayoutAlgorithm;
+import org.jungrapht.visualization.layout.algorithms.RadialEdgeAwareTreeLayoutAlgorithm;
+import org.jungrapht.visualization.layout.algorithms.RadialTreeLayoutAlgorithm;
 import org.jungrapht.visualization.layout.algorithms.sugiyama.Layering;
 import org.jungrapht.visualization.layout.event.LayoutStateChange;
 import org.jungrapht.visualization.layout.model.LayoutModel;
@@ -16,6 +19,8 @@ import org.jungrapht.visualization.layout.model.Point;
 import org.jungrapht.visualization.layout.model.Rectangle;
 
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -24,7 +29,9 @@ public class TrackingGraph {
     private final Graph<GraphElement, DefaultEdge> graph;
     private final List<ChangeListener> listeners = new ArrayList<>();
     private Map<GraphElement, Vector2f> posMap;
+
     private final Object mutex = new Object();
+    private final Executor executor = Executors.newSingleThreadExecutor(r -> new Thread(r, "Graph Builder"));
 
     public TrackingGraph(GraphElement root) {
         GraphBuilder<GraphElement, DefaultEdge, ? extends SimpleDirectedGraph<GraphElement, DefaultEdge>> graphBuilder = SimpleDirectedGraph.createBuilder(DefaultEdge.class);
@@ -36,14 +43,10 @@ public class TrackingGraph {
     @SuppressWarnings("unchecked")
     private Map<GraphElement, Vector2f> layout() {
         HierarchicalMinCrossLayoutAlgorithm<GraphElement, DefaultEdge> algorithm = HierarchicalMinCrossLayoutAlgorithm.<GraphElement, DefaultEdge>edgeAwareBuilder()
-                .layering(Layering.NETWORK_SIMPLEX)
+                .layering(Layering.LONGEST_PATH)
                 .vertexBoundsFunction(_ -> Rectangle.of(64, 64))
-                .straightenEdges(true)
-                .postStraighten(true)
                 .transposeLimit(10)
-                .transpose(true)
-                .threaded(true)
-                .separateComponents(true)
+                .executor(executor)
                 .build();
         LayoutModel<GraphElement> layoutModel = LayoutModel.<GraphElement>builder()
                 .graph(graph)

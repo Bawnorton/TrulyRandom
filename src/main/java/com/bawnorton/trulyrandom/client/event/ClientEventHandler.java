@@ -24,6 +24,10 @@ public class ClientEventHandler {
             TrulyRandomClient.getLootBookController().reset();
         });
 
-        PictureInPictureRendererRegistry.register(ctx -> new BlockStateGuiRenderer(ctx.bufferSource()));
+        //? if <=26.1.2 {
+        //PictureInPictureRendererRegistry.register(ctx -> new BlockStateGuiRenderer(ctx.bufferSource()));
+        //?} else {
+        PictureInPictureRendererRegistry.register(_ -> new BlockStateGuiRenderer());
+        //?}
     }
 }

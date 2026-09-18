@@ -1,6 +1,6 @@
 package com.bawnorton.trulyrandom.client.mixin;
 
-import dev.kikugie.fletching_table.annotation.MixinEnvironment;
+import dev.kikugie.fletching_table.mixin.MixinEnvironment;
 import org.jungrapht.visualization.layout.algorithms.eiglsperger.EiglspergerSteps;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

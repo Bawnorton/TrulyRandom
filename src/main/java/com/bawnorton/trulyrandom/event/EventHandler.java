@@ -36,7 +36,7 @@ public class EventHandler {
     }
 
     private static void registerCommands() {
-        ArgumentTypeRegistry.registerArgumentType(TrulyRandom.id("set_string"), SetStringArgumentType.class, new SetStringArgumentTypeSerializer());
+        ArgumentTypeRegistry.registerArgumentType(TrulyRandom.id("set_string"), SetStringArgumentType.class, SetStringArgumentTypeSerializer.INSTANCE);
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> CommandHandler.register(dispatcher, registryAccess));
     }

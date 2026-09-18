@@ -56,16 +56,16 @@ If you wish to enable worldgen modules, they **MUST** be done in this file; othe
 <details>
 <summary>Config Schema</summary>
 
-| Module          | State Id                    | Options                                                                                                                                                                         |
-|-----------------|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `block_models`  | `trulyrandom:block_model`   | `force_states_to_use_same_model` (boolean) defaults to false<br/>`ignore_model_occlusion` (boolean) defaults to false<br/>`ignore_state_properties` (boolean) defaults to false |
-| `item_models`   | `trulyrandom:item_model`    | `match_block_model_randomisation` (boolean) defaults to false                                                                                                                   |
-| `loot_tables`   | `trulyrandom:loot`          | `use_other_loot_tables` (boolean) defaults to true                                                                                                                              |
-| `recipes`       | `trulyrandom:recipe`        | `enabled_recipe_types`: see below                                                                                                                                               |
-| `trades`        | `trulyrandom:standard`      | N/A                                                                                                                                                                             |
-| `structures`    | `trulyrandom:structure`     | `use_legacy_randomiser` (boolean) defaults to false<br/>`nerf_elytra` (boolean) defaults to false                                                                               |
-| `features`      | `trulyrandom:standard`      | N/A                                                                                                                                                                             |
-| `block_palette` | `trulyrandom:block_palette` | `ignore_state_properties` (boolean) defaults to true<br/>`ignore_collision_shape` (boolean) defaults to false<br/>`ignore_occlusion_shape` (boolean) defaults to true           |
+| Module          | State Id                    | Options                                                                                                                                                                                                                      |
+|-----------------|-----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `block_models`  | `trulyrandom:block_model`   | `force_states_to_use_same_model` (boolean) defaults to false<br/>`ignore_model_occlusion` (boolean) defaults to false<br/>`ignore_state_properties` (boolean) defaults to false                                              |
+| `item_models`   | `trulyrandom:item_model`    | `match_block_model_randomisation` (boolean) defaults to false                                                                                                                                                                |
+| `loot_tables`   | `trulyrandom:loot`          | `use_other_loot_tables` (boolean) defaults to true                                                                                                                                                                           |
+| `recipes`       | `trulyrandom:recipe`        | `enabled_recipe_types`: see below                                                                                                                                                                                            |
+| `trades`        | `trulyrandom:standard`      | N/A                                                                                                                                                                                                                          |
+| `structures`    | `trulyrandom:structure`     | `use_legacy_randomiser` (boolean) defaults to false<br/>`nerf_elytra` (boolean) defaults to false                                                                                                                            |
+| `features`      | `trulyrandom:standard`      | N/A                                                                                                                                                                                                                          |
+| `block_palette` | `trulyrandom:block_palette` | `ignore_state_properties` (boolean) defaults to false<br/>`ignore_collision_shape` (boolean) defaults to false<br/>`ignore_occlusion_shape` (boolean) defaults to false<br/>`keep_stone_as_stone` (boolean) defaults to true |          |
 
 ### Recipe Types
 Enabling / Disabling recipe types follows the format of `"namespace:type": <boolean>`. For example:
@@ -75,9 +75,6 @@ Enabling / Disabling recipe types follows the format of `"namespace:type": <bool
     "minecraft:smoking": true,
     "minecraft:stonecutting": true,
     "minecraft:smelting": true,
-    "minecraft:blasting": true,
-    "minecraft:campfire_cooking": true,
-    "minecraft:smithing": true,
     "minecraft:crafting": true
   }
 }

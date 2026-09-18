@@ -83,7 +83,8 @@ public abstract class AbstractTrulyRandomSettingsScreen extends Screen {
 
     @Override
     public void onClose() {
-        minecraft.setScreen(parent);
+        //~ if <=26.1.2 'gui.setScreen' -> 'setScreen'
+        minecraft.gui.setScreen(parent);
     }
 
     private void applyAndClose() {
