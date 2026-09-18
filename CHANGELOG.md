@@ -1,3 +1,8 @@
+# 3.1.0
+- Updated to Minecraft 26.3
+- Improved loot book graph building and rendering
+- Add support for brewing recipe types
+
 # 3.0.0
 
 ### Randomiser Menu

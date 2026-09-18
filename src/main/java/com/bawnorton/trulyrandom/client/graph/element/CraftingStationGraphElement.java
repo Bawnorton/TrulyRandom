@@ -27,7 +27,7 @@ public abstract class CraftingStationGraphElement extends GraphElement {
 
     private final RecipeHolder<?> recipe;
     private final Item station;
-    private final Long2ObjectMap<Cycler<Item>> cyclers = new Long2ObjectOpenHashMap<>();
+    protected final Long2ObjectMap<Cycler<Item>> cyclers = new Long2ObjectOpenHashMap<>();
 
     protected CraftingStationGraphElement(RecipeHolder<?> recipe, Item station) {
         this.station = station;

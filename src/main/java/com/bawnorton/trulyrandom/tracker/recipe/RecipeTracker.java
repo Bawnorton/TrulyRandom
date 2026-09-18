@@ -1,5 +1,7 @@
 package com.bawnorton.trulyrandom.tracker.recipe;
 
+import com.bawnorton.trulyrandom.TrulyRandom;
+import com.bawnorton.trulyrandom.client.TrulyRandomClient;
 import com.bawnorton.trulyrandom.team.Team;
 import com.bawnorton.trulyrandom.tracker.Tracker;
 import com.mojang.serialization.Codec;
@@ -9,6 +11,8 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
@@ -19,6 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
+
+import static com.bawnorton.trulyrandom.TrulyRandom.getServer;
 
 public class RecipeTracker extends Tracker<ResourceKey<Recipe<?>>, ItemStack> {
     public static final ThreadLocal<ItemStack> LAST_RECIPE_OUTPUT = ThreadLocal.withInitial(() -> ItemStack.EMPTY);
@@ -64,7 +71,6 @@ public class RecipeTracker extends Tracker<ResourceKey<Recipe<?>>, ItemStack> {
         this.knownRecipes = new HashMap<>();
         this.recipesByOutput = new HashMap<>();
     }
-
 
     public void setRecipeRegistry(Function<ResourceKey<Recipe<?>>, RecipeHolder<?>> registry) {
         this.recipeRegistry = registry;

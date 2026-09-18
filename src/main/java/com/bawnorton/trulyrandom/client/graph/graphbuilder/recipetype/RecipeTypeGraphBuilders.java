@@ -7,6 +7,7 @@ import com.bawnorton.trulyrandom.tracker.loot.LootTableTracker;
 import com.bawnorton.trulyrandom.tracker.loot.drop.LootTableDrops;
 import com.bawnorton.trulyrandom.tracker.loot.drop.TrackingConnection;
 import com.bawnorton.trulyrandom.tracker.recipe.RecipeTracker;
+import com.google.common.collect.Streams;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
@@ -15,17 +16,11 @@ import net.minecraft.stats.Stats;
 import net.minecraft.stats.StatsCounter;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
-import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.storage.loot.LootTable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class RecipeTypeGraphBuilders {
     private static final Map<RecipeType<?>, GraphBuilder<RecipeHolder<?>>> GRAPH_BUILDERS = new HashMap<>() {
@@ -43,6 +38,7 @@ public class RecipeTypeGraphBuilders {
         GRAPH_BUILDERS.put(RecipeType.SMITHING, RecipeTypeGraphBuilders::smithingGraphBuilder);
         GRAPH_BUILDERS.put(RecipeType.STONECUTTING, RecipeTypeGraphBuilders::stonecuttingGraphBuilder);
         GRAPH_BUILDERS.put(RecipeType.SMOKING, RecipeTypeGraphBuilders::smokingGraphBuilder);
+        GRAPH_BUILDERS.put(RecipeType.BREWING, RecipeTypeGraphBuilders::brewingGraphBuilder);
     }
 
     public static GraphBuilder<RecipeHolder<?>> getBuilder(RecipeType<?> recipeType) {
@@ -63,6 +59,10 @@ public class RecipeTypeGraphBuilders {
                 .map(Holder::value)
                 .distinct()
                 .toList();
+        return addInputItems(items, lootTracker, recipeTracker, inspectedTables, inspectedRecipes, root);
+    }
+
+    private static GraphElement addInputItems(List<Item> items, LootTableTracker lootTracker, RecipeTracker recipeTracker, Set<ResourceKey<LootTable>> inspectedTables, Set<ResourceKey<Recipe<?>>> inspectedRecipes, CraftingStationGraphElement root) {
         for(Item item : items) {
             GraphElement ingredient = new ItemElement(item);
             boolean known = false;
@@ -89,6 +89,7 @@ public class RecipeTypeGraphBuilders {
         }
         return root;
     }
+
     private static GraphElement stonecuttingGraphBuilder(RecipeHolder<?> recipeEntry, LootTableTracker lootTracker, RecipeTracker recipeTracker, Set<ResourceKey<LootTable>> inspectedTables, Set<ResourceKey<Recipe<?>>> inspectedRecipes) {
         return addIngredients(recipeEntry, lootTracker, recipeTracker, inspectedTables, inspectedRecipes, new StonecutterGraphElement(recipeEntry));
     }
@@ -115,6 +116,17 @@ public class RecipeTypeGraphBuilders {
 
     private static GraphElement craftingGraphBuilder(RecipeHolder<?> recipeEntry, LootTableTracker lootTracker, RecipeTracker recipeTracker, Set<ResourceKey<LootTable>> inspectedTables, Set<ResourceKey<Recipe<?>>> inspectedRecipes) {
         return addIngredients(recipeEntry, lootTracker, recipeTracker, inspectedTables, inspectedRecipes, new CraftingTableGraphElement(recipeEntry));
+    }
+
+    private static GraphElement brewingGraphBuilder(RecipeHolder<?> recipeHolder, LootTableTracker lootTableTracker, RecipeTracker recipeTracker, Set<ResourceKey<LootTable>> resourceKeys, Set<ResourceKey<Recipe<?>>> inspectedRecipes) {
+        Recipe<?> value = recipeHolder.value();
+        List<Item> items = new ArrayList<>();
+        if (value instanceof BrewingRecipe brewingRecipe) {
+            Streams.concat(brewingRecipe.getInput().ingredient().items(), brewingRecipe.getReagent().ingredient().items())
+                    .map(Holder::value)
+                    .forEach(items::add);
+        }
+        return addInputItems(items, lootTableTracker, recipeTracker, resourceKeys, inspectedRecipes, new BrewingStandGraphElement(recipeHolder));
     }
 
     private interface ForwardingRecipeTypeGraphBuilder extends GraphBuilder<RecipeHolder<?>> {
