@@ -39,7 +39,7 @@ Choose which modules should be randomised for the world through three main categ
   - The tracker book now also supports tracking "Hero of the Village" gifts across all villager professions.
 
 ### Server Setup
-In the root folder of the server create a json file called `trulyrandom.json` with the following content:
+In the root folder of the server create a json file called `trulyrandom_example.json` with the following content:
 ```json5
 {
     "<module_name>": {
@@ -82,7 +82,9 @@ Enabling / Disabling recipe types follows the format of `"namespace:type": <bool
 
 </details>
 
-To view a sample config, don't provide one, and the mod will generate the one used for the server as a template.
+An example config can be found here: [trulyrandom.json](example/trulyrandom.json)
+
+To view a complete sample config, don't provide one, and the mod will generate the one used for the server as a template.
 To re-use this config, delete the world folder, make the changes you wish, and then restart your server.
 
 #### Teams
