@@ -1,3 +1,4 @@
+//? if >=26.3 {
 package com.bawnorton.trulyrandom.client.graph.element;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
@@ -64,3 +65,4 @@ public class BrewingStandGraphElement extends CraftingStationGraphElement {
         graphics.fakeItem(stack, x, y);
     }
 }
+//?}

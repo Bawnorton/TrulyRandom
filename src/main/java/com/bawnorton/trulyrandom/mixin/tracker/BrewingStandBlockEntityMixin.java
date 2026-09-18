@@ -1,3 +1,4 @@
+//? if >=26.3 {
 package com.bawnorton.trulyrandom.mixin.tracker;
 
 import com.bawnorton.trulyrandom.extend.BrewingStandBlockEntityExtender;
@@ -40,3 +41,4 @@ abstract class BrewingStandBlockEntityMixin implements BrewingStandBlockEntityEx
         return trulyrandom$RECIPES;
     }
 }
+//?}

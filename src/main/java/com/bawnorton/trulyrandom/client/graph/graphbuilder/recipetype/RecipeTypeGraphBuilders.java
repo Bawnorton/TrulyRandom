@@ -38,6 +38,7 @@ public class RecipeTypeGraphBuilders {
         GRAPH_BUILDERS.put(RecipeType.SMITHING, RecipeTypeGraphBuilders::smithingGraphBuilder);
         GRAPH_BUILDERS.put(RecipeType.STONECUTTING, RecipeTypeGraphBuilders::stonecuttingGraphBuilder);
         GRAPH_BUILDERS.put(RecipeType.SMOKING, RecipeTypeGraphBuilders::smokingGraphBuilder);
+        //? if >=26.3
         GRAPH_BUILDERS.put(RecipeType.BREWING, RecipeTypeGraphBuilders::brewingGraphBuilder);
     }
 
@@ -118,6 +119,7 @@ public class RecipeTypeGraphBuilders {
         return addIngredients(recipeEntry, lootTracker, recipeTracker, inspectedTables, inspectedRecipes, new CraftingTableGraphElement(recipeEntry));
     }
 
+    //? if >=26.3 {
     private static GraphElement brewingGraphBuilder(RecipeHolder<?> recipeHolder, LootTableTracker lootTableTracker, RecipeTracker recipeTracker, Set<ResourceKey<LootTable>> resourceKeys, Set<ResourceKey<Recipe<?>>> inspectedRecipes) {
         Recipe<?> value = recipeHolder.value();
         List<Item> items = new ArrayList<>();
@@ -128,6 +130,7 @@ public class RecipeTypeGraphBuilders {
         }
         return addInputItems(items, lootTableTracker, recipeTracker, resourceKeys, inspectedRecipes, new BrewingStandGraphElement(recipeHolder));
     }
+    //?}
 
     private interface ForwardingRecipeTypeGraphBuilder extends GraphBuilder<RecipeHolder<?>> {
         static @NotNull ForwardingRecipeTypeGraphBuilder forward(GraphBuilder<RecipeHolder<?>> builder) {

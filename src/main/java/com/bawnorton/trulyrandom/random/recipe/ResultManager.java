@@ -48,6 +48,7 @@ public class ResultManager {
         getters.put(DecoratedPotRecipe.class, this::getDecoratedPotResult);
         getters.put(RepairItemRecipe.class, this::getRepairItemResult);
         getters.put(TransmuteRecipe.class, this::getTransmuteResult);
+        //? if >=26.3
         getters.put(BrewingRecipe.class, this::getBrewingResult);
     }
 
@@ -159,10 +160,12 @@ public class ResultManager {
         return item.getDefaultInstance();
     }
 
+    //? if >=26.3 {
     private ItemStack getBrewingResult(RecipeHolder<?> recipe, MinecraftServer minecraftServer) {
         BrewingRecipe brewingRecipe = (BrewingRecipe) recipe.value();
         return brewingRecipe.getOutput().create();
     }
+    //?}
 
     private class SmithingTrimResultGetter implements ResultGetter {
         private List<ItemStack> bases;
