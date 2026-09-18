@@ -31,10 +31,10 @@
   },
   "requirements": [
     [
-      "is_loot_tables"
+      "rod"
     ],
     [
-      "rod"
+      "is_loot_tables"
     ]
   ],
   "sends_telemetry_event": true

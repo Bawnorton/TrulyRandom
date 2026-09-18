@@ -162,11 +162,14 @@ publishMods {
         projectId = property("publishing.modrinth") as String
         accessToken = mrTokenProvider
         minecraftVersions.addAll(compatibleVersions)
+        environment.set(CLIENT_AND_SERVER)
     }
 
     curseforge {
         projectId = property("publishing.curseforge") as String
         accessToken = cfTokenProvider
         minecraftVersions.addAll(compatibleVersions)
+        client.set(true)
+        server.set(true)
     }
 }
