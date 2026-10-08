@@ -56,16 +56,16 @@
   },
   "requirements": [
     [
-      "wood"
-    ],
-    [
-      "bamboo"
-    ],
-    [
       "breeze"
     ],
     [
       "blaze"
+    ],
+    [
+      "wood"
+    ],
+    [
+      "bamboo"
     ]
   ],
   "rewards": {

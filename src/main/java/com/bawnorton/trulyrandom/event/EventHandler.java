@@ -42,12 +42,14 @@ public class EventHandler {
     }
 
     private static void registerServerEvents() {
-        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
-            randomiser.updateLoot(server, false);
-            randomiser.updateRecipes(server, false);
-            randomiser.updateTrades(server, false);
-            LootTableDrops.populate((Registry<LootTable>) server.reloadableRegistries().lookup().lookupOrThrow(Registries.LOOT_TABLE));
+        ServerLifecycleEvents.SERVER_STARTED.register(EventHandler::initTrulyRandom);
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, _, success) -> {
+            if (success) {
+                TrulyRandom.getRandomiser(server).reloadData(server);
+                LootTableDrops.populate((Registry<LootTable>) server.reloadableRegistries().lookup().lookupOrThrow(Registries.LOOT_TABLE));
+                server.getPlayerList().getPlayers().forEach(player ->
+                        ServerPlayNetworking.send(player, new ClientboundSyncLootDropsPacket(LootTableDrops.ALL_DROPS)));
+            }
         });
 
         ServerPlayConnectionEvents.JOIN.register((handler, _, server) -> {
@@ -75,6 +77,14 @@ public class EventHandler {
             ServerPlayNetworking.send(handler.player, new ClientboundSyncLootTableTrackerPacket(lootTableTracker));
             ServerPlayNetworking.send(handler.player, new ClientboundSyncRecipeTrackerPacket(recipeTracker));
         });
+    }
+
+    private static void initTrulyRandom(MinecraftServer server) {
+        ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
+        randomiser.updateLoot(server, false);
+        randomiser.updateRecipes(server, false);
+        randomiser.updateTrades(server, false);
+        LootTableDrops.populate((Registry<LootTable>) server.reloadableRegistries().lookup().lookupOrThrow(Registries.LOOT_TABLE));
     }
 
     private static void registerTickEvents() {

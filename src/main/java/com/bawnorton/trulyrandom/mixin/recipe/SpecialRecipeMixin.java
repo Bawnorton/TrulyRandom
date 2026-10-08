@@ -33,7 +33,8 @@ abstract class SpecialRecipeMixin implements ResultClearer {
     )
     private ItemStack useRandomResult(ItemStack result) {
         if (this.result.isEmpty()) return result;
-        return this.result;
+
+        return this.result.copy();
     }
 
     @Override

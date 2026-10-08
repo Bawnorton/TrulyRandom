@@ -3,6 +3,7 @@ package com.bawnorton.trulyrandom.random.recipe;
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.extend.ResultClearer;
 import com.bawnorton.trulyrandom.extend.ResultHolder;
+import com.bawnorton.trulyrandom.mixin.accessor.DyeRecipeAccessor;
 import com.bawnorton.trulyrandom.mixin.accessor.SmithingTrimRecipeAccessor;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -12,6 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.context.ContextMap;
+import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -44,7 +46,7 @@ public class ResultManager {
         getters.put(ShieldDecorationRecipe.class, this::getShieldDecorationResult);
         getters.put(ImbueRecipe.class, this::getImbueResult);
         getters.put(DyeRecipe.class, this::getDyeResult);
-        getters.put(MapExtendingRecipe.class, this::getMapCloningResult);
+        getters.put(MapExtendingRecipe.class, this::getMapExtendingResult);
         getters.put(DecoratedPotRecipe.class, this::getDecoratedPotResult);
         getters.put(RepairItemRecipe.class, this::getRepairItemResult);
         getters.put(TransmuteRecipe.class, this::getTransmuteResult);
@@ -54,6 +56,7 @@ public class ResultManager {
 
     public void setRandom(long seed) {
         random = new Random(seed);
+        getters.put(SmithingTrimRecipe.class, new SmithingTrimResultGetter());
     }
 
     public ItemStack getResult(RecipeHolder<?> recipe, MinecraftServer server) {
@@ -96,8 +99,11 @@ public class ResultManager {
     }
 
     private ItemStack getBannerDuplicateResult(RecipeHolder<?> recipe, MinecraftServer server) {
-        //~ if <=26.1.2 'BANNER.white()' -> 'WHITE_BANNER'
-        return Items.BANNER.white().getDefaultInstance();
+        List<Item> bannerItems = BuiltInRegistries.ITEM.stream()
+                .filter(item -> item instanceof BannerItem)
+                .toList();
+        Item item = bannerItems.get(random.nextInt(bannerItems.size()));
+        return item.getDefaultInstance();
     }
 
     private ItemStack getFireworkStarFadeResult(RecipeHolder<?> recipe, MinecraftServer server) {
@@ -129,14 +135,10 @@ public class ResultManager {
     }
 
     private ItemStack getDyeResult(RecipeHolder<?> recipe, MinecraftServer server) {
-        List<Item> dyeableItems = BuiltInRegistries.ITEM.stream()
-                .filter(item -> item.components().has(DataComponents.DYE))
-                .toList();
-        Item item = dyeableItems.get(random.nextInt(dyeableItems.size()));
-        return item.getDefaultInstance();
+        return ((DyeRecipeAccessor) recipe.value()).trulyrandom$result().create();
     }
 
-    private ItemStack getMapCloningResult(RecipeHolder<?> recipe, MinecraftServer server) {
+    private ItemStack getMapExtendingResult(RecipeHolder<?> recipe, MinecraftServer server) {
         return Items.MAP.getDefaultInstance();
     }
 
@@ -154,7 +156,7 @@ public class ResultManager {
 
     private ItemStack getTransmuteResult(RecipeHolder<?> recipe, MinecraftServer server) {
         List<Item> transmutableItems = BuiltInRegistries.ITEM.listElements()
-                .filter(ref -> ref.is(ItemTags.SHULKER_BOXES) || ref.is(ItemTags.BUNDLES))
+                .filter(ref -> ref.is(ItemTags.SHULKER_BOXES) || ref.is(ItemTags.BUNDLES) || ref.value() == Items.MAP)
                 .map(Holder.Reference::value).toList();
         Item item = transmutableItems.get(random.nextInt(transmutableItems.size()));
         return item.getDefaultInstance();

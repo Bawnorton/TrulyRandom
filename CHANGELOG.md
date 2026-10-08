@@ -1,3 +1,12 @@
+# 3.1.2
+- Fixed graph rendering sometimes crashing
+
+# 3.1.1
+- Fixed some silk loot tables not being marked as requiring silk correctly
+- Fixed various special recipe outputs
+- Fixed shulkers dropping other loot tables on non-swapping loot tables mode
+- Fixed various other misc bugs
+
 # 3.1.0
 - Updated to Minecraft 26.3
 - Improved loot book graph building and rendering

@@ -76,6 +76,17 @@ public class ServerRandomiser extends Randomiser {
         update(tradeRandomiser, server, seedChanged);
     }
 
+    public void reloadData(MinecraftServer server) {
+        recipeRandomiser.setOriginalOutputs(server, modules.getSeed(Module.RECIPES));
+        lootRandomiser.reloadLootTables(server);
+        recipeRandomiser.setRandomised(false);
+        lootRandomiser.setRandomised(false);
+        recipeRandomiser.getTrackerList().forEach(Tracker::reset);
+        lootRandomiser.getTrackerList().forEach(Tracker::reset);
+        updateRecipes(server, false, true);
+        updateLoot(server, false, true);
+    }
+
     public void updateClients(MinecraftServer server) {
         server.getPlayerList()
                 .getPlayers()

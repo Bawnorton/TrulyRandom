@@ -53,6 +53,7 @@ public class LootTableDrops {
 
     public static void populate(Registry<LootTable> lootTableRegistry) {
         long start = System.currentTimeMillis();
+        ALL_DROPS.clear();
         lootTableRegistry.listElements().forEach(ref -> ref.unwrapKey().ifPresent(key -> ALL_DROPS.put(key, new LootTableDrops(key, LootTableReader.read(lootTableRegistry, ref.value())))));
         long end = System.currentTimeMillis();
         TrulyRandom.LOGGER.info("Populated {} loot table drops in {}ms", ALL_DROPS.size(), end - start);

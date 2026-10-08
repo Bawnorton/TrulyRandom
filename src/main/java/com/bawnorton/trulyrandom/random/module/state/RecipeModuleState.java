@@ -30,7 +30,8 @@ public class RecipeModuleState extends StandardModuleState {
 
     private RecipeModuleState(StandardModuleState state, Map<RecipeType<?>, Boolean> enabledRecipeTypes) {
         super(state.isEnabled(), state.isVisible(), state.getSeed());
-        this.enabledRecipeTypes = enabledRecipeTypes;
+        this.enabledRecipeTypes = new HashMap<>(enabledRecipeTypes);
+        BuiltInRegistries.RECIPE_TYPE.stream().forEach(recipeType -> this.enabledRecipeTypes.putIfAbsent(recipeType, true));
     }
 
     public RecipeModuleState() {
@@ -49,7 +50,7 @@ public class RecipeModuleState extends StandardModuleState {
     }
 
     public boolean isRecipeTypeEnabled(RecipeType<?> type) {
-        return enabledRecipeTypes.get(type);
+        return enabledRecipeTypes.getOrDefault(type, true);
     }
 
     public void setRecipeTypeEnabled(RecipeType<?> recipeType, boolean enabled) {

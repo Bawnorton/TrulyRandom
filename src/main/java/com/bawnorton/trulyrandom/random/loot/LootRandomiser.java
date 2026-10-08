@@ -11,6 +11,7 @@ import com.bawnorton.trulyrandom.util.collection.UnaryHashBiMap;
 import com.google.common.collect.Streams;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -41,7 +42,7 @@ public class LootRandomiser extends ServerRandomiserModule {
     private final Map<UUID, LootTableTracker> trackers = new HashMap<>();
     private final Map<ResourceKey<LootTable>, LootTable> originalLootTables = new HashMap<>();
     private final UnaryBiMap<ResourceKey<LootTable>> redirectMap = new UnaryHashBiMap<>();
-    private final Registry<LootTable> lootTableRegistry;
+    private Registry<LootTable> lootTableRegistry;
 
     private RandomSource randomSource;
 
@@ -73,14 +74,21 @@ public class LootRandomiser extends ServerRandomiserModule {
     //?}
 
     public LootRandomiser(MinecraftServer server) {
+        reloadLootTables(server);
+    }
+
+    public void reloadLootTables(MinecraftServer server) {
+        reset(server);
         lootTableRegistry = (Registry<LootTable>) server.reloadableRegistries()
                 .lookup()
                 .lookupOrThrow(Registries.LOOT_TABLE);
+        originalLootTables.clear();
         Set<ResourceKey<LootTable>> keys = lootTableRegistry.registryKeySet();
         keys.forEach(key -> {
             LootTable lootTable = lootTableRegistry.getValue(key);
             originalLootTables.put(key, lootTable);
         });
+        trackers.values().forEach(tracker -> tracker.setLootTableRegistry(lootTableRegistry));
     }
 
     public static Codec<LootRandomiser> codec(MinecraftServer server) {
@@ -116,12 +124,28 @@ public class LootRandomiser extends ServerRandomiserModule {
         return result;
     }
 
+    public Holder<LootTable> getLootTable(@NotNull List<Team> teams, Holder<LootTable> original) {
+        if (isCompletelyRandom()) {
+            return Holder.direct(maybeReplaceLootTable(original.value()));
+        }
+
+        return original.unwrapKey()
+                .map(key -> getLootTable(teams, key))
+                .flatMap(lootTableRegistry::get)
+                .map(ref -> (Holder<LootTable>) ref)
+                .orElse(original);
+    }
+
     public boolean isCompletelyRandom() {
         return !TrulyRandom.getCachedRandomiser().getModules().getState(getModule(), LootModuleState.class).useOtherLootTables();
     }
 
     public LootTable maybeReplaceLootTable(LootTable original) {
         if(!isCompletelyRandom()) return original;
+
+        if (lootTableRegistry.getResourceKey(original).map(blacklist::contains).orElse(false)) {
+            return original;
+        }
 
         if(randomSource == null) {
             randomSource = RandomSource.create(TrulyRandom.getCachedRandomiser().getModules().getSeed(getModule()));
@@ -146,8 +170,9 @@ public class LootRandomiser extends ServerRandomiserModule {
 
     @Override
     public void randomise(MinecraftServer server, long seed) {
-        redirectMap.clear();
+        reset(server);
         List<ResourceKey<LootTable>> keys = new ArrayList<>(originalLootTables.keySet());
+        keys.removeAll(blacklist);
         keys.sort(Comparator.comparing(ResourceKey::identifier));
         Random random = new Random(seed);
         Collections.shuffle(keys, random);
@@ -157,17 +182,13 @@ public class LootRandomiser extends ServerRandomiserModule {
             ResourceKey<LootTable> randomKey = keys.get((i + 1) % keys.size());
             preRedirects.put(originalKey, randomKey);
         }
-        blacklist.forEach(key -> {
-            ResourceKey<LootTable> blacklistedDrops = preRedirects.remove(key);
-            ResourceKey<LootTable> dropsBlacklisted = preRedirects.inverse().remove(key);
-            preRedirects.put(dropsBlacklisted, blacklistedDrops);
-        });
         redirectMap.putAll(preRedirects);
     }
 
     @Override
     public void reset(MinecraftServer server) {
         redirectMap.clear();
+        randomSource = null;
     }
 
     @Override

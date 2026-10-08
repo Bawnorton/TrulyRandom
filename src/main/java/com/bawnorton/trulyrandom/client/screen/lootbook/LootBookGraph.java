@@ -226,7 +226,9 @@ public class LootBookGraph implements Renderable, GuiEventListener {
             int xPos = centreX + offsetX + Math.round(pos.x) - 16;
             int yPos = centreY + offsetY + Math.round(pos.y) - 16;
             vertex.extractBackground(graphics, xPos, yPos, 32, 32);
-            vertex.extractRenderState(graphics, minecraft, mouseX, mouseY, xPos + 16, yPos + 16, scale);
+            try {
+                vertex.extractRenderState(graphics, minecraft, mouseX, mouseY, xPos + 16, yPos + 16, scale);
+            } catch (RuntimeException ignored) {}
         });
         matrices.popMatrix();
 

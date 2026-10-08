@@ -35,10 +35,15 @@ public class RecipeRandomiser extends ServerRandomiserModule {
 
     public void setOriginalOutputs(MinecraftServer server, long seed) {
         resultManager.setRandom(seed);
-        getRecipes(server).forEach((key, recipe) -> {
-            ItemStack result = resultManager.getResult(recipe, server);
-            originalOutputs.put(key, result);
-        });
+        originalOutputs.clear();
+        outputToRecipes.clear();
+        getRecipes(server).entrySet().stream()
+                .sorted(Comparator.comparing(entry -> entry.getKey().identifier()))
+                .forEach(entry -> {
+                    ItemStack result = resultManager.getResult(entry.getValue(), server);
+                    originalOutputs.put(entry.getKey(), result.copy());
+                    outputToRecipes.computeIfAbsent(result.getItem(), _ -> new ArrayList<>()).add(entry.getKey());
+                });
     }
 
     public static Codec<RecipeRandomiser> codec(MinecraftServer server) {

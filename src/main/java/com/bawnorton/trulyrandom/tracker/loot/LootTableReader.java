@@ -23,6 +23,8 @@ import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.*;
+import net.minecraft.world.level.storage.loot.predicates.AnyOfCondition;
+import net.minecraft.world.level.storage.loot.predicates.CompositeLootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.MatchTool;
 
@@ -165,9 +167,27 @@ public class LootTableReader {
     }
 
     private static boolean doesConditionNeedSilk(LootItemCondition condition) {
-        if (!(condition instanceof MatchTool matchTool)) return false;
+        if (condition instanceof MatchTool matchTool) {
+            return doesMatchToolNeedSilk(matchTool);
+        } else if (condition instanceof CompositeLootItemConditionAccessor composite) {
+            //? if >=26.3 {
+            HolderSet<LootItemCondition> terms = composite.trulyrandom$terms();
+            for (Holder<LootItemCondition> term : terms) {
+                if (doesConditionNeedSilk(term.value())) {
+                    return true;
+                }
+            }
+            //?} else {
+            /*List<LootItemCondition> terms = composite.trulyrandom$terms();
+            for (LootItemCondition term : terms) {
+                if (doesConditionNeedSilk(term)) {
+                    return true;
+                }
+            }
+            *///?}
+        }
+        return false;
 
-        return doesMatchToolNeedSilk(matchTool);
     }
 
     public static boolean doesMatchToolNeedSilk(MatchTool matchTool) {
