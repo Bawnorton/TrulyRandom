@@ -17,7 +17,8 @@
   "environment": "*",
   "depends": {
     "minecraft": "~${minecraft_dependency}",
-    "fabricloader": ">=0.18.0"
+    "fabricloader": ">=0.18.0",
+    "fabric-api": "*"
   },
   "mixins": [
     "${mod_id}.mixins.json",
