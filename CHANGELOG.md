@@ -1,5 +1,6 @@
 # 3.2.0
 
+- Add support for RRV
 - Fix the issue with loot table randomisation changing on the same seed 
 - Add explicit FAPI dependency
 
