@@ -23,8 +23,8 @@ abstract class PiglinAiMixin {
             )
     )
     private static void trackCause(Piglin body, CallbackInfoReturnable<List<ItemStack>> cir) {
-        if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if (body.level().isClientSide()) return;
+        if (!TrulyRandom.getRandomiser(body.level().getServer()).getModules().isEnabled(Module.LOOT_TABLES)) return;
 
         LootTableTracker.LOOT_CAUSERS.remove();
         body.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_PLAYER).ifPresent(player -> LootTableTracker.LOOT_CAUSERS.set(List.of(player.trulyrandom$getTeam())));

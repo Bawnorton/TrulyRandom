@@ -35,8 +35,7 @@ abstract class LivingEntityMixin extends Entity {
             )
     )
     private void trackCause(ServerLevel level, DamageSource source, boolean playerKilled, CallbackInfo ci) {
-        if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
-        if (level.isClientSide()) return;
+        if (!TrulyRandom.getRandomiser(level.getServer()).getModules().isEnabled(Module.LOOT_TABLES)) return;
 
         LootTableTracker.LOOT_CAUSERS.remove();
         Player attackingPlayer = getLastHurtByPlayer();

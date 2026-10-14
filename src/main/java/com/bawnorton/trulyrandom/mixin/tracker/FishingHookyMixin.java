@@ -34,8 +34,7 @@ abstract class FishingHookyMixin extends Projectile {
             )
     )
     private void trackCause(ItemStack rod, CallbackInfoReturnable<Integer> cir) {
-        if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
-        if (level().isClientSide()) return;
+        if (!TrulyRandom.getRandomiser(level().getServer()).getModules().isEnabled(Module.LOOT_TABLES)) return;
 
         LootTableTracker.LOOT_CAUSERS.remove();
         Player owner = getPlayerOwner();

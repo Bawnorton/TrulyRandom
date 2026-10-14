@@ -30,7 +30,7 @@ abstract class AdvancementRewardsMixin {
             )
     )
     private static <T> T replaceLootTable(Holder<T> instance, Operation<T> original, ServerPlayer player) {
-        ServerRandomiser randomiser = TrulyRandom.getCachedRandomiser();
+        ServerRandomiser randomiser = TrulyRandom.getRandomiser(player.level().getServer());
         if(!randomiser.getModules().isEnabled(Module.LOOT_TABLES)) {
             return original.call(instance);
         }
@@ -47,7 +47,7 @@ abstract class AdvancementRewardsMixin {
             )
     )
     private static LootTable replaceLootTable(ReloadableServerRegistries.Holder instance, ResourceKey<LootTable> id, Operation<LootTable> original, ServerPlayer player) {
-        ServerRandomiser randomiser = TrulyRandom.getCachedRandomiser();
+        ServerRandomiser randomiser = TrulyRandom.getRandomiser(player.level().getServer());
         if(!randomiser.getModules().isEnabled(Module.LOOT_TABLES)) {
             return original.call(instance, id);
         }

@@ -70,7 +70,10 @@ public class RandomiserSaveLoader extends SavedData {
 
     public static RandomiserSaveLoader getServerState(MinecraftServer server) {
         ServerLevel level = server.getLevel(ServerLevel.OVERWORLD);
-        Objects.requireNonNull(level, "Tried to get randomiser state before world was loaded");
+        if (level == null) {
+            TrulyRandom.LOGGER.warn("Tried to get randomiser state before world was loaded! Providing ephemeral randomiser, this may not provide correct randomisation");
+            return new RandomiserSaveLoader(server);
+        }
 
         SavedDataStorage storage = level.getDataStorage();
         RandomiserSaveLoader state = storage.computeIfAbsent(TYPE);

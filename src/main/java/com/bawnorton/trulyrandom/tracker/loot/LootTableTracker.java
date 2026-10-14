@@ -162,8 +162,16 @@ public class LootTableTracker extends Tracker<ResourceKey<LootTable>, ResourceKe
 
     @Override
     public void track(ResourceKey<LootTable> from, ResourceKey<LootTable> to) {
-        if (!knownLootTables.containsKey(from)) {
+        if (!knownLootTables.containsKey(from) && !knownLootTables.containsValue(to)) {
             knownLootTables.put(from, to);
+            this.markDirty();
+        } else {
+            ResourceKey<LootTable> priorTo = knownLootTables.get(from);
+            ResourceKey<LootTable> priorFrom = knownLootTables.inverse().get(priorTo);
+            if (priorFrom.equals(from) && priorTo.equals(to)) return;
+
+            TrulyRandom.LOGGER.warn("Replacing tracking of {} to {} with {} to {}. Did the seed change?", priorFrom, priorTo, from, to);
+            knownLootTables.forcePut(from, to);
             this.markDirty();
         }
 

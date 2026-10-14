@@ -13,11 +13,17 @@ import java.util.List;
 
 @Mixin(ContainerEntity.class)
 interface ContainerEntityMixin {
-    @Inject(method = "unpackChestVehicleLootTable", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/ContainerEntity;getContainerLootTable()Lnet/minecraft/resources/ResourceKey;"))
+    @Inject(
+            method = "unpackChestVehicleLootTable",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/entity/vehicle/ContainerEntity;getContainerLootTable()Lnet/minecraft/resources/ResourceKey;"
+            )
+    )
     default void trackCause(Player player, CallbackInfo ci) {
-        if(!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if(player == null) return;
         if(player.level().isClientSide()) return;
+        if(!TrulyRandom.getRandomiser(player.level().getServer()).getModules().isEnabled(Module.LOOT_TABLES)) return;
 
         LootTableTracker.LOOT_CAUSERS.set(List.of(player.trulyrandom$getTeam()));
     }

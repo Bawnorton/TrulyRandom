@@ -27,7 +27,7 @@ abstract class MatchToolMixin {
     )
     private <T> T checkKillingEntityForTool(LootContext instance, ContextKey<T> key, Operation<T> original) {
         T stack = original.call(instance, key);
-        if(!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return stack;
+        if(!TrulyRandom.getServerRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return stack;
         if(stack != null) return stack;
         if(!instance.hasParameter(LootContextParams.ATTACKING_ENTITY)) return null;
 

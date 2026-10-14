@@ -24,9 +24,9 @@ abstract class BrushableBlockEntityMixin {
             )
     )
     private void trackCause(ServerLevel level, LivingEntity user, ItemInstance brush, CallbackInfo ci) {
-        if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if (user == null) return;
         if (!(user instanceof Player player)) return;
+        if (!TrulyRandom.getRandomiser(level.getServer()).getModules().isEnabled(Module.LOOT_TABLES)) return;
 
         LootTableTracker.LOOT_CAUSERS.set(List.of(player.trulyrandom$getTeam()));
     }

@@ -11,6 +11,6 @@ import org.spongepowered.asm.mixin.injection.At;
 abstract class LootItemRandomChanceConditionMixin {
     @ModifyReturnValue(method = "test(Lnet/minecraft/world/level/storage/loot/LootContext;)Z", at = @At("RETURN"))
     private boolean alwaysPass(boolean original) {
-        return original || TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES);
+        return original || TrulyRandom.getServerRandomiser().getModules().isEnabled(Module.LOOT_TABLES);
     }
 }

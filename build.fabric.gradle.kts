@@ -25,10 +25,11 @@ base.archivesName = "${mod("id")}-${mod("version")}+$minecraft-$loader"
 dependencies {
     minecraft("com.mojang:minecraft:$minecraft")
 
-    implementation("net.fabricmc:fabric-loader:0.18.4")
+    implementation("net.fabricmc:fabric-loader:0.19.5")
 
     deps("iris") { implementation("maven.modrinth:iris:$it-$loader") }
     deps("sodium") { implementation("net.caffeinemc:sodium-$loader:$it") }
+    deps("rrv") { implementation("maven.modrinth:rrv:$it-$loader") }
 
     implementation("net.fabricmc.fabric-api:fabric-api:${deps("fabric_api")}")
 

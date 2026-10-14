@@ -1,3 +1,8 @@
+# 3.2.0
+
+- Fix the issue with loot table randomisation changing on the same seed 
+- Add explicit FAPI dependency
+
 # 3.1.2
 - Fixed graph rendering sometimes crashing
 

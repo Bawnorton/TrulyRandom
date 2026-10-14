@@ -25,8 +25,7 @@ abstract class GiveGiftToHeroMixin {
             )
     )
     private void trackCause(ServerLevel level, Villager villager, LivingEntity target, CallbackInfo ci) {
-        if(!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
-        if(target.level().isClientSide()) return;
+        if(!TrulyRandom.getRandomiser(level.getServer()).getModules().isEnabled(Module.LOOT_TABLES)) return;
 
         LootTableTracker.LOOT_CAUSERS.remove();
         if(target instanceof Player player) {

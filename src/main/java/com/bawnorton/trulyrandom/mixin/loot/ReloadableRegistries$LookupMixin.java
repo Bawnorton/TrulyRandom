@@ -31,8 +31,8 @@ abstract class ReloadableRegistries$LookupMixin implements LookupExtender {
             argsOnly = true
     )
     private @Nullable ResourceKey<LootTable> getRandomisedLootTable(@Nullable ResourceKey<LootTable> id) {
-        ServerRandomiser randomiser = TrulyRandom.getCachedRandomiser();
-        if(!randomiser.getModules().isEnabled(Module.LOOT_TABLES)) return id;
+        ServerRandomiser randomiser = TrulyRandom.getLoadedServerRandomiser();
+        if(randomiser == null || !randomiser.getModules().isEnabled(Module.LOOT_TABLES)) return id;
 
         return randomiser.getLootRandomiser().getLootTable(LootTableTracker.LOOT_CAUSERS.get(), id);
     }
@@ -42,8 +42,8 @@ abstract class ReloadableRegistries$LookupMixin implements LookupExtender {
             at = @At("RETURN")
     )
     private LootTable interceptCreatedLootTable(LootTable original) {
-        ServerRandomiser randomiser = TrulyRandom.getCachedRandomiser();
-        if(!randomiser.getModules().isEnabled(Module.LOOT_TABLES)) return original;
+        ServerRandomiser randomiser = TrulyRandom.getLoadedServerRandomiser();
+        if(randomiser == null || !randomiser.getModules().isEnabled(Module.LOOT_TABLES)) return original;
 
         return randomiser.getLootRandomiser().maybeReplaceLootTable(original);
     }

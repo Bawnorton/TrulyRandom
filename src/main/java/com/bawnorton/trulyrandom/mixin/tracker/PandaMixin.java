@@ -29,7 +29,7 @@ abstract class PandaMixin extends Animal {
             )
     )
     private void trackCause(CallbackInfo ci) {
-        if(!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+        if(!TrulyRandom.getRandomiser(level().getServer()).getModules().isEnabled(Module.LOOT_TABLES)) return;
 
         LootTableTracker.LOOT_CAUSERS.remove();
         Player nearest = level().getNearestPlayer(this, 32D);

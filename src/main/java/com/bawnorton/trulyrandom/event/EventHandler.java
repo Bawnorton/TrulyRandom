@@ -91,8 +91,8 @@ public class EventHandler {
         ServerTickEvents.START_LEVEL_TICK.register(world -> {
             if(TrulyRandom.noRandomiserSet()) return;
 
-            ServerRandomiser randomiser = TrulyRandom.getCachedRandomiser();
             MinecraftServer server = world.getServer();
+            ServerRandomiser randomiser = TrulyRandom.getRandomiser(server);
             TrulyRandom.getTeams(server).forEach(team -> {
                 LootTableTracker lootTableTracker = randomiser.getLootRandomiser().getTracker(team);
                 if (lootTableTracker != null && lootTableTracker.isDirty()) {

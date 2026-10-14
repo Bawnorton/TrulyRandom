@@ -28,8 +28,8 @@ interface RandomizableContainerMixin {
             )
     )
     default void trackCause(Player player, CallbackInfo ci) {
-        if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if (getLevel().isClientSide()) return;
+        if (!TrulyRandom.getRandomiser(getLevel().getServer()).getModules().isEnabled(Module.LOOT_TABLES)) return;
 
         LootTableTracker.LOOT_CAUSERS.remove();
         if(player != null) {

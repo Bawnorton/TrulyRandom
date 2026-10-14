@@ -31,8 +31,8 @@ abstract class Cat$CatRelaxOnOwnerGoalMixin {
             )
     )
     private void trackCause(CallbackInfo ci) {
-        if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         if (cat.level().isClientSide()) return;
+        if (!TrulyRandom.getRandomiser(cat.level().getServer()).getModules().isEnabled(Module.LOOT_TABLES)) return;
 
         LootTableTracker.LOOT_CAUSERS.remove();
         if(ownerPlayer == null) return;

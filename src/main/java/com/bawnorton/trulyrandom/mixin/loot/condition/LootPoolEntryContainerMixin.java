@@ -29,7 +29,7 @@ abstract class LootPoolEntryContainerMixin {
             )
     )
     private <T> boolean ignoreConditionsOnLootRandomiser(Predicate<T> instance, Object context, Operation<Boolean> original) {
-        boolean isRandomised = TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES);
+        boolean isRandomised = TrulyRandom.getServerRandomiser().getModules().isEnabled(Module.LOOT_TABLES);
         if(!isRandomised) return original.call(instance, context);
 
         return switch (instance) {
@@ -48,7 +48,7 @@ abstract class LootPoolEntryContainerMixin {
             )
     )
     private <T> boolean ignoreConditionsOnLootRandomiser(LootItemCondition instance, T context, Operation<Boolean> original) {
-        boolean isRandomised = TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES);
+        boolean isRandomised = TrulyRandom.getServerRandomiser().getModules().isEnabled(Module.LOOT_TABLES);
         if(!isRandomised) return original.call(instance, context);
 
         return switch (instance) {

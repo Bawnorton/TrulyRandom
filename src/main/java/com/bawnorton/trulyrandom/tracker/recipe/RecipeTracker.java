@@ -75,13 +75,13 @@ public class RecipeTracker extends Tracker<ResourceKey<Recipe<?>>, ItemStack> {
     public void setRecipeRegistry(Function<ResourceKey<Recipe<?>>, RecipeHolder<?>> registry) {
         this.recipeRegistry = registry;
         this.recipesByOutput.clear();
-        this.knownRecipes.forEach((id, output) -> recipesByOutput.computeIfAbsent(output.getItem(), k -> new ArrayList<>()).add(registry.apply(id)));
+        this.knownRecipes.forEach((id, output) -> recipesByOutput.computeIfAbsent(output.getItem(), _ -> new ArrayList<>()).add(registry.apply(id)));
     }
 
     @Override
     public void track(ResourceKey<Recipe<?>> from, ItemStack to) {
         knownRecipes.put(from, to);
-        recipesByOutput.computeIfAbsent(to.getItem(), k -> new ArrayList<>()).add(recipeRegistry.apply(from));
+        recipesByOutput.computeIfAbsent(to.getItem(), _ -> new ArrayList<>()).add(recipeRegistry.apply(from));
         this.markDirty();
     }
 

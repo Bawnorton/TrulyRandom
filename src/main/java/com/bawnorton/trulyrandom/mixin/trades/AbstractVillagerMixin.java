@@ -2,11 +2,14 @@ package com.bawnorton.trulyrandom.mixin.trades;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
 import com.bawnorton.trulyrandom.mixin.accessor.MerchantOfferAccessor;
+import com.bawnorton.trulyrandom.random.ServerRandomiser;
 import com.bawnorton.trulyrandom.random.module.Module;
 import com.bawnorton.trulyrandom.random.trade.TradeRandomiser;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+//? if <=26.1.2 {
+/*import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+*///?}
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
@@ -39,28 +42,31 @@ public abstract class AbstractVillagerMixin extends AgeableMob {
             at = @At("RETURN")
     )
     private MerchantOffers randomiseTrades(MerchantOffers original) {
-        if(!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.TRADES)) return original;
+        if (level().isClientSide()) return original;
+
+        ServerRandomiser randomiser = TrulyRandom.getRandomiser(this.level().getServer());
+        if(!randomiser.getModules().isEnabled(Module.TRADES)) return original;
         if(original.isEmpty()) return original;
 
         MerchantOffers newOffers = new MerchantOffers();
-        TradeRandomiser randomiser = TrulyRandom.getCachedRandomiser().getTradeRandomiser();
+        TradeRandomiser tradeRandomiser = randomiser.getTradeRandomiser();
         AbstractVillager merchantEntity = (AbstractVillager) (Object) this;
         for(MerchantOffer offer : original) {
             ItemCost firstBuyItem = offer.getItemCostA();
-            Item redirected = randomiser.getItem(merchantEntity, firstBuyItem.item().value());
-            int count = randomiser.getCount(merchantEntity, redirected, firstBuyItem.count());
+            Item redirected = tradeRandomiser.getItem(merchantEntity, firstBuyItem.item().value());
+            int count = tradeRandomiser.getCount(merchantEntity, redirected, firstBuyItem.count());
             firstBuyItem = new ItemCost(redirected, count);
 
             Optional<ItemCost> secondBuyItem = offer.getItemCostB();
             if(secondBuyItem.isPresent()) {
-                redirected = randomiser.getItem(merchantEntity, secondBuyItem.get().item().value());
-                count = randomiser.getCount(merchantEntity, redirected, secondBuyItem.get().count());
+                redirected = tradeRandomiser.getItem(merchantEntity, secondBuyItem.get().item().value());
+                count = tradeRandomiser.getCount(merchantEntity, redirected, secondBuyItem.get().count());
                 secondBuyItem = Optional.of(new ItemCost(redirected, count));
             }
 
             ItemStack sellItem = offer.getResult();
-            redirected = randomiser.getItem(merchantEntity, sellItem.getItem());
-            count = randomiser.getCount(merchantEntity, redirected, sellItem.getCount());
+            redirected = tradeRandomiser.getItem(merchantEntity, sellItem.getItem());
+            count = tradeRandomiser.getCount(merchantEntity, redirected, sellItem.getCount());
             sellItem = sellItem.transmuteCopy(redirected);
             sellItem.setCount(count);
 

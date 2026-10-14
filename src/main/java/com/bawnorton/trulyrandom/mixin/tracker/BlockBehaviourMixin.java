@@ -28,8 +28,7 @@ abstract class BlockBehaviourMixin {
             )
     )
     private void trackCause(BlockState state, LootParams.Builder params, CallbackInfoReturnable<List<ItemStack>> cir) {
-        if (TrulyRandom.noRandomiserSet()) return;
-        if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+        if (!TrulyRandom.getServerRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
         
         LootTableTracker.LOOT_CAUSERS.remove();
         Entity entity = params.getOptionalParameter(LootContextParams.THIS_ENTITY);

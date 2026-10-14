@@ -35,12 +35,13 @@ abstract class LootCommandMixin {
             )
     )
     private static <T> T replaceLootTable(Holder<T> instance, Operation<T> original, CommandContext<CommandSourceStack> context) {
-        ServerRandomiser randomiser = TrulyRandom.getCachedRandomiser();
+        CommandSourceStack source = context.getSource();
+        ServerRandomiser randomiser = TrulyRandom.getRandomiser(source.getServer());
         if(!randomiser.getModules().isEnabled(Module.LOOT_TABLES)) {
             return original.call(instance);
         }
 
-        ServerPlayer player = context.getSource().getPlayer();
+        ServerPlayer player = source.getPlayer();
         List<Team> teams = player == null ? List.of() : List.of(((TeamMember) player).trulyrandom$getTeam());
         return (T) randomiser.getLootRandomiser().getLootTable(teams, (Holder<LootTable>) instance).value();
     }

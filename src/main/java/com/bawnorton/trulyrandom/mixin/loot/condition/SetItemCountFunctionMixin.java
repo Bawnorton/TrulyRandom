@@ -15,7 +15,7 @@ abstract class SetItemCountFunctionMixin {
             at = @At("RETURN")
     )
     private ItemStack ensureAtLeastOne(ItemStack stack) {
-        if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return stack;
+        if (!TrulyRandom.getServerRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return stack;
         if (stack.getCount() != 0) return stack;
 
         stack.setCount(1);

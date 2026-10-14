@@ -1,6 +1,7 @@
 package com.bawnorton.trulyrandom.random;
 
 import com.bawnorton.trulyrandom.TrulyRandom;
+import com.bawnorton.trulyrandom.compat.rrv.RRVCompat;
 import com.bawnorton.trulyrandom.network.packet.clientbound.ClientboundSetClientRandomiserPacket;
 import com.bawnorton.trulyrandom.random.loot.LootRandomiser;
 import com.bawnorton.trulyrandom.random.module.Module;
@@ -103,12 +104,14 @@ public class ServerRandomiser extends Randomiser {
     private void update(ServerRandomiserModule randomiser, MinecraftServer server, boolean seedChanged, boolean force) {
         boolean moduleEnabled = modules.isEnabled(randomiser.getModule());
         boolean isRandomised = randomiser.isRandomised();
+        boolean changed = false;
 
         if(!moduleEnabled) {
             if(isRandomised) {
                 randomiser.reset(server);
                 randomiser.setRandomised(false);
                 randomiser.getTrackerList().forEach(Tracker::reset);
+                changed = true;
             }
         } else if (!isRandomised || seedChanged || force) {
             randomiser.randomise(server, modules.getSeed(randomiser.getModule()));
@@ -116,6 +119,13 @@ public class ServerRandomiser extends Randomiser {
             if(seedChanged) {
                 randomiser.getTrackerList().forEach(Tracker::reset);
             }
+            changed = true;
+        }
+
+        if (changed && (randomiser.getModule() == Module.RECIPES || randomiser.getModule() == Module.LOOT_TABLES)) {
+            TrulyRandom.getCompat()
+                    .getRRVCompat()
+                    .ifPresent(rrv -> rrv.refresh(server, randomiser.getModule() == Module.RECIPES));
         }
     }
 }

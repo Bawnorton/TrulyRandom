@@ -27,9 +27,12 @@ abstract class VillagerMixin extends AbstractVillagerMixin {
             )
     )
     private MerchantOffers dontUseRandomised(Villager instance, Operation<MerchantOffers> original) {
-        if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.TRADES)) return original.call(instance);
+        if (level().isClientSide()) return original.call(instance);
 
-        if(offers == null && level() instanceof ServerLevel level) {
+        ServerLevel level = (ServerLevel) level();
+        if (!TrulyRandom.getRandomiser(level.getServer()).getModules().isEnabled(Module.TRADES)) return original.call(instance);
+
+        if(offers == null) {
             offers = new MerchantOffers();
             updateTrades(level);
         }

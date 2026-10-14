@@ -27,7 +27,7 @@ abstract class VaultBlockEntityMixin {
             )
     )
     private static void trackCause(ServerLevel serverLevel, VaultConfig config, BlockPos pos, Player player, ItemInstance insertedStack, CallbackInfoReturnable<List<ItemStack>> cir) {
-        if (!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+        if (!TrulyRandom.getRandomiser(serverLevel.getServer()).getModules().isEnabled(Module.LOOT_TABLES)) return;
 
         LootTableTracker.LOOT_CAUSERS.remove();
         if (player != null) {

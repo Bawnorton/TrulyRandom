@@ -1,5 +1,6 @@
 package com.bawnorton.trulyrandom;
 
+import com.bawnorton.trulyrandom.compat.Compat;
 import com.bawnorton.trulyrandom.event.EventHandler;
 import com.bawnorton.trulyrandom.network.Networking;
 import com.bawnorton.trulyrandom.random.Randomiser;
@@ -16,6 +17,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.Version;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +28,7 @@ public class TrulyRandom implements ModInitializer {
     public static final String MOD_ID = "trulyrandom";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static final Version VERSION;
+    private static final Compat COMPAT = new Compat();
 
     private static MinecraftServer cachedServer;
 
@@ -39,8 +42,19 @@ public class TrulyRandom implements ModInitializer {
         return randomiser;
     }
 
-    public static ServerRandomiser getCachedRandomiser() {
-        return RandomiserSaveLoader.getLastSetRandomiser();
+    public static ServerRandomiser getServerRandomiser() {
+        if (cachedServer == null) {
+            throw new IllegalStateException("No server exists yet");
+        }
+        return getRandomiser(cachedServer);
+    }
+
+    public static ServerRandomiser getLoadedServerRandomiser() {
+        MinecraftServer server = cachedServer;
+        if (server == null || server.getLevel(ServerLevel.OVERWORLD) == null) {
+            return null;
+        }
+        return getRandomiser(server);
     }
 
     public static boolean noRandomiserSet() {
@@ -71,12 +85,20 @@ public class TrulyRandom implements ModInitializer {
         return RandomiserSaveLoader.getServerState(server);
     }
 
+    public static void setServer(MinecraftServer server) {
+        cachedServer = server;
+    }
+
     public static MinecraftServer getServer() {
         return cachedServer;
     }
 
     public static void setWorldGenModules(Modules modules) {
         RandomiserSaveLoader.setWorldGenHolder(new WorldGenHolder(modules));
+    }
+
+    public static Compat getCompat() {
+        return COMPAT;
     }
 
     @Override
@@ -88,4 +110,3 @@ public class TrulyRandom implements ModInitializer {
         LOGGER.debug("TrulyRandom Initialised");
     }
 }
-

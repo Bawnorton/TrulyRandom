@@ -32,7 +32,7 @@ abstract class TrialSpawnerMixin {
             )
     )
     private void trackCause(ServerLevel level, BlockPos pos, ResourceKey<LootTable> ejectingLootTable, CallbackInfo ci) {
-        if(!TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES)) return;
+        if(!TrulyRandom.getRandomiser(level.getServer()).getModules().isEnabled(Module.LOOT_TABLES)) return;
 
         LootTableTracker.LOOT_CAUSERS.set(((TrialSpawnerDataAccessor) getStateData()).trulyrandom$detectedPlayers()
                 .stream()

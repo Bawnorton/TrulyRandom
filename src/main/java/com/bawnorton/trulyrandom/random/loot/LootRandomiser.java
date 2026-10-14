@@ -137,7 +137,7 @@ public class LootRandomiser extends ServerRandomiserModule {
     }
 
     public boolean isCompletelyRandom() {
-        return !TrulyRandom.getCachedRandomiser().getModules().getState(getModule(), LootModuleState.class).useOtherLootTables();
+        return !TrulyRandom.getServerRandomiser().getModules().getState(getModule(), LootModuleState.class).useOtherLootTables();
     }
 
     public LootTable maybeReplaceLootTable(LootTable original) {
@@ -148,7 +148,7 @@ public class LootRandomiser extends ServerRandomiserModule {
         }
 
         if(randomSource == null) {
-            randomSource = RandomSource.create(TrulyRandom.getCachedRandomiser().getModules().getSeed(getModule()));
+            randomSource = RandomSource.create(TrulyRandom.getServerRandomiser().getModules().getSeed(getModule()));
         }
 
         Item item = BuiltInRegistries.ITEM.getRandom(randomSource)
@@ -172,10 +172,10 @@ public class LootRandomiser extends ServerRandomiserModule {
     public void randomise(MinecraftServer server, long seed) {
         reset(server);
         List<ResourceKey<LootTable>> keys = new ArrayList<>(originalLootTables.keySet());
-        keys.removeAll(blacklist);
         keys.sort(Comparator.comparing(ResourceKey::identifier));
         Random random = new Random(seed);
         Collections.shuffle(keys, random);
+        keys.removeAll(blacklist);
         UnaryBiMap<ResourceKey<LootTable>> preRedirects = new UnaryHashBiMap<>(keys.size());
         for (int i = 0; i < keys.size(); i++) {
             ResourceKey<LootTable> originalKey = keys.get(i);

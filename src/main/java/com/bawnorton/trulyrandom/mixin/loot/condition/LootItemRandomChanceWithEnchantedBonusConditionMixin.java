@@ -14,6 +14,6 @@ abstract class LootItemRandomChanceWithEnchantedBonusConditionMixin {
             at = @At("RETURN")
     )
     private boolean alwaysPass(boolean original) {
-        return original || TrulyRandom.getCachedRandomiser().getModules().isEnabled(Module.LOOT_TABLES);
+        return original || TrulyRandom.getServerRandomiser().getModules().isEnabled(Module.LOOT_TABLES);
     }
 }
