@@ -17,7 +17,7 @@
   "selectWorld.trulyrandom.recipes": "Recipes",
   "selectWorld.trulyrandom.recipes.tooltip": "Randomises the crafting recipes of items.",
   "selectWorld.trulyrandom.structures": "Structures",
-  "selectWorld.trulyrandom.structures.tooltip": "Each structure will be replaced with a different structure where it would generate (excluding strongholds).\nEg: Shipwreck placed instead of an outpost.\n§c/locate will be unreliable.\nCannot be changed once set.",
+  "selectWorld.trulyrandom.structures.tooltip": "Each structure will be replaced with a different structure where it would generate.\nEg: Shipwreck placed instead of an outpost.\nCannot be changed once set.",
   "selectWorld.trulyrandom.features": "Features",
   "selectWorld.trulyrandom.features.tooltip": "Each features will be replaced with another feature where possible.\nEg: Iceberg placed instead of a tree.\n§cCannot be changed once set.",
   "selectWorld.trulyrandom.block_palette": "Block Palette",

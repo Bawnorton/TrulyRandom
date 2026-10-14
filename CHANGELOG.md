@@ -1,3 +1,7 @@
+# 3.2.1
+
+- Fix structure bounds being inaccurate when structure randomisation is enabled
+
 # 3.2.0
 
 - Add support for RRV
